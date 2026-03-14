@@ -298,28 +298,223 @@ function computeStrategy(d){
   else if(bullSignals>bearSignals+1){dir='bull';bias='BULLISH'}
   else if(bearSignals>bullSignals+1){dir='bear';bias='BEARISH'}
   else if(bearSignals===bullSignals&&bearSignals>0){dir='range';bias='RANGE BOUND'}
-  let strategy={}
-  if(dir==='bear'){
-    const ss=ceWallStr,bs=ceWallStr-step,sp=ceWall.ce?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.ce?.lastPrice||0
-    strategy={name:'BEAR CALL SPREAD',type:'Range / Bearish',rationale:`Sell the CE wall at ${ss} — ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts defending this level`,
+  // ── STRATEGY ENGINE — 5 strategies ──────────────────────
+  // 1. LONG CE        — price broke above CE wall (momentum/breakout)
+  // 2. LONG PE        — price broke below PE wall (momentum/breakdown)
+  // 3. BEAR CALL SPREAD — near CE wall or bearish bias
+  // 4. BULL PUT SPREAD  — near PE wall or bullish bias
+  // 5. IRON CONDOR      — range bound, neutral PCR
+
+  const atmCePrice = d.atmRow.ce?.lastPrice || 0
+  const atmPePrice = d.atmRow.pe?.lastPrice || 0
+
+  // All strategies as an array — show primary + secondary
+  let allStrategies = []
+
+  // BREAKOUT — price above CE wall
+  if (!inRange && spot >= ceWallStr) {
+    allStrategies.push({
+      name:'LONG CE (BREAKOUT)',
+      type:'Momentum / Bullish',
+      tag:'🚀 AGGRESSIVE',
+      tagColor:'var(--green)',
+      rationale:`CE wall at ${ceWallStr} has been broken. ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts were defending it — now that wall is gone, price can run freely. Momentum trade.`,
+      legs:[{action:'BUY',desc:`${d.atm} CE (ATM)`,price:atmCePrice.toFixed(1)}],
+      risk: Math.round(atmCePrice * 25),
+      reward: Math.round(atmCePrice * 25 * 2),
+      rr:'1:2.0 (target 2x premium)',
+      exit:`Exit at 2x premium OR if price falls back below ${ceWallStr}`,
+      when:'Enter on breakout candle close above ' + ceWallStr,
+      avoid:'Do NOT enter if OI at ' + ceWallStr + ' is still very high — wall may not be truly broken'
+    })
+    allStrategies.push({
+      name:'BULL PUT SPREAD',
+      type:'Range / Bullish',
+      tag:'🛡️ SAFER',
+      tagColor:'var(--blue)',
+      rationale:`Breakout confirmed. Sell puts at old resistance-turned-support at ${ceWallStr}. Lower risk than buying CE outright.`,
+      legs:[{action:'SELL',desc:`${ceWallStr} PE`,price:(d.strikeList.find(s=>s.strike===ceWallStr)?.pe?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${ceWallStr-step} PE`,price:'hedge'}],
+      risk: step * 25,
+      reward: Math.round(((d.strikeList.find(s=>s.strike===ceWallStr)?.pe?.lastPrice||0)) * 25),
+      rr:'Limited risk',
+      exit:`Exit if spot falls back below ${ceWallStr}`,
+      when:'Enter after breakout is confirmed — not before',
+      avoid:'Avoid if breakout happened on very low volume'
+    })
+  }
+  // BREAKDOWN — price below PE wall
+  else if (!inRange && spot <= peWallStr) {
+    allStrategies.push({
+      name:'LONG PE (BREAKDOWN)',
+      type:'Momentum / Bearish',
+      tag:'🔻 AGGRESSIVE',
+      tagColor:'var(--red)',
+      rationale:`PE wall at ${peWallStr} has been broken. ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts were supporting it — now that floor is gone, price can fall freely.`,
+      legs:[{action:'BUY',desc:`${d.atm} PE (ATM)`,price:atmPePrice.toFixed(1)}],
+      risk: Math.round(atmPePrice * 25),
+      reward: Math.round(atmPePrice * 25 * 2),
+      rr:'1:2.0 (target 2x premium)',
+      exit:`Exit at 2x premium OR if price recovers above ${peWallStr}`,
+      when:'Enter on breakdown candle close below ' + peWallStr,
+      avoid:'Do NOT enter if PE wall OI is still building — wall may hold'
+    })
+    allStrategies.push({
+      name:'BEAR CALL SPREAD',
+      type:'Range / Bearish',
+      tag:'🛡️ SAFER',
+      tagColor:'var(--blue)',
+      rationale:`Breakdown confirmed. Sell calls at old support-turned-resistance at ${peWallStr}. Lower risk than buying PE outright.`,
+      legs:[{action:'SELL',desc:`${peWallStr} CE`,price:(d.strikeList.find(s=>s.strike===peWallStr)?.ce?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${peWallStr+step} CE`,price:'hedge'}],
+      risk: step * 25,
+      reward: Math.round(((d.strikeList.find(s=>s.strike===peWallStr)?.ce?.lastPrice||0)) * 25),
+      rr:'Limited risk',
+      exit:`Exit if spot recovers above ${peWallStr}`,
+      when:'Enter after breakdown confirmed — not during the fall',
+      avoid:'Avoid if breakdown happened near end of day — gap risk overnight'
+    })
+  }
+  // NEAR CE WALL — bearish bias
+  else if (distToCe < 200) {
+    const ss=ceWallStr,bs=ceWallStr-step
+    const sp=ceWall.ce?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.ce?.lastPrice||0
+    allStrategies.push({
+      name:'BEAR CALL SPREAD',
+      type:'Near Resistance',
+      tag:'⚡ PRIMARY',
+      tagColor:'var(--red)',
+      rationale:`Only ${Math.round(distToCe)}pts from CE wall at ${ss} which has ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L OI. Sell the wall, collect premium — institutions will defend it.`,
       legs:[{action:'SELL',desc:`${ss} CE`,price:sp.toFixed(1)},{action:'BUY',desc:`${bs} CE`,price:bp.toFixed(1)}],
       risk:Math.abs((ss-bs)*25-Math.round((sp-bp)*25)),reward:Math.abs(Math.round((sp-bp)*25)),
-      exit:`Exit if ${ss} CE OI drops >20% OR spot closes above ${ss+step}`}
-  }else if(dir==='bull'){
-    const ss=peWallStr,bs=peWallStr+step,sp=peWall.pe?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.pe?.lastPrice||0
-    strategy={name:'BULL PUT SPREAD',type:'Range / Bullish',rationale:`Sell the PE wall at ${ss} — ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts defending this level`,
+      rr: Math.abs(Math.round((sp-bp)*25)) > 0 ? '1:'+(Math.abs(Math.round((sp-bp)*25))/Math.abs((ss-bs)*25-Math.round((sp-bp)*25))).toFixed(2) : '—',
+      exit:`Exit if ${ss} CE OI drops >20% OR spot closes above ${ss+step}`,
+      when:'Enter when spot is within 100pts of ' + ss,
+      avoid:'Avoid if PCR is below 0.8 — too bullish, wall may break'
+    })
+    allStrategies.push({
+      name:'IRON CONDOR',
+      type:'Range Bound',
+      tag:'🛡️ ALTERNATIVE',
+      tagColor:'var(--blue)',
+      rationale:`Sell both walls — CE at ${ceWallStr} and PE at ${peWallStr}. Collect premium from both sides while market stays in range.`,
+      legs:[{action:'SELL',desc:`${ceWallStr} CE`,price:sp.toFixed(1)},{action:'BUY',desc:`${ceWallStr+step} CE`,price:'hedge'},{action:'SELL',desc:`${peWallStr} PE`,price:(peWall.pe?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${peWallStr-step} PE`,price:'hedge'}],
+      risk: step*25, reward: Math.round((sp+(peWall.pe?.lastPrice||0))*25),
+      rr:'Defined risk both sides',
+      exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}`,
+      when:'Best entered Monday/Tuesday morning when both walls intact',
+      avoid:'Never hold Iron Condor into news events or RBI policy'
+    })
+  }
+  // NEAR PE WALL — bullish bias
+  else if (distToPe < 200) {
+    const ss=peWallStr,bs=peWallStr+step
+    const sp=peWall.pe?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.pe?.lastPrice||0
+    allStrategies.push({
+      name:'BULL PUT SPREAD',
+      type:'Near Support',
+      tag:'⚡ PRIMARY',
+      tagColor:'var(--green)',
+      rationale:`Only ${Math.round(distToPe)}pts from PE wall at ${ss} which has ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L OI. Sell the floor, collect premium — institutions will defend it.`,
       legs:[{action:'SELL',desc:`${ss} PE`,price:sp.toFixed(1)},{action:'BUY',desc:`${bs} PE`,price:bp.toFixed(1)}],
       risk:Math.abs((bs-ss)*25-Math.round((sp-bp)*25)),reward:Math.abs(Math.round((sp-bp)*25)),
-      exit:`Exit if ${ss} PE OI drops >20% OR spot closes below ${ss-step}`}
-  }else{
+      rr: Math.abs(Math.round((sp-bp)*25)) > 0 ? '1:'+(Math.abs(Math.round((sp-bp)*25))/Math.abs((bs-ss)*25-Math.round((sp-bp)*25))).toFixed(2) : '—',
+      exit:`Exit if ${ss} PE OI drops >20% OR spot closes below ${ss-step}`,
+      when:'Enter when spot bounces near ' + ss + ' with volume confirmation',
+      avoid:'Avoid on expiry day — gap risk is high near support'
+    })
+    allStrategies.push({
+      name:'IRON CONDOR',
+      type:'Range Bound',
+      tag:'🛡️ ALTERNATIVE',
+      tagColor:'var(--blue)',
+      rationale:`Sell both walls — PE at ${peWallStr} and CE at ${ceWallStr}. Collect premium from both sides while market stays in range.`,
+      legs:[{action:'SELL',desc:`${peWallStr} PE`,price:sp.toFixed(1)},{action:'BUY',desc:`${peWallStr-step} PE`,price:'hedge'},{action:'SELL',desc:`${ceWallStr} CE`,price:(ceWall.ce?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${ceWallStr+step} CE`,price:'hedge'}],
+      risk: step*25, reward: Math.round((sp+(ceWall.ce?.lastPrice||0))*25),
+      rr:'Defined risk both sides',
+      exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}`,
+      when:'Best entered Monday/Tuesday morning when both walls intact',
+      avoid:'Never hold Iron Condor into news events or RBI policy'
+    })
+  }
+  // IN RANGE — neutral
+  else {
     const sc=ceWallStr,bc=ceWallStr+step,sp2=peWallStr,bp2=peWallStr-step
     const scP=ceWall.ce?.lastPrice||0,spP=peWall.pe?.lastPrice||0,mg=Math.round((scP+spP)*25)
-    strategy={name:'IRON CONDOR',type:'Range Bound',rationale:`Market trapped between CE wall (${sc}) and PE wall (${sp2}). Collect premium from both sides.`,
+    if (bearSignals > bullSignals) {
+      const bs2=ceWallStr-step,bp3=ceWall.ce?.lastPrice||0,bb3=d.strikeList.find(s=>s.strike===bs2)?.ce?.lastPrice||0
+      allStrategies.push({
+        name:'BEAR CALL SPREAD',
+        type:'Range / Bearish Bias',
+        tag:'⚡ PRIMARY',
+        tagColor:'var(--red)',
+        rationale:`PCR and signals lean bearish. Sell CE wall at ${sc} — ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L OI defending this level.`,
+        legs:[{action:'SELL',desc:`${sc} CE`,price:bp3.toFixed(1)},{action:'BUY',desc:`${bs2} CE`,price:bb3.toFixed(1)}],
+        risk:Math.abs((sc-bs2)*25-Math.round((bp3-bb3)*25)),reward:Math.abs(Math.round((bp3-bb3)*25)),
+        rr:'Defined risk',
+        exit:`Exit if ${sc} CE OI drops >20% OR spot closes above ${sc+step}`,
+        when:'Enter when PCR is rising (more put buying) + spot near top of range',
+        avoid:'Avoid if market has strong bullish news catalyst'
+      })
+    } else if (bullSignals > bearSignals) {
+      const bs3=peWallStr+step,bp4=peWall.pe?.lastPrice||0,bb4=d.strikeList.find(s=>s.strike===bs3)?.pe?.lastPrice||0
+      allStrategies.push({
+        name:'BULL PUT SPREAD',
+        type:'Range / Bullish Bias',
+        tag:'⚡ PRIMARY',
+        tagColor:'var(--green)',
+        rationale:`PCR and signals lean bullish. Sell PE wall at ${sp2} — ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L OI defending this level.`,
+        legs:[{action:'SELL',desc:`${sp2} PE`,price:bp4.toFixed(1)},{action:'BUY',desc:`${bs3} PE`,price:bb4.toFixed(1)}],
+        risk:Math.abs((bs3-sp2)*25-Math.round((bp4-bb4)*25)),reward:Math.abs(Math.round((bp4-bb4)*25)),
+        rr:'Defined risk',
+        exit:`Exit if ${sp2} PE OI drops >20% OR spot closes below ${sp2-step}`,
+        when:'Enter when PCR is falling (more call buying) + spot near bottom of range',
+        avoid:'Avoid if market has bearish global cues overnight'
+      })
+    }
+    allStrategies.push({
+      name:'IRON CONDOR',
+      type:'Range Bound',
+      tag: bullSignals===bearSignals ? '⚡ PRIMARY' : '🛡️ ALTERNATIVE',
+      tagColor:'var(--purple)',
+      rationale:`Market in range between ${sp2} and ${sc}. Sell both walls and collect premium from both sides. ${mg > 0 ? 'Premium collected: ₹'+mg.toLocaleString('en-IN') : ''}`,
       legs:[{action:'SELL',desc:`${sc} CE`,price:scP.toFixed(1)},{action:'BUY',desc:`${bc} CE`,price:'hedge'},{action:'SELL',desc:`${sp2} PE`,price:spP.toFixed(1)},{action:'BUY',desc:`${bp2} PE`,price:'hedge'}],
-      risk:step*25-Math.abs(mg),reward:Math.abs(mg),exit:`Exit if spot breaks above ${sc} or below ${sp2}`}
+      risk:step*25-Math.abs(mg),reward:Math.abs(mg),
+      rr: Math.abs(mg) > 0 ? '1:'+(Math.abs(mg)/(step*25-Math.abs(mg))).toFixed(2) : '—',
+      exit:`Exit if spot breaks above ${sc} or below ${sp2}`,
+      when:'Best entered early week (Mon/Tue). Time decay works for you every day.',
+      avoid:'Never hold into RBI policy, budget day, or major global events'
+    })
   }
-  return{dir,zone,bias,strategy,reasons,bullSignals,bearSignals}
+
+  // Primary = first strategy, secondary = second
+  const strategy = allStrategies[0]
+  const strategy2 = allStrategies[1] || null
+  return{dir,zone,bias,strategy,strategy2,allStrategies,reasons,bullSignals,bearSignals}
 }
+function renderStrategyCard(strat, isPrimary) {
+  return `<div class="strategy-card" style="margin-bottom:${isPrimary?'10px':'0'}">
+    <div class="strategy-head" style="background:${isPrimary?'var(--blue)':'var(--bg3)'}">
+      <span class="strategy-head-label" style="color:${isPrimary?'rgba(255,255,255,0.8)':'var(--text3)'}">${isPrimary?'⚡ PRIMARY STRATEGY':'🛡️ ALTERNATIVE STRATEGY'}</span>
+      <span class="strategy-head-type" style="color:${isPrimary?'rgba(255,255,255,0.7)':'var(--text3)'}">${strat.type}</span>
+    </div>
+    <div class="strategy-body" style="background:${isPrimary?'var(--blue-bg)':'var(--bg3)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div class="strategy-name" style="margin-bottom:0;color:${isPrimary?'var(--blue)':'var(--text)'}">${strat.name}</div>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:${isPrimary?'var(--blue-bg)':'var(--bg2)'};color:${strat.tagColor||'var(--blue)'};border:1px solid ${isPrimary?'var(--blue-bd)':'var(--border)'}">${strat.tag||''}</span>
+      </div>
+      <div>${strat.legs.map(l=>`<div class="leg" style="border-color:${isPrimary?'var(--blue-bd)':'var(--border)'}"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
+      <div class="strategy-stats">
+        <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strat.risk.toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${strat.reward.toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">R : R</div><div class="stat-val rr">${strat.rr||'—'}</div></div>
+      </div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid ${isPrimary?'var(--blue-bd)':'var(--border)'}">
+        <div style="font-size:11px;color:var(--green);margin-bottom:4px">✅ When: ${strat.when||'—'}</div>
+        <div style="font-size:11px;color:var(--red)">⚠️ Avoid: ${strat.avoid||'—'}</div>
+      </div>
+    </div>
+  </div>`
+}
+
 function renderCommand(d,s){
   const{spot,atm,maxPainStrike,pcr,ceWall,peWall,totalCeOI,totalPeOI}=d,{dir,zone,bias,strategy}=s
   const pcrTrend=pcr>1.3?'↑↑ Strong Bear':pcr>1.1?'↑ Mild Bear':pcr<0.7?'↓↓ Strong Bull':pcr<0.9?'↓ Mild Bull':'─ Neutral'
@@ -350,18 +545,8 @@ function renderCommand(d,s){
     <div class="zone-box"><div class="zone-label">Bias</div><div class="zone-val" style="color:${biasColor}">${bias}</div></div>
   </div>
   <div class="strategy-section">
-    <div class="strategy-card">
-      <div class="strategy-head"><span class="strategy-head-label">⚡ Suggested Strategy</span><span class="strategy-head-type">${strategy.type}</span></div>
-      <div class="strategy-body">
-        <div class="strategy-name">${strategy.name}</div>
-        <div>${strategy.legs.map(l=>`<div class="leg"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
-        <div class="strategy-stats">
-          <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strategy.risk.toLocaleString('en-IN')}</div></div>
-          <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${strategy.reward.toLocaleString('en-IN')}</div></div>
-          <div class="stat"><div class="stat-label">R : R</div><div class="stat-val rr">1 : ${rrRatio}</div></div>
-        </div>
-      </div>
-    </div>
+    ${renderStrategyCard(strategy, true)}
+    ${s.strategy2 ? renderStrategyCard(s.strategy2, false) : ''}
   </div>`
 }
 function renderWarRoom(d,s){
@@ -509,7 +694,7 @@ async function loadData(){
 }
 function loadDemo(){
   const spot=24387,demoRaw=buildDemoData(spot),d=parseChain(demoRaw),s=computeStrategy(d)
-  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE temporarily unreachable. Showing realistic demo data. Will retry on next 5-min refresh.</div>`+renderCommand(d,s)
+  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE temporarily unreachable. Showing realistic demo data. Will retry on next 2-min refresh.</div>`+renderCommand(d,s)
   document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
   document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
   document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
@@ -529,7 +714,7 @@ function buildDemoData(spot){
   return{records:{data,underlyingValue:spot,expiryDates:[expiry]}}
 }
 loadData()
-setInterval(loadData,5*60*1000)
+setInterval(loadData,2*60*1000)
 </script>
 </body>
 </html>

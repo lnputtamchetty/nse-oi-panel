@@ -1382,6 +1382,14 @@ async function loadData(){
     document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
     const srcLabel = dataSource==='local'?' 🟢 Live (Local)':dataSource==='vercel'?' 🟡 Live (Server)':dataSource==='proxy'?' 🟠 Live (Proxy)':''
     document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+srcLabel
+    // Re-enable Telegram send button if modal is open
+    const tgBtn = document.getElementById('tgSendBtn')
+    if (tgBtn && tgBtn.textContent.includes('No data')) {
+      tgBtn.disabled = false
+      tgBtn.textContent = '✈️ Send to Telegram'
+      const tgSt = document.getElementById('tgStatus')
+      if (tgSt) { tgSt.textContent = `✅ Data ready — ${currentIndex} @ ${d.spot?.toLocaleString('en-IN')}`; tgSt.className='tg-status ok' }
+    }
     if(chainData){
       prevData={strikes:{}}
       for(const row of d.nearStrikes)prevData.strikes[row.strike]={
@@ -1470,7 +1478,22 @@ function openTgModal() {
   document.getElementById('tgToken').value  = savedToken
   document.getElementById('tgChatId').value = savedChatId
   document.getElementById('tgSetup').classList.toggle('show', !savedToken || !savedChatId)
-  document.getElementById('tgStatus').textContent = ''
+
+  // Show data status
+  const status = document.getElementById('tgStatus')
+  const btn    = document.getElementById('tgSendBtn')
+  if (!chainData) {
+    status.textContent = '⏳ Waiting for data to load — click Refresh first, then try again'
+    status.className   = 'tg-status err'
+    btn.disabled       = true
+    btn.textContent    = '⏳ No data yet'
+  } else {
+    status.textContent = `✅ Data ready — ${currentIndex} @ ${chainData.spot?.toLocaleString('en-IN')}`
+    status.className   = 'tg-status ok'
+    btn.disabled       = false
+    btn.textContent    = '✈️ Send to Telegram'
+  }
+
   document.getElementById('tgOverlay').classList.add('open')
 }
 
@@ -1581,6 +1604,12 @@ async function sendToTelegram() {
   const chatId = document.getElementById('tgChatId').value.trim()
   const status = document.getElementById('tgStatus')
   const btn    = document.getElementById('tgSendBtn')
+
+  if (!chainData) {
+    status.textContent = '⏳ No data loaded — click Refresh first, then try again'
+    status.className = 'tg-status err'
+    return
+  }
 
   if (!token || !chatId) {
     status.textContent = '⚠️ Please enter Bot Token and Chat ID'

@@ -226,6 +226,18 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .expiry-pill.expiring{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
 .expiry-pill.expiring.active{background:var(--red);color:white}
 
+/* ── PINE COPY BUTTON ── */
+.pine-copy-bar{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid #2a3a5c;border-radius:10px;padding:12px 16px;margin-top:10px}
+.pine-copy-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.4);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.pine-copy-title span{color:#60a5fa}
+.pine-values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.pine-val-item{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 10px}
+.pine-val-label{font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.pine-val-number{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:white}
+.pine-copy-btn{width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:1px;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.pine-copy-btn:hover{opacity:0.9;transform:translateY(-1px)}
+.pine-copy-btn.copied{background:linear-gradient(135deg,#22c55e,#16a34a)}
+
 /* ── TELEGRAM ── */
 .tg-btn{font-size:12px;font-weight:700;padding:5px 13px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(41,182,246,0.15);color:#7dd3fc;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;display:flex;align-items:center;gap:6px}
 .tg-btn:hover{background:rgba(41,182,246,0.3);border-color:#7dd3fc;color:white}
@@ -827,6 +839,41 @@ function renderCommand(d,s){
     <div class="walls-title">OI Walls</div>
     <div class="wall-card ce"><div class="wall-left"><div class="wall-type">🔴 Resistance (CE Wall)</div><div class="wall-strike">${ceWall.strike.toLocaleString('en-IN')}</div></div><div class="wall-right"><div class="wall-oi">${ceOI_L}L OI</div><div class="wall-dist">${distCe} pts above ↑</div></div></div>
     <div class="wall-card pe"><div class="wall-left"><div class="wall-type">🟢 Support (PE Wall)</div><div class="wall-strike">${peWall.strike.toLocaleString('en-IN')}</div></div><div class="wall-right"><div class="wall-oi">${peOI_L}L OI</div><div class="wall-dist">${distPe} pts below ↓</div></div></div>
+
+    <!-- ── PINE SCRIPT INPUT COPIER ── -->
+    <div class="pine-copy-bar">
+      <div class="pine-copy-title">📋 Copy to <span>TradingView Pine Script</span> — fills OI Panel inputs automatically</div>
+      <div class="pine-values-grid">
+        <div class="pine-val-item">
+          <div class="pine-val-label">🔴 CE Wall</div>
+          <div class="pine-val-number">${ceWall.strike}</div>
+        </div>
+        <div class="pine-val-item">
+          <div class="pine-val-label">🟢 PE Wall</div>
+          <div class="pine-val-number">${peWall.strike}</div>
+        </div>
+        <div class="pine-val-item">
+          <div class="pine-val-label">🎯 Max Pain</div>
+          <div class="pine-val-number">${maxPainStrike}</div>
+        </div>
+        <div class="pine-val-item">
+          <div class="pine-val-label">⚖️ Real PCR</div>
+          <div class="pine-val-number">${pcr.toFixed(2)}</div>
+        </div>
+        <div class="pine-val-item">
+          <div class="pine-val-label">CE OI (Lakhs)</div>
+          <div class="pine-val-number">${ceOI_L}</div>
+        </div>
+        <div class="pine-val-item">
+          <div class="pine-val-label">PE OI (Lakhs)</div>
+          <div class="pine-val-number">${peOI_L}</div>
+        </div>
+      </div>
+      <button class="pine-copy-btn" id="pineCopyBtn" onclick="copyPineValues(${ceWall.strike}, ${peWall.strike}, ${maxPainStrike}, ${pcr}, ${ceOI_L}, ${peOI_L})">
+        📋 Copy Values — paste into Pine Script settings
+      </button>
+      <div id="pineCopyStatus" style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-top:6px;min-height:16px"></div>
+    </div>
   </div>
   <div class="zone-row">
     <div class="zone-box"><div class="zone-label">Zone</div><div class="zone-val" style="color:${zoneColor}">${zone}</div></div>
@@ -1261,66 +1308,139 @@ function renderWarRoom(d,s){
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📋</div>OI Change Tracker — Are Walls Building or Breaking?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">
-      <div class="explain-box">Shows OI change since your <strong>last refresh</strong>. <span class="good">OI building ↑</span> = wall getting stronger. <span class="bad">OI falling ↓</span> = wall weakening = breakout possible.<br><strong class="warn">Key alert:</strong> CE Wall OI drops 15–20% in one refresh = institutions exiting = exit bear trades immediately.</div>
-      <!-- ── ALERT STRIP — only shows when something important detected ── -->
+
+      <!-- ── SUMMARY BAR — 3 key numbers at a glance ── -->
       ${(()=>{
-        const alerts = oiRows.flatMap(r=>{
-          const interp = interpretStrike(r)
-          if (!interp) return []
-          return interp.filter(s=>s.type==='SHORT_COVER_CE'||s.type==='SHORT_COVER_PE').map(s=>({...s,strike:r.strike}))
-        })
-        if (alerts.length===0) return ''
-        return `<div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
-          ${alerts.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pur-bg);border:1.5px solid var(--pur-bd);border-radius:8px">
-            <span style="font-size:15px">⚡</span>
-            <div>
-              <span style="font-size:11px;font-weight:800;color:var(--purple)">${a.label} at ${a.strike}</span>
-              <span style="font-size:11px;color:var(--text2);margin-left:6px">${a.plain}</span>
-            </div>
-          </div>`).join('')}
+        const ceBuilding = oiRows.filter(r=>r.ceDiff>30000).length
+        const peBuilding = oiRows.filter(r=>r.peDiff>30000).length
+        const ceUnwinding = oiRows.filter(r=>r.ceDiff<-30000).length
+        const peUnwinding = oiRows.filter(r=>r.peDiff<-30000).length
+        const shortCovers = oiRows.filter(r=>{
+          const interp=interpretStrike(r)
+          return interp&&interp.some(s=>s.type==='SHORT_COVER_CE'||s.type==='SHORT_COVER_PE')
+        }).length
+        const wallStatus = ceBuilding>ceUnwinding?'🔴 Resistance building':'ceUnwinding>ceBuilding?"🟢 Resistance weakening":"Resistance flat"'
+        return `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+          <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:4px">CE Walls</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:var(--text)">${ceBuilding} building · ${ceUnwinding} unwinding</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${ceBuilding>ceUnwinding?'Resistance strengthening':ceUnwinding>ceBuilding?'Resistance weakening':'Balanced'}</div>
+          </div>
+          <div style="background:${shortCovers>0?'var(--pur-bg)':'var(--bg3)'};border:1px solid ${shortCovers>0?'var(--pur-bd)':'var(--border)'};border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:${shortCovers>0?'var(--purple)':'var(--text3)'};margin-bottom:4px">⚡ Short Cover</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:var(--text)">${shortCovers} strike${shortCovers!==1?'s':''}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${shortCovers>0?'Walls weakening — watch breakout':'No covering detected'}</div>
+          </div>
+          <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:4px">PE Walls</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:var(--text)">${peBuilding} building · ${peUnwinding} unwinding</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${peBuilding>peUnwinding?'Support strengthening':peUnwinding>peBuilding?'Support weakening':'Balanced'}</div>
+          </div>
         </div>`
       })()}
 
-      <!-- ── COMPACT TABLE with 3-word signal per row ── -->
-      <table class="oi-table" style="margin-top:10px">
+      <!-- ── DELTA/THETA AWARE TABLE ── -->
+      <table class="oi-table">
         <thead><tr>
           <th style="text-align:left">Strike</th>
-          <th>CE OI</th><th>CE Δ</th><th>CE Signal</th>
-          <th>PE OI</th><th>PE Δ</th><th>PE Signal</th>
+          <th title="Cumulative OI at this strike">OI</th>
+          <th title="OI change since last refresh — the key number">Δ OI</th>
+          <th title="What is happening — plain English">What's Happening</th>
+          <th title="Delta: how much this strike moves per 1pt Nifty move. ATM≈0.5, deep OTM≈0.1">Δ Impact</th>
+          <th title="Theta: how much this strike loses per day from time decay. High near expiry.">θ Decay</th>
         </tr></thead>
         <tbody>
-        ${oiRows.map(r=>{
-          const cc = r.ceDiff>0?'up':r.ceDiff<0?'dn':'neutral'
-          const pc = r.peDiff>0?'up':r.peDiff<0?'dn':'neutral'
-          const interp = interpretStrike(r)
-          // Get 3-word label + emoji for CE and PE from interp
-          const ceSig = interp ? interp.find(s=>s.side==='CE') : null
-          const peSig = interp ? interp.find(s=>s.side==='PE') : null
-          const ceTag = ceSig
-            ? `<span style="font-size:10px;font-weight:700;color:${ceSig.color}" title="${ceSig.plain}">${ceSig.label}</span>`
-            : r.ceDiff>50000 ? '<span class="tag build">↑ Build</span>'
-            : r.ceDiff<-50000 ? '<span class="tag unwind">↓ Unwind</span>'
-            : '<span class="tag flat">─</span>'
-          const peTag = peSig
-            ? `<span style="font-size:10px;font-weight:700;color:${peSig.color}" title="${peSig.plain}">${peSig.label}</span>`
-            : r.peDiff>50000 ? '<span class="tag build">↑ Build</span>'
-            : r.peDiff<-50000 ? '<span class="tag unwind">↓ Unwind</span>'
-            : '<span class="tag flat">─</span>'
-          const rowCls = r.isCeWall?'style="background:var(--red-bg)"':r.isPeWall?'style="background:var(--green-bg)"':r.isAtm?'class="atm-row"':''
-          const strikeLabel = r.isCeWall?' 🔴':r.isPeWall?' 🟢':r.isAtm?' ◆':''
-          return`<tr ${rowCls}>
-            <td style="font-weight:700">${r.strike}${strikeLabel}</td>
-            <td>${(r.ceOI/100000).toFixed(1)}L</td>
-            <td class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td>
-            <td>${ceTag}</td>
-            <td>${(r.peOI/100000).toFixed(1)}L</td>
-            <td class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td>
-            <td>${peTag}</td>
-          </tr>`
-        }).join('')}
+        ${(()=>{
+          const dte = getDTE(d.expiry)
+          return oiRows.map(r=>{
+            // ── OI columns ──
+            const cc = r.ceDiff>0?'up':r.ceDiff<0?'dn':'neutral'
+            const pc = r.peDiff>0?'up':r.peDiff<0?'dn':'neutral'
+            const interp = interpretStrike(r)
+            const ceSig = interp ? interp.find(s=>s.side==='CE') : null
+            const peSig = interp ? interp.find(s=>s.side==='PE') : null
+
+            // ── DELTA — approximate moneyness-based delta ──
+            // ATM ≈ 0.50, 1 step OTM ≈ 0.35, 2 steps ≈ 0.20, 3+ ≈ 0.10
+            // This is an approximation — real delta needs BSM, but this is directionally right
+            const strikeDist = Math.abs(r.strike - d.atm)
+            const step = d.nearStrikes.length > 1 ? Math.abs(d.nearStrikes[1].strike - d.nearStrikes[0].strike) : 50
+            const stepsFromAtm = Math.round(strikeDist / step)
+            const approxDelta = stepsFromAtm===0?0.50:stepsFromAtm===1?0.35:stepsFromAtm===2?0.20:stepsFromAtm===3?0.12:0.06
+            const isItm = r.strike < d.atm  // for CE, below ATM = ITM
+            const deltaDisplay = isItm ? (approxDelta+0.15).toFixed(2) : approxDelta.toFixed(2)
+            const deltaColor = parseFloat(deltaDisplay)>=0.40?'var(--blue)':parseFloat(deltaDisplay)>=0.25?'var(--text2)':'var(--text3)'
+            const deltaTip = stepsFromAtm===0
+              ? 'ATM — moves ₹0.50 per 1pt Nifty move. High sensitivity.'
+              : stepsFromAtm<=2
+              ? `${stepsFromAtm} step OTM — moves ₹${deltaDisplay} per 1pt Nifty. Moderate sensitivity.`
+              : `Deep OTM — moves only ₹${deltaDisplay} per 1pt Nifty. Low sensitivity. Needs big move.`
+
+            // ── THETA — time decay urgency ──
+            // Higher near expiry, higher for ATM, lower for deep OTM
+            // Approximate: ATM theta spikes in last 3 days
+            const atmIV = d.atmIV || 15
+            const thetaBase = stepsFromAtm===0?100:stepsFromAtm===1?65:stepsFromAtm===2?35:stepsFromAtm===3?18:8
+            const thetaMultiplier = dte<=0?5:dte===1?3:dte<=3?2:dte<=7?1.3:1
+            const thetaScore = Math.min(100, Math.round(thetaBase * thetaMultiplier))
+            const thetaColor = thetaScore>=80?'var(--red)':thetaScore>=50?'var(--yellow)':'var(--green)'
+            const thetaBar = `<div style="display:flex;align-items:center;gap:4px">
+              <div style="width:${Math.round(thetaScore*0.4)}px;height:6px;background:${thetaColor};border-radius:3px;min-width:2px"></div>
+              <span style="font-size:9px;color:${thetaColor};font-weight:700">${thetaScore>80?'HIGH':thetaScore>50?'MED':'LOW'}</span>
+            </div>`
+            const thetaTip = dte<=1
+              ? 'Expiry imminent — theta destroying premium every minute. Option sellers winning.'
+              : dte<=3
+              ? `${dte} days left — theta accelerating. Time working against buyers at this strike.`
+              : `${dte} days left — theta moderate. Options still have reasonable time value.`
+
+            // ── Combined signal tag ──
+            const mainSignal = ceSig||peSig
+            const sigTag = mainSignal
+              ? `<span style="font-size:10px;font-weight:700;color:${mainSignal.color}" title="${mainSignal.plain}">${mainSignal.label}</span>`
+              : r.ceDiff>50000||r.peDiff>50000
+              ? '<span class="tag build">↑ Build</span>'
+              : r.ceDiff<-50000||r.peDiff<-50000
+              ? '<span class="tag unwind">↓ Unwind</span>'
+              : '<span class="tag flat">─</span>'
+
+            const rowCls = r.isCeWall?'style="background:var(--red-bg)"':r.isPeWall?'style="background:var(--green-bg)"':r.isAtm?'class="atm-row"':''
+            const strikeLabel = r.isCeWall?' 🔴':r.isPeWall?' 🟢':r.isAtm?' ◆':''
+
+            // Single merged OI display: CE / PE on one line
+            const ceOiStr = `<span style="color:var(--red)">${(r.ceOI/100000).toFixed(1)}L</span>`
+            const peOiStr = `<span style="color:var(--green)">${(r.peOI/100000).toFixed(1)}L</span>`
+            const ceDStr  = `<span class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</span>`
+            const peDStr  = `<span class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</span>`
+
+            return`<tr ${rowCls} title="${r.strike}: CE ${(r.ceOI/100000).toFixed(1)}L (${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L) | PE ${(r.peOI/100000).toFixed(1)}L (${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L)">
+              <td style="font-weight:700">${r.strike}${strikeLabel}</td>
+              <td style="text-align:left">${ceOiStr} / ${peOiStr}</td>
+              <td style="text-align:left">${ceDStr} / ${peDStr}</td>
+              <td>${sigTag}</td>
+              <td style="text-align:center" title="${deltaTip}">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${deltaColor}">${deltaDisplay}</span>
+              </td>
+              <td title="${thetaTip}">${thetaBar}</td>
+            </tr>`
+          }).join('')
+        })()}
         </tbody>
       </table>
-      ${oiHistory.length > 1 ? renderSparklines() : '<div style="font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--bg3);border-radius:6px">📈 OI trend chart builds after 2+ refreshes</div>'}
+
+      <!-- ── DELTA & THETA EXPLAINER — compact, one-time read ── -->
+      <details style="margin-top:10px">
+        <summary style="font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;padding:6px 0;list-style:none">
+          ℹ️ What are Delta (Δ) and Theta (θ)? Click to read
+        </summary>
+        <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-top:6px;font-size:12px;color:var(--text2);line-height:1.7;border:1px solid var(--border)">
+          <p style="margin-bottom:8px"><strong style="color:var(--blue)">Delta (Δ) = sensitivity to price movement.</strong> If an option has delta 0.50, it moves ₹0.50 for every ₹1 Nifty moves. ATM options have delta ~0.50. Deep OTM options have delta ~0.05 — they barely move even if Nifty does. <em>Higher delta = more reactive = costs more but needs smaller move.</em></p>
+          <p style="margin-bottom:8px"><strong style="color:var(--red)">Theta (θ) = time decay — the silent killer for option buyers.</strong> Every day that passes, your option loses value even if Nifty doesn't move. ATM options on expiry day can lose 80% of their value in one session. <em>Theta works FOR sellers (they collect it) and AGAINST buyers (they pay it).</em></p>
+          <p style="margin-bottom:0"><strong style="color:var(--text)">How to use these columns:</strong> High theta (RED bar) + high OI building = institutions writing options and collecting premium — they expect the strike to expire worthless. Low delta (deep OTM) + huge OI = used as cheap lottery tickets or hedges, not directional bets. ATM high delta + OI building = real directional conviction.</p>
+        </div>
+      </details>
+
+      ${oiHistory.length > 1 ? renderSparklines() : '<div style="font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--bg3);border-radius:6px">📈 OI wall trend builds after 2+ refreshes</div>'}
     </div>
   </div>
   <div class="wr-section">
@@ -1350,7 +1470,7 @@ function renderWarRoom(d,s){
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📉</div>IV Skew — Are Puts or Calls More Expensive?</div><span class="wr-chevron">▶</span></div>
     <div class="wr-body">
-      <div class="explain-box">IV (Implied Volatility) = how expensive an option is. <strong>Higher IV = more expensive = more fear/demand.</strong> Puts normally cost more than calls. When call IV spikes above put IV — someone big is buying calls aggressively.</div>
+      <!-- IV explanation condensed — detail is in Learning Corner -->
       <div style="margin-top:14px">${skewStrikes.map(row=>{
         const ceIV=row.ce?.impliedVolatility||0,peIV=row.pe?.impliedVolatility||0,isAtm=row.strike===atm
         return`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
@@ -1364,18 +1484,39 @@ function renderWarRoom(d,s){
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--yel-bg);border:1.5px solid var(--yel-bd)">⚡</div>Strategy Explained — Why This Trade?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">
-      <div class="explain-box"><strong>${strategy.name}</strong><br>${strategy.rationale}</div>
-      <div class="sec-label">Signal Reasons</div>
-      ${reasons.map(r=>`<div class="reason-item ${r.dir}">${r.dir==='bull'?'🟢':r.dir==='bear'?'🔴':r.dir==='warn'?'🟡':'⚪'} ${r.text}</div>`).join('')}
-      <div class="explain-box mt12"><p><strong>What makes this trade work:</strong></p><ul>${buildChecklist(d,s).filter(c=>c.type==='good').map(c=>`<li class="good">✅ ${c.text}</li>`).join('')}</ul><p style="margin-top:10px"><strong>What kills this trade:</strong></p><ul>${buildChecklist(d,s).filter(c=>c.type==='bad').map(c=>`<li class="bad">❌ ${c.text}</li>`).join('')}</ul><p style="margin-top:10px"><strong class="warn">Exit Rule:</strong> ${strategy.exit}</p></div>
+      <!-- Signal reasons + checklist merged — no separate rationale box -->
+      <div style="margin-bottom:10px">
+        ${reasons.map(r=>`<div class="reason-item ${r.dir}">${r.dir==='bull'?'🟢':r.dir==='bear'?'🔴':r.dir==='warn'?'🟡':'⚪'} ${r.text}</div>`).join('')}
+      </div>
+      <div class="explain-box">
+        <p style="margin-bottom:6px"><em style="color:var(--text3)">${strategy.rationale}</em></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+          <div>
+            <strong style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:1px">✅ Works when</strong>
+            <ul style="margin:6px 0 0 14px;font-size:12px">
+              ${buildChecklist(d,s).filter(c=>c.type==='good').map(c=>`<li class="good" style="margin-bottom:3px">${c.text}</li>`).join('')}
+            </ul>
+          </div>
+          <div>
+            <strong style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:1px">❌ Fails when</strong>
+            <ul style="margin:6px 0 0 14px;font-size:12px">
+              ${buildChecklist(d,s).filter(c=>c.type==='bad').map(c=>`<li class="bad" style="margin-bottom:3px">${c.text}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+        <p style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)"><strong class="warn">Exit Rule:</strong> ${strategy.exit}</p>
+      </div>
     </div>
   </div>
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📖</div>Learning Corner — Options Basics</div><span class="wr-chevron">▶</span></div>
     <div class="wr-body">
-      <div class="explain-box"><p><strong>OI vs Volume</strong></p><p><strong>Volume</strong> = contracts traded TODAY. Resets every morning.</p><p><strong>Open Interest (OI)</strong> = contracts currently OPEN (not yet closed). Builds over time. High OI = many active bets = that level matters.</p><p>Think: Volume = cars that entered the parking lot today. OI = cars still parked right now.</p></div>
-      <div class="explain-box mt12"><p><strong>Why does a CE Wall create a ceiling?</strong></p><p>When a big institution sells 80L call contracts at 24,600, they collect premium. If Nifty closes above 24,600, they must pay out. So they <strong>actively sell Nifty futures</strong> near 24,600 to protect themselves — called delta hedging. It's automatic, predictable, and creates the wall you see in OI data.</p></div>
-      <div class="explain-box mt12"><p><strong>What is Theta decay?</strong></p><p>Every option loses value every day from time passing alone — even if Nifty doesn't move. Monday ₹80 → Wednesday ₹45 → Expiry day ₹5. Time is the option seller's best friend and the buyer's enemy.</p></div>
+      <div class="explain-box">
+        <p><strong>OI vs Volume</strong> — Volume = contracts traded today (resets every morning). OI = contracts still open (builds over time). Think: Volume = cars that entered the parking lot today. OI = cars still parked. High OI at a strike = real institutional interest = that level matters.</p>
+        <p style="margin-top:8px"><strong>Why CE Wall = ceiling.</strong> When an institution sells 80L call contracts at 24,600 they collect premium. If Nifty closes above 24,600 they lose money. So they sell Nifty futures near 24,600 to protect themselves (called <em>delta hedging</em>). This is automatic, predictable, and creates the mechanical ceiling you see in OI data.</p>
+        <p style="margin-top:8px"><strong>Theta (θ) = time decay.</strong> Every option loses value every day from time alone — even if Nifty doesn't move. Monday ₹80 → Wednesday ₹45 → Expiry day ₹5. Sellers collect theta. Buyers pay it. Near expiry, only sell premium — don't buy it.</p>
+        <p style="margin-top:8px"><strong>Delta (Δ) = price sensitivity.</strong> ATM option moves ₹0.50 per ₹1 Nifty move. Deep OTM moves ₹0.05. Buying deep OTM = cheap lottery ticket = needs massive move to profit. Buying ATM = expensive but reactive = works even on moderate moves.</p>
+      </div>
       <div class="explain-box mt12">
         <p><strong>⚠️ Manipulation & Traps to Watch For</strong></p>
         <p><strong class="bad">1. Pin Risk (near expiry):</strong> Market makers push price toward max pain on expiry day to maximise options expiring worthless. Don't fight max pain on Thursdays.</p>
@@ -1557,6 +1698,51 @@ function buildChecklist(d,s){
 function getDTE(expiryStr){
   try{const parts=expiryStr.split('-'),months={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11},d=new Date(parseInt(parts[2]),months[parts[1].toUpperCase()],parseInt(parts[0])),today=new Date();today.setHours(0,0,0,0);return Math.max(0,Math.round((d-today)/(1000*60*60*24)))}catch(e){return'?'}
 }
+function copyPineValues(ceWall, peWall, maxPain, pcr, ceOI_L, peOI_L) {
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  const expiry = chainData?.expiry || '—'
+
+  // Format as a clear instruction block for Pine Script settings
+  const text = [
+    `LNP KAMAKSHIVA — OI Panel Values`,
+    `Index: ${currentIndex}  |  Expiry: ${expiry}  |  Time: ${now}`,
+    `─────────────────────────────────`,
+    `CE Wall Strike     : ${ceWall}`,
+    `PE Wall Strike     : ${peWall}`,
+    `Max Pain Strike    : ${maxPain}`,
+    `Real PCR           : ${pcr.toFixed(2)}`,
+    `CE Wall OI (Lakhs) : ${ceOI_L}`,
+    `PE Wall OI (Lakhs) : ${peOI_L}`,
+    `─────────────────────────────────`,
+    `Paste these into KAMAKSHIVA Pine Script:`,
+    `Settings → OI Panel Inputs (from NSE OI Panel app)`,
+  ].join('\n')
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('pineCopyBtn')
+    const status = document.getElementById('pineCopyStatus')
+    if (btn) {
+      btn.textContent = '✅ Copied! Now paste into Pine Script settings'
+      btn.classList.add('copied')
+      setTimeout(() => {
+        btn.textContent = '📋 Copy Values — paste into Pine Script settings'
+        btn.classList.remove('copied')
+      }, 3000)
+    }
+    if (status) {
+      status.textContent = `✅ ${ceWall} | ${peWall} | ${maxPain} | PCR ${pcr.toFixed(2)} — copied to clipboard`
+      status.style.color = '#86efac'
+    }
+  }).catch(() => {
+    // Fallback for browsers that block clipboard
+    const status = document.getElementById('pineCopyStatus')
+    if (status) {
+      status.textContent = `CE Wall: ${ceWall}  PE Wall: ${peWall}  Max Pain: ${maxPain}  PCR: ${pcr.toFixed(2)}`
+      status.style.color = 'rgba(255,255,255,0.7)'
+    }
+  })
+}
+
 function toggleGuide(header) {
   const body  = document.getElementById('oiGuideBody')
   const chev  = document.getElementById('guideChevron')

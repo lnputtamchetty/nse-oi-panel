@@ -189,6 +189,42 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
+/* ── TELEGRAM ── */
+.tg-btn{font-size:12px;font-weight:700;padding:5px 13px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(41,182,246,0.15);color:#7dd3fc;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;display:flex;align-items:center;gap:6px}
+.tg-btn:hover{background:rgba(41,182,246,0.3);border-color:#7dd3fc;color:white}
+.tg-btn.sending{opacity:0.6;cursor:not-allowed}
+.tg-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:center;justify-content:center}
+.tg-modal-overlay.open{display:flex}
+.tg-modal{background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2);overflow:hidden}
+.tg-modal-head{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.tg-modal-title{font-size:14px;font-weight:800;color:white;display:flex;align-items:center;gap:8px}
+.tg-modal-close{font-size:18px;color:rgba(255,255,255,0.5);cursor:pointer;background:none;border:none;line-height:1;padding:0}
+.tg-modal-close:hover{color:white}
+.tg-modal-body{padding:18px 20px}
+.tg-setup{background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--yellow);display:none}
+.tg-setup.show{display:block}
+.tg-setup strong{font-weight:700;color:var(--yellow)}
+.tg-input-row{margin-bottom:12px}
+.tg-input-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:5px}
+.tg-input{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none;font-family:'JetBrains Mono',monospace}
+.tg-input:focus{border-color:var(--blue)}
+.tg-divider{height:1px;background:var(--border);margin:14px 0}
+.tg-check-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px}
+.tg-checks{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.tg-check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;background:var(--bg3)}
+.tg-check-item:hover{border-color:var(--blue);background:var(--blue-bg)}
+.tg-check-item.checked{border-color:var(--blue);background:var(--blue-bg)}
+.tg-check-box{width:16px;height:16px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all 0.15s}
+.tg-check-item.checked .tg-check-box{background:var(--blue);border-color:var(--blue);color:white}
+.tg-check-text{font-size:12px;font-weight:600;color:var(--text)}
+.tg-check-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.tg-send-btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--blue);color:white;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
+.tg-send-btn:hover{background:#1d4ed8}
+.tg-send-btn:disabled{opacity:0.5;cursor:not-allowed}
+.tg-status{margin-top:10px;font-size:12px;font-weight:600;text-align:center;min-height:18px}
+.tg-status.ok{color:var(--green)}
+.tg-status.err{color:var(--red)}
+
 /* ── COUNTDOWN TIMER ── */
 .countdown-wrap{display:flex;align-items:center;gap:6px}
 .countdown{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:3px 8px;border-radius:6px;min-width:48px;text-align:center;transition:all 0.3s}
@@ -258,6 +294,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
+    <button class="tg-btn" onclick="openTgModal()">✈️ Telegram</button>
     <div class="countdown-wrap">
       <span class="last-update" id="lastUpdate">—</span>
       <span class="countdown" id="countdownTimer">2:00</span>
@@ -276,6 +313,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 </div>
 <script>
 let currentIndex='NIFTY',prevData=null,chainData=null
+// Strategy persistence tracker — stores last 5 strategy names
+// When same strategy appears 3+ times in a row = CONFIRMED signal
+let strategyHistory = []   // ['BEAR CALL SPREAD', 'BEAR CALL SPREAD', 'IRON CONDOR', ...]
 const INDEX_SYMBOLS={'NIFTY':'NIFTY','BANKNIFTY':'BANKNIFTY','FINNIFTY':'FINNIFTY','MIDCPNIFTY':'MIDCPNIFTY','NIFTY NEXT 50':'NIFTY NEXT 50','SENSEX':'SENSEX'}
 // Data source indicator
 let dataSource = 'demo'
@@ -592,7 +632,10 @@ function renderStrategyCard(strat, isPrimary) {
   return `<div class="strategy-card" style="margin-bottom:${isPrimary?'10px':'0'}">
     <div class="strategy-head" style="background:${isPrimary?'var(--blue)':'var(--bg3)'}">
       <span class="strategy-head-label" style="color:${isPrimary?'rgba(255,255,255,0.8)':'var(--text3)'}">${isPrimary?'⚡ PRIMARY STRATEGY':'🛡️ ALTERNATIVE STRATEGY'}</span>
-      <span class="strategy-head-type" style="color:${isPrimary?'rgba(255,255,255,0.7)':'var(--text3)'}">${strat.type}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${isPrimary && strategyHistory.length >= 1 ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${getStrategyPersistence(strat.name).bgColor};color:${getStrategyPersistence(strat.name).color};border:1px solid ${getStrategyPersistence(strat.name).bdColor}">${getStrategyPersistence(strat.name).label}</span>` : ''}
+        <span class="strategy-head-type" style="color:${isPrimary?'rgba(255,255,255,0.7)':'var(--text3)'}">${strat.type}</span>
+      </div>
     </div>
     <div class="strategy-body" style="background:${isPrimary?'var(--blue-bg)':'var(--bg3)'}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -648,6 +691,40 @@ function renderCommand(d,s){
     ${s.strategy2 ? renderStrategyCard(s.strategy2, false) : ''}
   </div>`
 }
+function getStrategyPersistence(currentStrategyName) {
+  if (strategyHistory.length < 2) {
+    return { count:1, isConfirmed:false, streak:1, label:'1st refresh', color:'var(--text3)', bgColor:'var(--bg3)', bdColor:'var(--border)', tip:'Wait for 2 more refreshes to confirm.' }
+  }
+  // Count consecutive same strategy from the END of history
+  let streak = 0
+  for (let i = strategyHistory.length - 1; i >= 0; i--) {
+    if (strategyHistory[i] === currentStrategyName) streak++
+    else break
+  }
+  if (streak >= 3) {
+    return {
+      count: streak, isConfirmed: true, streak,
+      label: `✅ CONFIRMED — ${streak} refreshes in a row`,
+      color: 'var(--green)', bgColor: 'var(--green-bg)', bdColor: 'var(--green-bd)',
+      tip: `Same strategy for ${streak} consecutive refreshes (${streak*2} minutes). This is a confirmed signal — market conviction is high. You can act on this.`
+    }
+  } else if (streak === 2) {
+    return {
+      count: streak, isConfirmed: false, streak,
+      label: `⏳ BUILDING — 2 refreshes in a row`,
+      color: 'var(--yellow)', bgColor: 'var(--yel-bg)', bdColor: 'var(--yel-bd)',
+      tip: `Same strategy for 2 consecutive refreshes (4 minutes). One more refresh needed to confirm. Prepare but don't enter yet.`
+    }
+  } else {
+    return {
+      count: streak, isConfirmed: false, streak,
+      label: `🔄 NEW — just appeared`,
+      color: 'var(--text3)', bgColor: 'var(--bg3)', bdColor: 'var(--border)',
+      tip: `Strategy just changed or appeared for the first time. Wait for 2 more refreshes before acting.`
+    }
+  }
+}
+
 function buildQuickRead(d, s) {
   const { spot, atm, maxPainStrike, pcr, ceWall, peWall, totalCeOI, totalPeOI, atmIV } = d
   const { dir, zone, bias, confidence, bullSignals, bearSignals } = s
@@ -709,7 +786,33 @@ function buildQuickRead(d, s) {
   const bdColor = dir==='bull' ? 'var(--green-bd)' : dir==='bear' ? 'var(--red-bd)' : 'var(--yel-bd)'
   const txColor = dir==='bull' ? 'var(--green)' : dir==='bear' ? 'var(--red)' : 'var(--yellow)'
 
-  return { s1, s2, s3, emoji, bgColor, bdColor, txColor, bias }
+  // Check for short covering signals across all near strikes
+  // This is computed here so Quick Read can mention it
+  let shortCoverAlert = ''
+  if (d.nearStrikes) {
+    const oiCheck = d.nearStrikes.map(row => {
+      const ceOI = row.ce?.openInterest||0, peOI = row.pe?.openInterest||0
+      const cePrice = row.ce?.lastPrice||0, pePrice = row.pe?.lastPrice||0
+      const cePrev = prevData?(prevData.strikes?.[row.strike]?.ce||ceOI):ceOI
+      const pePrev = prevData?(prevData.strikes?.[row.strike]?.pe||peOI):peOI
+      const cePricePrev = prevData?(prevData.strikes?.[row.strike]?.cePrice||cePrice):cePrice
+      const pePricePrev = prevData?(prevData.strikes?.[row.strike]?.pePrice||pePrice):pePrice
+      return {
+        strike:row.strike,
+        ceDiff:ceOI-cePrev, peDiff:peOI-pePrev,
+        cePriceDiff:cePrice-cePricePrev, pePriceDiff:pePrice-pePricePrev
+      }
+    })
+    const ceSC = oiCheck.filter(r => r.ceDiff < -20000 && r.cePriceDiff > 0.5)
+    const peSC = oiCheck.filter(r => r.peDiff < -20000 && r.pePriceDiff < -0.5)
+    if (ceSC.length > 0) {
+      shortCoverAlert = `⚡ CE Short Covering detected at ${ceSC.map(r=>r.strike).join(', ')} — call writers covering = ceiling weakening = bullish pressure building.`
+    } else if (peSC.length > 0) {
+      shortCoverAlert = `⚡ PE Short Covering detected at ${peSC.map(r=>r.strike).join(', ')} — put writers covering = floor weakening = bearish pressure building.`
+    }
+  }
+
+  return { s1, s2, s3, emoji, bgColor, bdColor, txColor, bias, shortCoverAlert }
 }
 
 function inRange(spot, peWall, ceWall) {
@@ -727,13 +830,26 @@ function renderWarRoom(d,s){
   const pcrDesc=pcr>1.5?'Extreme fear — contrarian buy signal possible':pcr>1.3?'Heavy put buying — bearish sentiment':pcr>1.1?'More puts than calls — mild bearish':pcr>0.9?'Balanced — no strong bias':pcr>0.7?'More calls than puts — mild bullish':'Extreme greed — contrarian sell possible'
   const mpDTE=getDTE(d.expiry),checklist=buildChecklist(d,s)
   const oiRows=nearStrikes.map(row=>{
-    const ceOI=row.ce?.openInterest||0,peOI=row.pe?.openInterest||0
-    const cePrev=prevData?(prevData.strikes?.[row.strike]?.ce||ceOI):ceOI
-    const pePrev=prevData?(prevData.strikes?.[row.strike]?.pe||peOI):peOI
-    return{strike:row.strike,ceOI,peOI,ceDiff:ceOI-cePrev,peDiff:peOI-pePrev,isAtm:row.strike===atm}
+    const ceOI   = row.ce?.openInterest||0
+    const peOI   = row.pe?.openInterest||0
+    const cePrice= row.ce?.lastPrice||0
+    const pePrice= row.pe?.lastPrice||0
+    const cePrev = prevData?(prevData.strikes?.[row.strike]?.ce||ceOI):ceOI
+    const pePrev = prevData?(prevData.strikes?.[row.strike]?.pe||peOI):peOI
+    const cePricePrev = prevData?(prevData.strikes?.[row.strike]?.cePrice||cePrice):cePrice
+    const pePricePrev = prevData?(prevData.strikes?.[row.strike]?.pePrice||pePrice):pePrice
+    return{
+      strike:row.strike, ceOI, peOI, cePrice, pePrice,
+      ceDiff:ceOI-cePrev, peDiff:peOI-pePrev,
+      cePriceDiff:cePrice-cePricePrev, pePriceDiff:pePrice-pePricePrev,
+      isAtm:row.strike===atm,
+      isCeWall:row.strike===ceWall.strike,
+      isPeWall:row.strike===peWall.strike
+    }
   })
   const maxIV=40
   const qr = buildQuickRead(d, s)
+  const sp = getStrategyPersistence(s.strategy.name)
 
   return`
   <!-- ═══ QUICK READ TIP ═══ -->
@@ -744,7 +860,10 @@ function renderWarRoom(d,s){
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${qr.txColor}">Quick Read — ${currentIndex}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:1px">Plain English summary · updates every 2 min</div>
       </div>
-      <div style="margin-left:auto;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${qr.txColor};color:white">${qr.bias}</div>
+      <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        <div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${qr.txColor};color:white">${qr.bias}</div>
+        <div style="font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;background:${sp.bgColor};color:${sp.color};border:1px solid ${sp.bdColor}">${sp.label}</div>
+      </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:7px">
       <div style="display:flex;gap:8px;align-items:flex-start">
@@ -755,9 +874,20 @@ function renderWarRoom(d,s){
         <span style="font-size:13px;flex-shrink:0;margin-top:1px">📊</span>
         <span style="font-size:13px;color:var(--text2);line-height:1.6">${qr.s2}</span>
       </div>
+      ${qr.shortCoverAlert ? `<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;background:var(--pur-bg);border:1px solid var(--pur-bd);border-radius:7px">
+        <span style="font-size:14px;flex-shrink:0">⚡</span>
+        <span style="font-size:13px;color:var(--purple);font-weight:600;line-height:1.6">${qr.shortCoverAlert}</span>
+      </div>` : ''}
       <div style="display:flex;gap:8px;align-items:flex-start;padding-top:7px;border-top:1px solid ${qr.bdColor}">
         <span style="font-size:13px;flex-shrink:0;margin-top:1px">💡</span>
         <span style="font-size:13px;color:var(--text);line-height:1.6;font-weight:600">${qr.s3}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start;padding-top:7px;border-top:1px solid ${qr.bdColor};margin-top:2px">
+        <span style="font-size:13px;flex-shrink:0;margin-top:1px">⏱️</span>
+        <div>
+          <span style="font-size:12px;font-weight:700;color:${sp.color}">${sp.label} &nbsp;—&nbsp; ${s.strategy.name}</span><br>
+          <span style="font-size:12px;color:var(--text2);line-height:1.6">${sp.tip}</span>
+        </div>
       </div>
     </div>
   </div>
@@ -936,13 +1066,64 @@ function renderWarRoom(d,s){
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📋</div>OI Change Tracker — Are Walls Building or Breaking?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">
       <div class="explain-box">Shows OI change since your <strong>last refresh</strong>. <span class="good">OI building ↑</span> = wall getting stronger. <span class="bad">OI falling ↓</span> = wall weakening = breakout possible.<br><strong class="warn">Key alert:</strong> CE Wall OI drops 15–20% in one refresh = institutions exiting = exit bear trades immediately.</div>
-      <table class="oi-table"><thead><tr><th>Strike</th><th>CE OI</th><th>CE Δ</th><th>Signal</th><th>PE OI</th><th>PE Δ</th><th>Signal</th></tr></thead>
-      <tbody>${oiRows.map(r=>{
-        const cc=r.ceDiff>0?'up':r.ceDiff<0?'dn':'neutral',pc=r.peDiff>0?'up':r.peDiff<0?'dn':'neutral'
-        const ceSig=r.ceDiff>50000?'<span class="tag build">Building</span>':r.ceDiff<-50000?'<span class="tag unwind">Unwinding</span>':'<span class="tag flat">Flat</span>'
-        const peSig=r.peDiff>50000?'<span class="tag build">Building</span>':r.peDiff<-50000?'<span class="tag unwind">Unwinding</span>':'<span class="tag flat">Flat</span>'
-        return`<tr ${r.isAtm?'class="atm-row"':''}><td>${r.strike}${r.isAtm?' ◆':''}</td><td>${(r.ceOI/100000).toFixed(1)}L</td><td class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td><td>${ceSig}</td><td>${(r.peOI/100000).toFixed(1)}L</td><td class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td><td>${peSig}</td></tr>`
-      }).join('')}</tbody></table>
+      <!-- ── ALERT STRIP — only shows when something important detected ── -->
+      ${(()=>{
+        const alerts = oiRows.flatMap(r=>{
+          const interp = interpretStrike(r)
+          if (!interp) return []
+          return interp.filter(s=>s.type==='SHORT_COVER_CE'||s.type==='SHORT_COVER_PE').map(s=>({...s,strike:r.strike}))
+        })
+        if (alerts.length===0) return ''
+        return `<div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+          ${alerts.map(a=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--pur-bg);border:1.5px solid var(--pur-bd);border-radius:8px">
+            <span style="font-size:15px">⚡</span>
+            <div>
+              <span style="font-size:11px;font-weight:800;color:var(--purple)">${a.label} at ${a.strike}</span>
+              <span style="font-size:11px;color:var(--text2);margin-left:6px">${a.plain}</span>
+            </div>
+          </div>`).join('')}
+        </div>`
+      })()}
+
+      <!-- ── COMPACT TABLE with 3-word signal per row ── -->
+      <table class="oi-table" style="margin-top:10px">
+        <thead><tr>
+          <th style="text-align:left">Strike</th>
+          <th>CE OI</th><th>CE Δ</th><th>CE Signal</th>
+          <th>PE OI</th><th>PE Δ</th><th>PE Signal</th>
+        </tr></thead>
+        <tbody>
+        ${oiRows.map(r=>{
+          const cc = r.ceDiff>0?'up':r.ceDiff<0?'dn':'neutral'
+          const pc = r.peDiff>0?'up':r.peDiff<0?'dn':'neutral'
+          const interp = interpretStrike(r)
+          // Get 3-word label + emoji for CE and PE from interp
+          const ceSig = interp ? interp.find(s=>s.side==='CE') : null
+          const peSig = interp ? interp.find(s=>s.side==='PE') : null
+          const ceTag = ceSig
+            ? `<span style="font-size:10px;font-weight:700;color:${ceSig.color}" title="${ceSig.plain}">${ceSig.label}</span>`
+            : r.ceDiff>50000 ? '<span class="tag build">↑ Build</span>'
+            : r.ceDiff<-50000 ? '<span class="tag unwind">↓ Unwind</span>'
+            : '<span class="tag flat">─</span>'
+          const peTag = peSig
+            ? `<span style="font-size:10px;font-weight:700;color:${peSig.color}" title="${peSig.plain}">${peSig.label}</span>`
+            : r.peDiff>50000 ? '<span class="tag build">↑ Build</span>'
+            : r.peDiff<-50000 ? '<span class="tag unwind">↓ Unwind</span>'
+            : '<span class="tag flat">─</span>'
+          const rowCls = r.isCeWall?'style="background:var(--red-bg)"':r.isPeWall?'style="background:var(--green-bg)"':r.isAtm?'class="atm-row"':''
+          const strikeLabel = r.isCeWall?' 🔴':r.isPeWall?' 🟢':r.isAtm?' ◆':''
+          return`<tr ${rowCls}>
+            <td style="font-weight:700">${r.strike}${strikeLabel}</td>
+            <td>${(r.ceOI/100000).toFixed(1)}L</td>
+            <td class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td>
+            <td>${ceTag}</td>
+            <td>${(r.peOI/100000).toFixed(1)}L</td>
+            <td class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td>
+            <td>${peTag}</td>
+          </tr>`
+        }).join('')}
+        </tbody>
+      </table>
       ${oiHistory.length > 1 ? renderSparklines() : '<div style="font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--bg3);border-radius:6px">📈 OI trend chart builds after 2+ refreshes</div>'}
     </div>
   </div>
@@ -1047,6 +1228,105 @@ function renderSparklines() {
   </div>`
 }
 
+function interpretStrike(r) {
+  // Need price movement to determine quadrant
+  // If no prevData yet — OI delta is 0 — return neutral
+  const hasDelta = Math.abs(r.ceDiff) > 10000 || Math.abs(r.peDiff) > 10000
+  if (!hasDelta) return null   // not enough change to interpret
+
+  const ceOIUp    = r.ceDiff > 20000
+  const ceOIDn    = r.ceDiff < -20000
+  const cePriceUp = r.cePriceDiff > 0.5
+  const cePriceDn = r.cePriceDiff < -0.5
+
+  const peOIUp    = r.peDiff > 20000
+  const peOIDn    = r.peDiff < -20000
+  const pePriceUp = r.pePriceDiff > 0.5
+  const pePriceDn = r.pePriceDiff < -0.5
+
+  const signals = []
+
+  // ── CE interpretation ──────────────────────────────────
+  if (ceOIUp && cePriceUp) {
+    signals.push({
+      type: 'FRESH_LONG_CE', side: 'CE',
+      emoji: '🟢',
+      label: '🟢 Calls In',
+      color: 'var(--green)',
+      bg: 'var(--green-bg)', bd: 'var(--green-bd)',
+      plain: `New call buyers entering at ${r.strike} — bulls are aggressively buying upside.`
+    })
+  } else if (ceOIUp && cePriceDn) {
+    signals.push({
+      type: 'FRESH_SHORT_CE', side: 'CE',
+      emoji: '🔴',
+      label: '🔴 Wall↑',
+      color: 'var(--red)',
+      bg: 'var(--red-bg)', bd: 'var(--red-bd)',
+      plain: `Bears writing calls at ${r.strike} — institutions adding resistance here. Ceiling strengthening.`
+    })
+  } else if (ceOIDn && cePriceUp) {
+    signals.push({
+      type: 'SHORT_COVER_CE', side: 'CE',
+      emoji: '⚡',
+      label: '⚡ CE Cover',
+      color: '#7c3aed',
+      bg: 'var(--pur-bg)', bd: 'var(--pur-bd)',
+      plain: `⚡ SHORT COVERING at ${r.strike} CE — bears who wrote calls are buying them back. This is BULLISH — ceiling is weakening, possible breakout above ${r.strike}.`
+    })
+  } else if (ceOIDn && cePriceDn) {
+    signals.push({
+      type: 'LONG_UNWIND_CE', side: 'CE',
+      emoji: '🟡',
+      label: '🟡 Calls Out',
+      color: 'var(--yellow)',
+      bg: 'var(--yel-bg)', bd: 'var(--yel-bd)',
+      plain: `Call buyers at ${r.strike} are exiting their positions — mild bearish. Bulls losing confidence here.`
+    })
+  }
+
+  // ── PE interpretation ──────────────────────────────────
+  if (peOIUp && pePriceDn) {
+    signals.push({
+      type: 'FRESH_LONG_PE', side: 'PE',
+      emoji: '🔴',
+      label: '🔴 Puts In',
+      color: 'var(--red)',
+      bg: 'var(--red-bg)', bd: 'var(--red-bd)',
+      plain: `New put buyers entering at ${r.strike} — bears aggressively buying downside protection.`
+    })
+  } else if (peOIUp && pePriceUp) {
+    signals.push({
+      type: 'FRESH_SHORT_PE', side: 'PE',
+      emoji: '🟢',
+      label: '🟢 Floor↑',
+      color: 'var(--green)',
+      bg: 'var(--green-bg)', bd: 'var(--green-bd)',
+      plain: `Bulls writing puts at ${r.strike} — institutions adding support here. Floor strengthening.`
+    })
+  } else if (peOIDn && pePriceDn) {
+    signals.push({
+      type: 'SHORT_COVER_PE', side: 'PE',
+      emoji: '⚡',
+      label: '⚡ PE Cover',
+      color: '#7c3aed',
+      bg: 'var(--pur-bg)', bd: 'var(--pur-bd)',
+      plain: `⚡ SHORT COVERING at ${r.strike} PE — bulls who wrote puts are buying them back. This is BEARISH — floor is weakening, possible breakdown below ${r.strike}.`
+    })
+  } else if (peOIDn && pePriceUp) {
+    signals.push({
+      type: 'LONG_UNWIND_PE', side: 'PE',
+      emoji: '🟡',
+      label: '🟡 Puts Out',
+      color: 'var(--yellow)',
+      bg: 'var(--yel-bg)', bd: 'var(--yel-bd)',
+      plain: `Put buyers at ${r.strike} are exiting — mild bullish. Bears losing conviction here.`
+    })
+  }
+
+  return signals.length > 0 ? signals : null
+}
+
 function buildChecklist(d,s){
   const checks=[],{pcr,ceWall,peWall,atmIV}=d,{dir}=s
   if(dir==='bear'){
@@ -1080,7 +1360,15 @@ function toggleGuide(header) {
 }
 
 function toggleSection(header){const body=header.nextElementSibling,chev=header.querySelector('.wr-chevron'),isOpen=body.classList.contains('open');body.classList.toggle('open',!isOpen);chev.classList.toggle('open',!isOpen)}
-function switchIndex(el,idx){currentIndex=idx;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');prevData=null;loadData()}
+function switchIndex(el,idx){
+  currentIndex=idx
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+  el.classList.add('active')
+  prevData=null
+  strategyHistory=[]   // reset persistence — new index = fresh start
+  oiHistory=[]         // reset OI sparkline too
+  loadData()
+}
 async function loadData(){
   const btn=document.getElementById('refreshBtn');btn.classList.add('spinning');document.getElementById('lastUpdate').textContent='Loading...'
   document.getElementById('loadingLeft').style.display='flex';document.getElementById('commandContent').style.display='none'
@@ -1096,31 +1384,54 @@ async function loadData(){
     document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+srcLabel
     if(chainData){
       prevData={strikes:{}}
-      for(const row of d.nearStrikes)prevData.strikes[row.strike]={ce:row.ce?.openInterest||0,pe:row.pe?.openInterest||0}
+      for(const row of d.nearStrikes)prevData.strikes[row.strike]={
+        ce:row.ce?.openInterest||0, pe:row.pe?.openInterest||0,
+        cePrice:row.ce?.lastPrice||0, pePrice:row.pe?.lastPrice||0
+      }
       storeOISnapshot(d)  // store for sparkline history
+      // Track strategy name for persistence detection
+      strategyHistory.push(s.strategy.name)
+      if (strategyHistory.length > 5) strategyHistory.shift()
     }
   }catch(e){loadDemo()}
   btn.classList.remove('spinning')
   startCountdown()  // restart countdown after each load
 }
+// Realistic demo spot prices per index
+const DEMO_SPOTS = {
+  'NIFTY':         { spot: 24387, step: 50,  expiry: '27-Mar-2026' },
+  'BANKNIFTY':     { spot: 51840, step: 100, expiry: '26-Mar-2026' },
+  'FINNIFTY':      { spot: 23150, step: 50,  expiry: '25-Mar-2026' },
+  'MIDCPNIFTY':    { spot: 12380, step: 25,  expiry: '28-Mar-2026' },
+  'NIFTY NEXT 50': { spot: 65200, step: 100, expiry: '27-Mar-2026' },
+  'SENSEX':        { spot: 80120, step: 100, expiry: '28-Mar-2026' }
+}
+
 function loadDemo(){
-  const spot=24387,demoRaw=buildDemoData(spot),d=parseChain(demoRaw),s=computeStrategy(d)
-  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE temporarily unreachable. Showing realistic demo data. Will retry on next 2-min refresh.</div>`+renderCommand(d,s)
+  const cfg   = DEMO_SPOTS[currentIndex] || DEMO_SPOTS['NIFTY']
+  const demoRaw = buildDemoData(cfg.spot, cfg.step, cfg.expiry)
+  const d = parseChain(demoRaw)
+  const s = computeStrategy(d)
+  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE temporarily unreachable. Showing realistic demo data for ${currentIndex}. Will retry on next 2-min refresh.</div>`+renderCommand(d,s)
   document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
   document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
   document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
   document.getElementById('lastUpdate').textContent='⚪ Demo Data — start nse-proxy.js for live'
 }
-function buildDemoData(spot){
-  const step=50,base=Math.round(spot/step)*step,data=[],expiry='26-Mar-2026'
+function buildDemoData(spot, step=50, expiry='27-Mar-2026'){
+  const base=Math.round(spot/step)*step, data=[]
+  // Scale OI to index size — BankNifty has higher absolute OI than Nifty
+  const oiScale = spot > 40000 ? 2.5 : spot > 20000 ? 1.0 : 0.6
   for(let i=-8;i<=8;i++){
-    const strike=base+i*step,atmDist=Math.abs(i)
-    const ceOI=Math.max(5,Math.round((i>=0?Math.max(8,80-i*10+(i===2?15:0)):Math.max(5,30-atmDist*5))*100000+Math.random()*50000))
-    const peOI=Math.max(5,Math.round((i<=0?Math.max(8,80+i*9+(i===-2?18:0)):Math.max(5,30-atmDist*5))*100000+Math.random()*50000))
+    const strike=base+i*step, atmDist=Math.abs(i)
+    const ceOI=Math.max(5,Math.round((i>=0?Math.max(8,80-i*10+(i===2?15:0)):Math.max(5,30-atmDist*5))*100000*oiScale+Math.random()*50000))
+    const peOI=Math.max(5,Math.round((i<=0?Math.max(8,80+i*9+(i===-2?18:0)):Math.max(5,30-atmDist*5))*100000*oiScale+Math.random()*50000))
     const atmIV=14+atmDist*0.8
+    // Premium scales with spot price — BankNifty ATM premiums are much higher
+    const premScale = spot > 40000 ? 4.0 : spot > 20000 ? 1.0 : 0.5
     data.push({strikePrice:strike,expiryDate:expiry,
-      CE:{strikePrice:strike,openInterest:ceOI,changeinOpenInterest:Math.round((Math.random()-0.4)*ceOI*0.1),lastPrice:Math.max(1,Math.round((spot-strike+150+Math.random()*20)*0.7)),impliedVolatility:atmIV+(i>0?0:1.5),totalTradedVolume:Math.round(ceOI*0.3)},
-      PE:{strikePrice:strike,openInterest:peOI,changeinOpenInterest:Math.round((Math.random()-0.4)*peOI*0.1),lastPrice:Math.max(1,Math.round((strike-spot+150+Math.random()*20)*0.7)),impliedVolatility:atmIV+(i<0?0:1.2),totalTradedVolume:Math.round(peOI*0.3)}})
+      CE:{strikePrice:strike,openInterest:ceOI,changeinOpenInterest:Math.round((Math.random()-0.4)*ceOI*0.1),lastPrice:Math.max(1,Math.round((spot-strike+step*3+Math.random()*20)*0.7*premScale)),impliedVolatility:atmIV+(i>0?0:1.5),totalTradedVolume:Math.round(ceOI*0.3)},
+      PE:{strikePrice:strike,openInterest:peOI,changeinOpenInterest:Math.round((Math.random()-0.4)*peOI*0.1),lastPrice:Math.max(1,Math.round((strike-spot+step*3+Math.random()*20)*0.7*premScale)),impliedVolatility:atmIV+(i<0?0:1.2),totalTradedVolume:Math.round(peOI*0.3)}})
   }
   return{records:{data,underlyingValue:spot,expiryDates:[expiry]}}
 }
@@ -1148,8 +1459,281 @@ function updateCountdownDisplay() {
   el.classList.toggle('urgent', countdownSeconds <= 20)
 }
 
+// ── TELEGRAM ──────────────────────────────────────────
+const TG_TOKEN_KEY  = 'lnp_tg_token'
+const TG_CHATID_KEY = 'lnp_tg_chatid'
+
+function openTgModal() {
+  // Load saved credentials
+  const savedToken  = localStorage.getItem(TG_TOKEN_KEY)  || ''
+  const savedChatId = localStorage.getItem(TG_CHATID_KEY) || ''
+  document.getElementById('tgToken').value  = savedToken
+  document.getElementById('tgChatId').value = savedChatId
+  document.getElementById('tgSetup').classList.toggle('show', !savedToken || !savedChatId)
+  document.getElementById('tgStatus').textContent = ''
+  document.getElementById('tgOverlay').classList.add('open')
+}
+
+function closeTgModal(e) {
+  if (e.target === document.getElementById('tgOverlay')) closeTgModalDirect()
+}
+function closeTgModalDirect() {
+  document.getElementById('tgOverlay').classList.remove('open')
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked')
+  el.querySelector('.tg-check-box').textContent = el.classList.contains('checked') ? '✓' : ''
+}
+
+function isChecked(id) {
+  return document.getElementById(id)?.classList.contains('checked')
+}
+
+function buildTelegramMessage() {
+  if (!chainData) return '⚠️ No data loaded yet.'
+  const d = chainData
+  const s = computeStrategy(d)
+  const sp = getStrategyPersistence(s.strategy.name)
+  const qr = buildQuickRead(d, s)
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+
+  let msg = `🇮🇳 *LNP KAMAKSHIVA — ${currentIndex}*
+`
+  msg += `⏰ ${now}  |  Expiry: ${d.expiry}
+`
+  msg += `📊 Spot: *${d.spot.toLocaleString('en-IN')}*  |  ATM: ${d.atm}
+`
+  msg += `─────────────────────
+`
+
+  if (isChecked('chk-quickread')) {
+    msg += `
+📍 *QUICK READ*
+`
+    msg += `${qr.s1}
+`
+    msg += `${qr.s2}
+`
+    msg += `💡 ${qr.s3}
+`
+  }
+
+  if (isChecked('chk-strategy')) {
+    const strat = s.strategy
+    msg += `
+⚡ *STRATEGY: ${strat.name}*
+`
+    msg += `Type: ${strat.type}
+`
+    strat.legs.forEach(l => {
+      msg += `  ${l.action} ${l.desc} @ ₹${l.price}
+`
+    })
+    msg += `Risk: ₹${strat.risk.toLocaleString('en-IN')}  |  Reward: ₹${strat.reward.toLocaleString('en-IN')}  |  R:R ${strat.rr||'—'}
+`
+    msg += `Exit: ${strat.exit}
+`
+  }
+
+  if (isChecked('chk-persistence')) {
+    msg += `
+⏱️ *PERSISTENCE:* ${sp.label}
+`
+    msg += `${sp.tip}
+`
+  }
+
+  if (isChecked('chk-walls')) {
+    const ceOI = ((d.ceWall.ce?.openInterest||0)/100000).toFixed(1)
+    const peOI = ((d.peWall.pe?.openInterest||0)/100000).toFixed(1)
+    msg += `
+🔴 *CE WALL:* ${d.ceWall.strike}  (${ceOI}L OI, ${Math.round(d.ceWall.strike-d.spot)}pts away)
+`
+    msg += `🟢 *PE WALL:* ${d.peWall.strike}  (${peOI}L OI, ${Math.round(d.spot-d.peWall.strike)}pts away)
+`
+  }
+
+  if (isChecked('chk-pcr')) {
+    const pcrLabel = d.pcr>1.3?'STRONG BEAR':d.pcr>1.1?'Mild Bear':d.pcr<0.7?'STRONG BULL':d.pcr<0.9?'Mild Bull':'Neutral'
+    msg += `
+⚖️ *PCR:* ${d.pcr.toFixed(2)} (${pcrLabel})
+`
+    msg += `🎯 *Max Pain:* ${d.maxPainStrike}  (${Math.abs(Math.round(d.spot-d.maxPainStrike))}pts ${d.spot>d.maxPainStrike?'above':'below'} spot)
+`
+  }
+
+  if (isChecked('chk-shortcover') && qr.shortCoverAlert) {
+    msg += `
+⚡ *SHORT COVER ALERT*
+${qr.shortCoverAlert}
+`
+  }
+
+  msg += `─────────────────────
+`
+  msg += `_Sent from LNP KAMAKSHIVA OI Panel_`
+  return msg
+}
+
+async function sendToTelegram() {
+  const token  = document.getElementById('tgToken').value.trim()
+  const chatId = document.getElementById('tgChatId').value.trim()
+  const status = document.getElementById('tgStatus')
+  const btn    = document.getElementById('tgSendBtn')
+
+  if (!token || !chatId) {
+    status.textContent = '⚠️ Please enter Bot Token and Chat ID'
+    status.className = 'tg-status err'
+    document.getElementById('tgSetup').classList.add('show')
+    return
+  }
+
+  // Check at least one option is checked
+  const anyChecked = ['chk-strategy','chk-quickread','chk-walls','chk-pcr','chk-persistence','chk-shortcover']
+    .some(id => isChecked(id))
+  if (!anyChecked) {
+    status.textContent = '⚠️ Tick at least one thing to send'
+    status.className = 'tg-status err'
+    return
+  }
+
+  // Save credentials
+  localStorage.setItem(TG_TOKEN_KEY, token)
+  localStorage.setItem(TG_CHATID_KEY, chatId)
+
+  btn.disabled = true
+  btn.textContent = 'Sending...'
+  status.textContent = ''
+  status.className = 'tg-status'
+
+  const text = buildTelegramMessage()
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'Markdown'
+      })
+    })
+    const json = await res.json()
+    if (json.ok) {
+      status.textContent = '✅ Sent successfully!'
+      status.className = 'tg-status ok'
+      setTimeout(() => closeTgModalDirect(), 1800)
+    } else {
+      status.textContent = '❌ ' + (json.description || 'Send failed')
+      status.className = 'tg-status err'
+    }
+  } catch(e) {
+    status.textContent = '❌ Network error — check token and chat ID'
+    status.className = 'tg-status err'
+  }
+
+  btn.disabled = false
+  btn.textContent = '✈️ Send to Telegram'
+}
+
 loadData()
 setInterval(loadData, 2*60*1000)
 </script>
+
+<!-- ══ TELEGRAM MODAL ══ -->
+<div class="tg-modal-overlay" id="tgOverlay" onclick="closeTgModal(event)">
+  <div class="tg-modal">
+    <div class="tg-modal-head">
+      <div class="tg-modal-title">✈️ Send to Telegram</div>
+      <button class="tg-modal-close" onclick="closeTgModalDirect()">✕</button>
+    </div>
+    <div class="tg-modal-body">
+
+      <!-- Setup reminder -->
+      <div class="tg-setup" id="tgSetup">
+        <strong>One-time setup needed:</strong><br>
+        1. Create a Telegram bot via @BotFather → copy the Bot Token<br>
+        2. Send any message to your bot → get your Chat ID from<br>
+        &nbsp;&nbsp;&nbsp;<code>api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code><br>
+        3. Paste both below — saved in your browser automatically
+      </div>
+
+      <!-- Bot Token -->
+      <div class="tg-input-row">
+        <div class="tg-input-label">Bot Token</div>
+        <input class="tg-input" id="tgToken" type="password" placeholder="123456:ABC-DEF..." autocomplete="off"/>
+      </div>
+
+      <!-- Chat ID -->
+      <div class="tg-input-row">
+        <div class="tg-input-label">Chat ID</div>
+        <input class="tg-input" id="tgChatId" type="text" placeholder="-100123456789 or your user ID"/>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <!-- What to send -->
+      <div class="tg-check-label">What to include in message</div>
+      <div class="tg-checks">
+
+        <div class="tg-check-item checked" id="chk-strategy" onclick="toggleCheck(this)">
+          <div class="tg-check-box">✓</div>
+          <div>
+            <div class="tg-check-text">⚡ Strategy</div>
+            <div class="tg-check-sub">Primary strategy name, legs, risk, reward, R:R</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item checked" id="chk-quickread" onclick="toggleCheck(this)">
+          <div class="tg-check-box">✓</div>
+          <div>
+            <div class="tg-check-text">📍 Quick Read Summary</div>
+            <div class="tg-check-sub">Plain English 3-line market story</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-walls" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">🔴🟢 OI Walls</div>
+            <div class="tg-check-sub">CE Wall, PE Wall, distance from spot</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-pcr" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">⚖️ PCR + Max Pain</div>
+            <div class="tg-check-sub">Put-call ratio and max pain strike</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-persistence" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">⏱️ Strategy Persistence</div>
+            <div class="tg-check-sub">How many refreshes same strategy has held</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-shortcover" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">⚡ Short Cover Alerts</div>
+            <div class="tg-check-sub">Any short covering signals detected</div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="tg-send-btn" id="tgSendBtn" onclick="sendToTelegram()">
+        ✈️ Send to Telegram
+      </button>
+      <div class="tg-status" id="tgStatus"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

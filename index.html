@@ -216,8 +216,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .alert-chip.manip{background:rgba(124,58,237,0.15);color:#c4b5fd;border:1px solid rgba(124,58,237,0.25)}
 
 /* ── EXPIRY SELECTOR in command panel ── */
-.expiry-select-wrap{padding:10px 18px;border-bottom:1px solid var(--border);background:var(--bg2)}
-.expiry-select-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px}
+.expiry-select-wrap{padding:12px 18px;border-bottom:2px solid var(--blue-bd);background:var(--blue-bg)}
+.expiry-select-label{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .expiry-pills{display:flex;gap:5px;flex-wrap:wrap}
 .expiry-pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all 0.15s}
 .expiry-pill:hover{border-color:var(--blue);color:var(--blue)}
@@ -798,7 +798,12 @@ function renderCommand(d,s){
     <div class="index-name">${currentIndex}</div>
     <div class="spot-value">${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}</div>
     <div class="spot-meta">
-      <div class="spot-meta-item">Expiry <span>${d.expiry}</span></div>
+      <div class="spot-meta-item">Expiry
+        <span style="font-weight:700">${d.expiry}</span>
+        <span style="font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;background:${getExpiryType(d.expiry,d.allExpiries||[])==='monthly'?'rgba(124,58,237,0.3)':'rgba(29,85,212,0.3)'};color:white">
+          ${getExpiryType(d.expiry,d.allExpiries||[])==='monthly'?'MONTHLY':'WEEKLY'}
+        </span>
+      </div>
       <div class="spot-meta-item">ATM <span>${atm}</span></div>
       <div class="spot-meta-item">
         <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:${s.dte===0?'rgba(239,68,68,0.3)':s.dte<=2?'rgba(245,158,11,0.25)':'rgba(255,255,255,0.1)'};color:${s.dte===0?'#fca5a5':s.dte<=2?'#fde68a':'rgba(255,255,255,0.7)'}">${s.dteLabel} · ${s.dte}D</span>
@@ -807,11 +812,9 @@ function renderCommand(d,s){
     ${s.dte===0?`<div style="background:rgba(239,68,68,0.15);border-top:1px solid rgba(239,68,68,0.3);padding:6px 20px;font-size:11px;font-weight:700;color:#fca5a5">⚠️ EXPIRY DAY — Theta decay is maximum. Only sell premium. Exit all positions by 3:00 PM.</div>`:''}
     ${s.dte===1?`<div style="background:rgba(245,158,11,0.1);border-top:1px solid rgba(245,158,11,0.2);padding:6px 20px;font-size:11px;font-weight:700;color:#fde68a">⏳ 1 DAY TO EXPIRY — Spreads are ideal. Theta accelerating. Adjust or exit by EOD tomorrow.</div>`:''}
   </div>
-  <div class="expiry-select-wrap" id="expirySelectWrap">
-    <div class="expiry-select-label">Select Expiry</div>
-    <div class="expiry-pills" id="expiryPills">
-      <!-- filled by renderExpiryPills() -->
-    </div>
+  <div class="expiry-select-wrap" id="expirySelectWrap" style="display:none">
+    <div class="expiry-select-label">📅 Select Expiry — click to switch between weekly & monthly</div>
+    <div class="expiry-pills" id="expiryPills"></div>
   </div>
 
   <div class="metrics-grid">
@@ -1049,7 +1052,9 @@ function renderWarRoom(d,s){
       <span style="font-size:18px">${qr.emoji}</span>
       <div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${qr.txColor}">Quick Read — ${currentIndex}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:1px">Plain English summary · updates every 2 min</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">
+          Plain English · ${d.expiry} (${getExpiryType(d.expiry,d.allExpiries||[])==='monthly'?'Monthly':'Weekly'}) · ${s.dte}D to expiry · updates every 2 min
+        </div>
       </div>
       <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px">
         <div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${qr.txColor};color:white">${qr.bias}</div>
@@ -1760,22 +1765,52 @@ function selectExpiry(exp) {
 }
 
 function renderExpiryPills(allExpDates) {
-  const wrap = document.getElementById('expiryPills')
+  const wrap  = document.getElementById('expiryPills')
+  const wrapOuter = document.getElementById('expirySelectWrap')
   if (!wrap || !allExpDates || allExpDates.length === 0) return
-  wrap.innerHTML = allExpDates.slice(0, 6).map(exp => {
-    const dte       = getDTE(exp)
-    const type      = getExpiryType(exp, allExpDates)
-    const dayName   = getExpiryDayName(exp)
+
+  // Show the wrap now that we have data
+  if (wrapOuter) wrapOuter.style.display = 'block'
+
+  wrap.innerHTML = allExpDates.slice(0, 8).map(exp => {
+    const dte        = getDTE(exp)
+    const type       = getExpiryType(exp, allExpDates)
+    const dayName    = getExpiryDayName(exp)
     const isSelected = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
     const isExpiring = dte <= 1
-    const isMon     = type !== 'weekly'
-    // Label: show date + day name + DTE + type — no hardcoded assumptions
-    const typeStr   = type === 'monthly' ? 'Monthly' : type === 'special' ? 'Special' : 'Weekly'
-    const dteStr    = dte === 0 ? '⚠️ Today' : dte === 1 ? '⚡ Tomorrow' : `${dte}D`
-    const label     = `${exp} · ${dayName} · ${typeStr} · ${dteStr}`
-    return `<span class="expiry-pill${isSelected?' active':''}${isExpiring?' expiring':''}${isMon?' monthly':''}"
-      onclick="selectExpiry('${exp}')" title="${label}">${exp} (${dteStr})</span>`
+    const isMon      = type !== 'weekly'
+    const typeStr    = type === 'monthly' ? 'Monthly' : type === 'special' ? 'Special' : 'Weekly'
+    const typeBadge  = isMon
+      ? `<span style="font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;background:${isSelected?'rgba(255,255,255,0.3)':'var(--pur-bg)'};color:${isSelected?'white':'var(--purple)'}">M</span>`
+      : `<span style="font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;background:${isSelected?'rgba(255,255,255,0.3)':'var(--blue-bg)'};color:${isSelected?'white':'var(--blue)'}">W</span>`
+
+    // DTE display
+    const dteDisplay = dte === 0
+      ? `<span style="color:${isSelected?'white':'var(--red)'}">⚠ Today</span>`
+      : dte === 1
+      ? `<span style="color:${isSelected?'white':'var(--yellow)'}">⚡ Tomorrow</span>`
+      : `<span style="opacity:0.75">${dte}D</span>`
+
+    return `<div class="expiry-pill${isSelected?' active':''}${isExpiring?' expiring':''}"
+      onclick="selectExpiry('${exp}')"
+      style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px"
+      title="${exp} · ${dayName} · ${typeStr} · ${dte} days away">
+      <span style="font-weight:700">${exp}</span>
+      <span style="font-size:10px;opacity:0.7">${dayName.slice(0,3)}</span>
+      ${typeBadge}
+      <span style="font-size:10px">${dteDisplay}</span>
+    </div>`
   }).join('')
+
+  // Add helper note below pills
+  const existing = document.getElementById('expiryNote')
+  if (!existing) {
+    const note = document.createElement('div')
+    note.id = 'expiryNote'
+    note.style.cssText = 'font-size:10px;color:var(--text3);margin-top:6px;line-height:1.5'
+    note.innerHTML = `<strong style="color:var(--text2)">W</strong> = Weekly expiry &nbsp;·&nbsp; <strong style="color:var(--purple)">M</strong> = Monthly expiry &nbsp;·&nbsp; Click any pill to switch — all data reloads for that expiry`
+    wrap.parentNode.appendChild(note)
+  }
 }
 
 // ══════════════════════════════════════════════════════

@@ -183,6 +183,51 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── COUNTDOWN TIMER ── */
+.countdown-wrap{display:flex;align-items:center;gap:6px}
+.countdown{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:3px 8px;border-radius:6px;min-width:48px;text-align:center;transition:color 0.3s,border-color 0.3s}
+.countdown.urgent{color:var(--blue);border-color:var(--blue-bd);background:var(--blue-bg)}
+
+/* ── CONFIDENCE METER ── */
+.confidence-wrap{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.confidence-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.confidence-dots{display:flex;gap:4px}
+.conf-dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background 0.3s}
+.conf-dot.filled-1{background:#ef4444}
+.conf-dot.filled-2{background:#f97316}
+.conf-dot.filled-3{background:#eab308}
+.conf-dot.filled-4{background:#22c55e}
+.conf-dot.filled-5{background:#16a34a;box-shadow:0 0 6px rgba(22,163,74,0.4)}
+.confidence-text{font-size:11px;font-weight:700}
+.conf-weak{color:#ef4444}
+.conf-mod{color:#eab308}
+.conf-strong{color:#22c55e}
+.conf-max{color:#16a34a}
+
+/* ── MIRRORED HEATMAP ── */
+.heatmap-mirror{margin-top:14px}
+.hm-mirror-container{position:relative;display:flex;gap:3px;align-items:stretch;margin:0 30px}
+.hm-mirror-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:0}
+.hm-ce-bar{width:100%;border-radius:3px 3px 0 0;min-height:3px;background:var(--red)}
+.hm-ce-bar.atm{background:var(--orange)}
+.hm-center-line{height:2px;width:100%;background:var(--border);flex-shrink:0}
+.hm-pe-bar{width:100%;border-radius:0 0 3px 3px;min-height:3px;background:var(--green)}
+.hm-pe-bar.atm{background:#0891b2}
+.hm-strike-label{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);margin-top:5px;text-align:center}
+.hm-strike-label.atm{color:var(--blue);font-weight:700}
+.hm-side-label{width:28px;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700}
+.hm-mirror-row{display:flex;gap:4px;align-items:stretch}
+
+/* ── OI HISTORY SPARKLINE ── */
+.oi-history-section{margin-top:14px}
+.spark-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.spark-row:last-child{border-bottom:none}
+.spark-label{font-size:11px;font-weight:600;color:var(--text2);width:110px;flex-shrink:0}
+.spark-canvas{flex:1;height:28px;position:relative;display:flex;align-items:flex-end;gap:2px}
+.spark-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height 0.3s}
+.spark-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;width:44px;text-align:right;flex-shrink:0}
+.spark-trend{font-size:10px;font-weight:700;width:24px;text-align:center;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -201,7 +246,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
-    <span class="last-update" id="lastUpdate">—</span>
+    <div class="countdown-wrap">
+      <span class="last-update" id="lastUpdate">—</span>
+      <span class="countdown" id="countdownTimer">2:00</span>
+    </div>
   </div>
 </div>
 <div class="main">
@@ -488,8 +536,46 @@ function computeStrategy(d){
   // Primary = first strategy, secondary = second
   const strategy = allStrategies[0]
   const strategy2 = allStrategies[1] || null
-  return{dir,zone,bias,strategy,strategy2,allStrategies,reasons,bullSignals,bearSignals}
+  // Confidence score 1-5 based on signal alignment
+  const totalSig = bullSignals + bearSignals
+  const dominance = Math.abs(bullSignals - bearSignals)
+  let confidence = 1
+  if (totalSig >= 4 && dominance >= 3) confidence = 5
+  else if (totalSig >= 3 && dominance >= 2) confidence = 4
+  else if (totalSig >= 2 && dominance >= 1) confidence = 3
+  else if (totalSig >= 1) confidence = 2
+  else confidence = 1
+
+  return{dir,zone,bias,strategy,strategy2,allStrategies,reasons,bullSignals,bearSignals,confidence}
 }
+// OI history — store last 5 snapshots for sparkline
+let oiHistory = []  // [{time, ceWallOI, peWallOI, ceWallStrike, peWallStrike}]
+
+function storeOISnapshot(d) {
+  const snap = {
+    time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    ceWallOI: d.ceWall.ce?.openInterest || 0,
+    peWallOI: d.peWall.pe?.openInterest || 0,
+    ceStrike: d.ceWall.strike,
+    peStrike: d.peWall.strike
+  }
+  oiHistory.push(snap)
+  if (oiHistory.length > 8) oiHistory.shift()  // keep last 8 snapshots
+}
+
+function renderConfidence(score) {
+  const labels = ['','Very Weak','Weak','Moderate','Strong','Very Strong']
+  const classes = ['','conf-weak','conf-weak','conf-mod','conf-strong','conf-max']
+  const dots = [1,2,3,4,5].map(i =>
+    `<div class="conf-dot ${i<=score ? 'filled-'+score : ''}"></div>`
+  ).join('')
+  return `<div class="confidence-wrap">
+    <span class="confidence-label">Signal Strength</span>
+    <div class="confidence-dots">${dots}</div>
+    <span class="confidence-text ${classes[score]}">${labels[score]}</span>
+  </div>`
+}
+
 function renderStrategyCard(strat, isPrimary) {
   return `<div class="strategy-card" style="margin-bottom:${isPrimary?'10px':'0'}">
     <div class="strategy-head" style="background:${isPrimary?'var(--blue)':'var(--bg3)'}">
@@ -497,10 +583,11 @@ function renderStrategyCard(strat, isPrimary) {
       <span class="strategy-head-type" style="color:${isPrimary?'rgba(255,255,255,0.7)':'var(--text3)'}">${strat.type}</span>
     </div>
     <div class="strategy-body" style="background:${isPrimary?'var(--blue-bg)':'var(--bg3)'}">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div class="strategy-name" style="margin-bottom:0;color:${isPrimary?'var(--blue)':'var(--text)'}">${strat.name}</div>
         <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:${isPrimary?'var(--blue-bg)':'var(--bg2)'};color:${strat.tagColor||'var(--blue)'};border:1px solid ${isPrimary?'var(--blue-bd)':'var(--border)'}">${strat.tag||''}</span>
       </div>
+      ${isPrimary && strat.confidence !== undefined ? renderConfidence(strat.confidence) : ''}
       <div>${strat.legs.map(l=>`<div class="leg" style="border-color:${isPrimary?'var(--blue-bd)':'var(--border)'}"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
       <div class="strategy-stats">
         <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strat.risk.toLocaleString('en-IN')}</div></div>
@@ -545,7 +632,7 @@ function renderCommand(d,s){
     <div class="zone-box"><div class="zone-label">Bias</div><div class="zone-val" style="color:${biasColor}">${bias}</div></div>
   </div>
   <div class="strategy-section">
-    ${renderStrategyCard(strategy, true)}
+    ${renderStrategyCard({...strategy, confidence: s.confidence}, true)}
     ${s.strategy2 ? renderStrategyCard(s.strategy2, false) : ''}
   </div>`
 }
@@ -572,10 +659,27 @@ function renderWarRoom(d,s){
     <div class="wr-body open">
       <div class="explain-box">Taller bar = more contracts = bigger wall. <span class="bad">Red = Call OI (resistance/ceiling)</span>. <span class="good">Green = Put OI (support/floor)</span>. The tallest red bar is where market has a ceiling. Tallest green bar is the floor.</div>
       <div class="heatmap">
-        <div class="hm-row"><div class="hm-label" style="color:var(--red)">CE</div><div class="hm-bars">${nearStrikes.map(row=>{const h=maxOI>0?Math.round((row.ce.openInterest||0)/maxOI*70):3;const isAtm=row.strike===atm;return`<div class="hm-bar-wrap"><div class="hm-bar ce${isAtm?' atm':''}" style="height:${Math.max(3,h)}px"></div></div>`}).join('')}</div></div>
-        <div style="height:2px;background:var(--border);margin-left:30px;margin-bottom:2px"></div>
-        <div class="hm-row" style="align-items:flex-start"><div class="hm-label" style="color:var(--green)">PE</div><div class="hm-bars">${nearStrikes.map(row=>{const h=maxOI>0?Math.round((row.pe.openInterest||0)/maxOI*70):3;const isAtm=row.strike===atm;return`<div class="hm-bar-wrap"><div class="hm-bar pe${isAtm?' atm':''}" style="height:${Math.max(3,h)}px"></div></div>`}).join('')}</div></div>
-        <div class="hm-strike-row">${nearStrikes.map(row=>`<div class="hm-strike${row.strike===atm?' atm':''}">${row.strike}</div>`).join('')}</div>
+        <div class="hm-mirror-row">
+          <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-end;width:26px;gap:0;margin-right:4px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--red);margin-bottom:4px">CE</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--green);margin-top:4px">PE</span>
+          </div>
+          <div style="flex:1;display:flex;gap:3px">
+            ${nearStrikes.map(row=>{
+              const ceH=maxOI>0?Math.round((row.ce.openInterest||0)/maxOI*55):2
+              const peH=maxOI>0?Math.round((row.pe.openInterest||0)/maxOI*55):2
+              const isAtm=row.strike===atm
+              const ceOI_L=((row.ce.openInterest||0)/100000).toFixed(1)
+              const peOI_L=((row.pe.openInterest||0)/100000).toFixed(1)
+              return`<div class="hm-mirror-col" title="CE: ${ceOI_L}L | PE: ${peOI_L}L">
+                <div class="hm-ce-bar${isAtm?' atm':''}" style="height:${Math.max(2,ceH)}px"></div>
+                <div class="hm-center-line"></div>
+                <div class="hm-pe-bar${isAtm?' atm':''}" style="height:${Math.max(2,peH)}px"></div>
+                <div class="hm-strike-label${isAtm?' atm':''}">${row.strike}</div>
+              </div>`
+            }).join('')}
+          </div>
+        </div>
         <div class="hm-legend"><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--red)"></div>CE OI (Resistance)</div><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--green)"></div>PE OI (Support)</div><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--blue)"></div>ATM Strike</div></div>
       </div>
     </div>
@@ -591,6 +695,7 @@ function renderWarRoom(d,s){
         const peSig=r.peDiff>50000?'<span class="tag build">Building</span>':r.peDiff<-50000?'<span class="tag unwind">Unwinding</span>':'<span class="tag flat">Flat</span>'
         return`<tr ${r.isAtm?'class="atm-row"':''}><td>${r.strike}${r.isAtm?' ◆':''}</td><td>${(r.ceOI/100000).toFixed(1)}L</td><td class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td><td>${ceSig}</td><td>${(r.peOI/100000).toFixed(1)}L</td><td class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td><td>${peSig}</td></tr>`
       }).join('')}</tbody></table>
+      ${oiHistory.length > 1 ? renderSparklines() : '<div style="font-size:11px;color:var(--text3);margin-top:10px;padding:8px;background:var(--bg3);border-radius:6px">📈 OI trend chart builds after 2+ refreshes</div>'}
     </div>
   </div>
   <div class="wr-section">
@@ -649,6 +754,51 @@ function renderWarRoom(d,s){
     </div>
   </div>`
 }
+function renderSparklines() {
+  if (oiHistory.length < 2) return ''
+  const maxCE = Math.max(...oiHistory.map(h=>h.ceWallOI), 1)
+  const maxPE = Math.max(...oiHistory.map(h=>h.peWallOI), 1)
+  const latest = oiHistory[oiHistory.length-1]
+  const prev    = oiHistory[oiHistory.length-2]
+  const ceTrend = latest.ceWallOI > prev.ceWallOI ? '↑' : latest.ceWallOI < prev.ceWallOI ? '↓' : '─'
+  const peTrend = latest.peWallOI > prev.peWallOI ? '↑' : latest.peWallOI < prev.peWallOI ? '↓' : '─'
+  const ceTrendColor = ceTrend==='↑'?'var(--red)':ceTrend==='↓'?'var(--green)':'var(--text3)'
+  const peTrendColor = peTrend==='↑'?'var(--green)':peTrend==='↓'?'var(--red)':'var(--text3)'
+
+  const ceBars = oiHistory.map((h,i)=>{
+    const ht = Math.max(3, Math.round(h.ceWallOI/maxCE*26))
+    const isLast = i===oiHistory.length-1
+    return `<div class="spark-bar" style="height:${ht}px;background:${isLast?'var(--red)':'rgba(201,53,53,0.3)'}"></div>`
+  }).join('')
+
+  const peBars = oiHistory.map((h,i)=>{
+    const ht = Math.max(3, Math.round(h.peWallOI/maxPE*26))
+    const isLast = i===oiHistory.length-1
+    return `<div class="spark-bar" style="height:${ht}px;background:${isLast?'var(--green)':'rgba(23,122,86,0.3)'}"></div>`
+  }).join('')
+
+  return `<div style="margin-top:12px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px">OI WALL TREND — Last ${oiHistory.length} refreshes</div>
+    <div class="spark-row">
+      <div class="spark-label">🔴 CE Wall (${latest.ceStrike})</div>
+      <div class="spark-canvas">${ceBars}</div>
+      <div class="spark-val" style="color:var(--red)">${(latest.ceWallOI/100000).toFixed(1)}L</div>
+      <div class="spark-trend" style="color:${ceTrendColor};font-weight:800">${ceTrend}</div>
+    </div>
+    <div class="spark-row">
+      <div class="spark-label">🟢 PE Wall (${latest.peStrike})</div>
+      <div class="spark-canvas">${peBars}</div>
+      <div class="spark-val" style="color:var(--green)">${(latest.peWallOI/100000).toFixed(1)}L</div>
+      <div class="spark-trend" style="color:${peTrendColor};font-weight:800">${peTrend}</div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:8px">
+      CE ${ceTrend==='↑'?'<span style="color:var(--red)">Building (resistance strengthening)</span>':ceTrend==='↓'?'<span style="color:var(--green)">Unwinding (wall weakening — breakout risk)</span>':'<span>Flat</span>'}
+      &nbsp;·&nbsp;
+      PE ${peTrend==='↑'?'<span style="color:var(--green)">Building (support strengthening)</span>':peTrend==='↓'?'<span style="color:var(--red)">Unwinding (floor weakening — breakdown risk)</span>':'<span>Flat</span>'}
+    </div>
+  </div>`
+}
+
 function buildChecklist(d,s){
   const checks=[],{pcr,ceWall,peWall,atmIV}=d,{dir}=s
   if(dir==='bear'){
@@ -688,9 +838,14 @@ async function loadData(){
     document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
     const srcLabel = dataSource==='local'?' 🟢 Live (Local)':dataSource==='vercel'?' 🟡 Live (Server)':dataSource==='proxy'?' 🟠 Live (Proxy)':''
     document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+srcLabel
-    if(chainData){prevData={strikes:{}};for(const row of d.nearStrikes)prevData.strikes[row.strike]={ce:row.ce?.openInterest||0,pe:row.pe?.openInterest||0}}
+    if(chainData){
+      prevData={strikes:{}}
+      for(const row of d.nearStrikes)prevData.strikes[row.strike]={ce:row.ce?.openInterest||0,pe:row.pe?.openInterest||0}
+      storeOISnapshot(d)  // store for sparkline history
+    }
   }catch(e){loadDemo()}
   btn.classList.remove('spinning')
+  startCountdown()  // restart countdown after each load
 }
 function loadDemo(){
   const spot=24387,demoRaw=buildDemoData(spot),d=parseChain(demoRaw),s=computeStrategy(d)
@@ -713,8 +868,32 @@ function buildDemoData(spot){
   }
   return{records:{data,underlyingValue:spot,expiryDates:[expiry]}}
 }
+// ── COUNTDOWN TIMER ──────────────────────────────
+let countdownSeconds = 120
+let countdownInterval = null
+
+function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval)
+  countdownSeconds = 120
+  updateCountdownDisplay()
+  countdownInterval = setInterval(() => {
+    countdownSeconds--
+    if (countdownSeconds <= 0) countdownSeconds = 0
+    updateCountdownDisplay()
+  }, 1000)
+}
+
+function updateCountdownDisplay() {
+  const el = document.getElementById('countdownTimer')
+  if (!el) return
+  const m = Math.floor(countdownSeconds / 60)
+  const s = countdownSeconds % 60
+  el.textContent = m + ':' + String(s).padStart(2,'0')
+  el.classList.toggle('urgent', countdownSeconds <= 20)
+}
+
 loadData()
-setInterval(loadData,2*60*1000)
+setInterval(loadData, 2*60*1000)
 </script>
 </body>
 </html>

@@ -408,6 +408,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
+    <a style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s" href="index.html">📊 Indexes</a>
+    <a style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s" href="stocks.html">📈 Stocks</a>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
     <button class="tg-btn" onclick="openTgModal()">✈️ Telegram</button>
     <div style="position:relative">
@@ -2526,7 +2528,8 @@ let alertUnseenCount = 0      // badge counter
 const DEFAULT_ALERT_SETTINGS = {
   soundEnabled: true,
   popupEnabled: true,
-  tgEnabled: false,
+  tgEnabled: false,        // AUTO-send to Telegram on spike alerts (opt-in)
+  tgManual: true,          // Show Telegram button on each popup toast (always on)
   emailEnabled: false,
   onOISpike: true,
   onShortCover: true,
@@ -2553,6 +2556,7 @@ function saveAlertSettings() {
     soundEnabled:       document.getElementById('alertSoundEnabled')?.checked,
     popupEnabled:       document.getElementById('alertPopupEnabled')?.checked,
     tgEnabled:          document.getElementById('alertTgEnabled')?.checked,
+    tgManual:           document.getElementById('alertTgManual')?.checked,
     emailEnabled:       document.getElementById('alertEmailEnabled')?.checked,
     onOISpike:          document.getElementById('alertOnOISpike')?.checked,
     onShortCover:       document.getElementById('alertOnShortCover')?.checked,
@@ -2579,6 +2583,7 @@ function loadAlertSettingsIntoModal() {
   set('alertSoundEnabled', s.soundEnabled)
   set('alertPopupEnabled', s.popupEnabled)
   set('alertTgEnabled', s.tgEnabled)
+  set('alertTgManual', s.tgManual !== false)  // default true
   set('alertEmailEnabled', s.emailEnabled)
   set('alertOnOISpike', s.onOISpike)
   set('alertOnShortCover', s.onShortCover)
@@ -2677,7 +2682,7 @@ function showToast(alert) {
     <div class="toast-body">${alert.detail || ''}</div>
     <div class="toast-actions">
       <button class="toast-btn" onclick="dismissToast('${id}')">Dismiss</button>
-      ${s.tgEnabled ? `<button class="toast-btn primary" onclick="sendAlertToTelegram(${JSON.stringify(alert).replace(/"/g,'&quot;')});dismissToast('${id}')">✈️ Telegram</button>` : ''}
+      ${(s.tgManual !== false) ? `<button class="toast-btn primary" onclick="sendAlertToTelegram(${JSON.stringify(alert).replace(/"/g,'&quot;')});dismissToast('${id}')">✈️ Send</button>` : ''}
       ${s.emailEnabled ? `<button class="toast-btn" onclick="sendAlertEmail(${JSON.stringify(alert).replace(/"/g,'&quot;')});dismissToast('${id}')">📧 Email</button>` : ''}
     </div>
   `
@@ -2712,8 +2717,10 @@ function fireAlert(alert) {
   // Popup
   if (s.popupEnabled) showToast(alert)
 
-  // Telegram (auto-send if enabled)
-  if (s.tgEnabled) sendAlertToTelegram(alert)
+  // Telegram AUTO-send — only if enabled AND alert is spike/manip/warn (not tips/info)
+  if (s.tgEnabled && ['spike','warn','manip','safe'].includes(alert.type)) {
+    sendAlertToTelegram(alert)
+  }
 
   // Email (auto-send if enabled)
   if (s.emailEnabled) sendAlertEmail(alert)
@@ -3121,10 +3128,23 @@ setInterval(loadData, 2*60*1000)
         </label>
       </div>
 
+      <!-- Telegram Manual — show button on popups -->
       <div class="alert-toggle-row">
         <div class="alert-toggle-left">
-          <div class="alert-toggle-label">✈️ Telegram Alert</div>
-          <div class="alert-toggle-sub">Send spike alert to your Telegram bot instantly</div>
+          <div class="alert-toggle-label">✈️ Telegram button on popups</div>
+          <div class="alert-toggle-sub">Each alert popup shows a Send button — YOU decide what to send</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertTgManual" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <!-- Telegram Auto — sends every spike automatically -->
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">🤖 Auto-send spikes to Telegram</div>
+          <div class="alert-toggle-sub" style="color:var(--yellow)">⚠️ Sends automatically on every OI spike/short cover — without you clicking. Turn ON only if you want instant auto-alerts.</div>
         </div>
         <label class="alert-toggle">
           <input type="checkbox" id="alertTgEnabled" onchange="saveAlertSettings()">

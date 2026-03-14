@@ -1952,6 +1952,7 @@ function loadDemo(){
   document.getElementById('lastUpdate').textContent='⚪ Demo Data — start nse-proxy.js for live'
   // Render expiry pills in header
   renderExpiryPills(expiries)
+  renderExpiryBar(expiries)
   // Detect alerts on demo data too
   const alerts = detectAndFireAlerts(d)
   renderAlertTicker(alerts)
@@ -2082,41 +2083,30 @@ function selectExpiry(exp) {
 }
 
 function renderExpiryPills(allExpDates) {
-  // Pills now live in the header expiry bar — no separate left panel wrap needed
-  const wrap  = document.getElementById('expiryBar')
-  if (!wrap || !allExpDates || allExpDates.length === 0) return
-
-  wrap.innerHTML = allExpDates.slice(0, 8).map(exp => {
-    const dte        = getDTE(exp)
-    const type       = getExpiryType(exp, allExpDates)
-    const dayName    = getExpiryDayName(exp)
-    const isSelected = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
-    const isExpiring = dte <= 1
-    const isMon      = type !== 'weekly'
-    const typeStr    = type === 'monthly' ? 'Monthly' : type === 'special' ? 'Special' : 'Weekly'
-    const typeBadge  = isMon
-      ? `<span style="font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;background:${isSelected?'rgba(255,255,255,0.3)':'var(--pur-bg)'};color:${isSelected?'white':'var(--purple)'}">M</span>`
-      : `<span style="font-size:8px;font-weight:800;padding:1px 4px;border-radius:3px;background:${isSelected?'rgba(255,255,255,0.3)':'var(--blue-bg)'};color:${isSelected?'white':'var(--blue)'}">W</span>`
-
-    // DTE display
-    const dteDisplay = dte === 0
-      ? `<span style="color:${isSelected?'white':'var(--red)'}">⚠ Today</span>`
-      : dte === 1
-      ? `<span style="color:${isSelected?'white':'var(--yellow)'}">⚡ Tomorrow</span>`
-      : `<span style="opacity:0.75">${dte}D</span>`
-
-    return `<div class="expiry-pill${isSelected?' active':''}${isExpiring?' expiring':''}"
-      onclick="selectExpiry('${exp}')"
-      style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px"
-      title="${exp} · ${dayName} · ${typeStr} · ${dte} days away">
-      <span style="font-weight:700">${exp}</span>
-      <span style="font-size:10px;opacity:0.7">${dayName.slice(0,3)}</span>
-      ${typeBadge}
-      <span style="font-size:10px">${dteDisplay}</span>
-    </div>`
-  }).join('')
-
-
+  const bar = document.getElementById('expiryBar')
+  if (!bar || !allExpDates || allExpDates.length === 0) return
+  let html = ''
+  allExpDates.forEach(exp => {
+    const dte      = getDTE(exp)
+    const type     = getExpiryType(exp, allExpDates)
+    const dayName  = getExpiryDayName(exp)
+    const isSel    = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
+    const dot      = dte===0?'#ef4444':dte===1?'#f97316':dte<=3?'#f59e0b':'#22c55e'
+    const tLabel   = type==='monthly'?'M':type==='special'?'S':'W'
+    const tBg      = type==='monthly'?'rgba(139,92,246,0.35)':'rgba(59,130,246,0.25)'
+    const dteStr   = dte===0?'🔴 Today':dte===1?'🟡 Tmrw':`${dte}D`
+    const sty      = isSel
+      ? 'background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.7);color:white;font-weight:800'
+      : 'background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)'
+    html += `<span onclick="selectExpiry('${exp}')" title="${exp} · ${dayName} · ${type} · ${dte}D"
+      style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:14px;border:1px solid;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.15s;white-space:nowrap;${sty}">
+      <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
+      ${exp}
+      <span style="font-size:8px;padding:1px 3px;border-radius:3px;background:${tBg};color:rgba(255,255,255,0.85);font-weight:700">${tLabel}</span>
+      <span style="font-size:9px;opacity:0.8">${dteStr}</span>
+    </span>`
+  })
+  bar.innerHTML = html
 }
 
 // ══════════════════════════════════════════════════════

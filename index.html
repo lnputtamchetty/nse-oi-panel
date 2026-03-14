@@ -5,551 +5,191 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>LNP · NSE OI PANEL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg:        #050810;
-    --bg2:       #080d1a;
-    --bg3:       #0c1220;
-    --border:    #1a2540;
-    --border2:   #243060;
-    --text:      #c8d4f0;
-    --text2:     #6a7fa8;
-    --text3:     #3a4a68;
-    --accent:    #4f8fff;
-    --green:     #00e5a0;
-    --red:       #ff4466;
-    --yellow:    #ffd060;
-    --orange:    #ff8c42;
-    --purple:    #a855f7;
-    --cyan:      #22d3ee;
-    --glow-g:    0 0 12px rgba(0,229,160,0.3);
-    --glow-r:    0 0 12px rgba(255,68,102,0.3);
-    --glow-a:    0 0 12px rgba(79,143,255,0.25);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 14px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  /* Scanline overlay */
-  body::before {
-    content:'';
-    position:fixed; inset:0; pointer-events:none; z-index:9999;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-  }
-
-  /* ── HEADER ── */
-  .header {
-    display:flex; align-items:center; justify-content:space-between;
-    padding: 14px 20px 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg2);
-    position: sticky; top:0; z-index:100;
-  }
-  .header-left { display:flex; align-items:center; gap:14px; }
-  .logo {
-    font-family:'Space Mono', monospace;
-    font-size:11px; font-weight:700;
-    color: var(--accent);
-    letter-spacing:3px;
-    text-transform:uppercase;
-    border: 1px solid var(--border2);
-    padding: 4px 10px;
-    border-radius:2px;
-  }
-  .header-title {
-    font-size:18px; font-weight:700; letter-spacing:1px;
-    color: var(--text);
-  }
-  .header-right { display:flex; align-items:center; gap:12px; }
-  .index-tabs { display:flex; gap:5px; flex-wrap:wrap; }
-  .tab {
-    font-family:'Space Mono',monospace;
-    font-size:10px; font-weight:700; letter-spacing:1px;
-    padding: 5px 12px;
-    border: 1px solid var(--border2);
-    border-radius:2px;
-    cursor:pointer;
-    transition: all 0.15s;
-    background: transparent;
-    color: var(--text2);
-  }
-  .tab:hover { border-color:var(--accent); color:var(--text); }
-  .tab.active { background:var(--accent); border-color:var(--accent); color:#050810; }
-  .refresh-btn {
-    font-family:'Space Mono',monospace; font-size:10px;
-    padding: 5px 14px;
-    border: 1px solid var(--border2);
-    border-radius:2px;
-    cursor:pointer;
-    background: transparent;
-    color: var(--text2);
-    transition: all 0.15s;
-    letter-spacing:1px;
-  }
-  .refresh-btn:hover { border-color:var(--yellow); color:var(--yellow); }
-  .refresh-btn.spinning { animation: spin 1s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  .last-update {
-    font-family:'Share Tech Mono',monospace;
-    font-size:10px; color:var(--text3);
-  }
-
-  /* ── LAYOUT ── */
-  .main { display:grid; grid-template-columns:380px 1fr; gap:0; min-height:calc(100vh - 53px); }
-  @media(max-width:900px) { .main { grid-template-columns:1fr; } }
-
-  /* ── LEFT: COMMAND CENTER ── */
-  .command {
-    border-right: 1px solid var(--border);
-    background: var(--bg2);
-    padding: 0;
-    display:flex; flex-direction:column;
-  }
-  .section-label {
-    font-family:'Space Mono',monospace;
-    font-size:9px; letter-spacing:3px; text-transform:uppercase;
-    color: var(--text3);
-    padding: 10px 16px 8px;
-    border-bottom: 1px solid var(--border);
-    display:flex; align-items:center; gap:8px;
-  }
-  .section-label::before {
-    content:''; width:3px; height:3px;
-    background:var(--accent); border-radius:50%;
-    box-shadow: var(--glow-a);
-  }
-
-  /* Spot block */
-  .spot-block {
-    padding: 18px 16px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  .spot-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
-  .spot-value {
-    font-family:'Space Mono',monospace;
-    font-size:32px; font-weight:700;
-    color: var(--text);
-    letter-spacing:-1px;
-  }
-  .spot-change {
-    font-family:'Space Mono',monospace;
-    font-size:13px; font-weight:700;
-  }
-  .spot-change.up { color:var(--green); }
-  .spot-change.dn { color:var(--red); }
-  .spot-meta {
-    font-size:11px; color:var(--text3);
-    font-family:'Share Tech Mono',monospace;
-  }
-
-  /* Key metrics */
-  .metrics-grid {
-    display:grid; grid-template-columns:1fr 1fr;
-    border-bottom: 1px solid var(--border);
-  }
-  .metric {
-    padding: 12px 16px;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .metric:nth-child(even) { border-right:none; }
-  .metric-label {
-    font-size:10px; color:var(--text3);
-    letter-spacing:1px; text-transform:uppercase;
-    font-family:'Space Mono',monospace;
-    margin-bottom:5px;
-  }
-  .metric-value {
-    font-family:'Space Mono',monospace;
-    font-size:18px; font-weight:700;
-  }
-  .metric-sub {
-    font-size:10px; color:var(--text2);
-    margin-top:2px;
-  }
-
-  /* Walls */
-  .walls { padding:14px 16px; border-bottom:1px solid var(--border); }
-  .wall-row {
-    display:flex; align-items:center; justify-content:space-between;
-    padding: 8px 12px;
-    border-radius:3px;
-    margin-bottom:8px;
-  }
-  .wall-row.ce { background: rgba(255,68,102,0.07); border:1px solid rgba(255,68,102,0.2); }
-  .wall-row.pe { background: rgba(0,229,160,0.07); border:1px solid rgba(0,229,160,0.2); }
-  .wall-left { display:flex; align-items:center; gap:10px; }
-  .wall-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .wall-dot.ce { background:var(--red); box-shadow:var(--glow-r); }
-  .wall-dot.pe { background:var(--green); box-shadow:var(--glow-g); }
-  .wall-label { font-size:10px; color:var(--text2); letter-spacing:1px; font-family:'Space Mono',monospace; }
-  .wall-strike { font-family:'Space Mono',monospace; font-size:16px; font-weight:700; margin-top:1px; }
-  .wall-strike.ce { color:var(--red); }
-  .wall-strike.pe { color:var(--green); }
-  .wall-right { text-align:right; }
-  .wall-oi { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:var(--text); }
-  .wall-dist { font-size:10px; color:var(--text3); margin-top:2px; }
-
-  /* Zone + Bias */
-  .zone-block {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    display:grid; grid-template-columns:1fr 1fr; gap:8px;
-  }
-  .zone-item { }
-  .zone-label { font-size:10px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; font-family:'Space Mono',monospace; margin-bottom:4px; }
-  .zone-val { font-size:14px; font-weight:700; }
-
-  /* Strategy box */
-  .strategy-box {
-    margin: 14px 16px;
-    border-radius:4px;
-    overflow:hidden;
-    border: 1px solid var(--border2);
-  }
-  .strategy-header {
-    padding: 8px 14px;
-    background: rgba(79,143,255,0.1);
-    border-bottom: 1px solid var(--border2);
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .strategy-tag {
-    font-family:'Space Mono',monospace;
-    font-size:9px; letter-spacing:2px; color:var(--accent);
-    text-transform:uppercase;
-  }
-  .strategy-type {
-    font-size:11px; color:var(--text2);
-    font-family:'Space Mono',monospace;
-  }
-  .strategy-body { padding:12px 14px; background:var(--bg3); }
-  .strategy-name { font-size:17px; font-weight:700; color:var(--text); margin-bottom:10px; }
-  .strategy-legs { margin-bottom:10px; }
-  .leg {
-    display:flex; align-items:center; gap:8px;
-    padding: 5px 0;
-    border-bottom: 1px solid var(--border);
-    font-family:'Share Tech Mono',monospace; font-size:12px;
-  }
-  .leg:last-child { border-bottom:none; }
-  .leg-action {
-    font-size:10px; font-weight:700; letter-spacing:1px;
-    padding: 2px 6px; border-radius:2px;
-    min-width:36px; text-align:center;
-  }
-  .leg-action.sell { background:rgba(255,68,102,0.2); color:var(--red); border:1px solid rgba(255,68,102,0.3); }
-  .leg-action.buy  { background:rgba(0,229,160,0.1); color:var(--green); border:1px solid rgba(0,229,160,0.2); }
-  .leg-desc { color:var(--text); }
-  .leg-price { margin-left:auto; color:var(--yellow); }
-  .strategy-stats {
-    display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
-    padding-top:10px; border-top:1px solid var(--border);
-  }
-  .stat { text-align:center; }
-  .stat-label { font-size:9px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
-  .stat-val { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; }
-  .stat-val.risk { color:var(--red); }
-  .stat-val.reward { color:var(--green); }
-  .stat-val.rr { color:var(--yellow); }
-
-  /* ── RIGHT: WAR ROOM ── */
-  .warroom {
-    background: var(--bg);
-    overflow-y: auto;
-    padding-bottom:40px;
-  }
-  .wr-section {
-    border-bottom: 1px solid var(--border);
-    padding: 0;
-  }
-  .wr-header {
-    padding: 12px 20px 10px;
-    cursor:pointer;
-    display:flex; align-items:center; justify-content:space-between;
-    user-select:none;
-    transition:background 0.15s;
-  }
-  .wr-header:hover { background:rgba(255,255,255,0.02); }
-  .wr-title {
-    display:flex; align-items:center; gap:10px;
-    font-size:13px; font-weight:700; letter-spacing:1px;
-    color:var(--text);
-  }
-  .wr-icon {
-    width:24px; height:24px; border-radius:4px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:12px;
-    flex-shrink:0;
-  }
-  .wr-chevron {
-    font-family:'Space Mono',monospace;
-    font-size:10px; color:var(--text3);
-    transition:transform 0.2s;
-  }
-  .wr-chevron.open { transform:rotate(90deg); }
-  .wr-body { padding:0 20px 16px; display:none; }
-  .wr-body.open { display:block; }
-
-  /* OI Heatmap */
-  .heatmap {
-    margin-top:12px;
-    position:relative;
-  }
-  .hm-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-  .hm-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--text3); width:24px; text-align:right; flex-shrink:0; }
-  .hm-bars { flex:1; display:flex; gap:2px; align-items:center; }
-  .hm-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .hm-bar {
-    width:100%; border-radius:1px;
-    transition: height 0.4s ease;
-    min-height:2px;
-  }
-  .hm-bar.ce { background:var(--red); opacity:0.7; }
-  .hm-bar.pe { background:var(--green); opacity:0.7; }
-  .hm-strike {
-    font-family:'Share Tech Mono',monospace;
-    font-size:8px; color:var(--text3);
-    writing-mode:vertical-rl;
-    transform:rotate(180deg);
-    margin-top:4px;
-  }
-  .hm-strike.atm { color:var(--yellow); }
-  .hm-spot-line {
-    position:absolute; top:0; bottom:30px;
-    width:1px; background:var(--yellow);
-    opacity:0.5;
-  }
-  .hm-legend { display:flex; gap:16px; margin-top:8px; }
-  .hm-legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text3); }
-  .hm-legend-dot { width:8px; height:8px; border-radius:1px; }
-
-  /* OI Table */
-  .oi-table { width:100%; border-collapse:collapse; margin-top:12px; }
-  .oi-table th {
-    font-family:'Space Mono',monospace;
-    font-size:9px; letter-spacing:1px; text-transform:uppercase;
-    color:var(--text3); padding:6px 8px;
-    border-bottom:1px solid var(--border);
-    text-align:right;
-  }
-  .oi-table th:first-child { text-align:left; }
-  .oi-table td {
-    font-family:'Share Tech Mono',monospace;
-    font-size:12px; padding:7px 8px;
-    border-bottom:1px solid var(--border);
-    text-align:right;
-    color:var(--text);
-  }
-  .oi-table td:first-child { text-align:left; color:var(--text2); }
-  .oi-table tr.atm-row td { background:rgba(255,208,96,0.05); color:var(--yellow); }
-  .oi-change.up { color:var(--green); }
-  .oi-change.dn { color:var(--red); }
-  .oi-change.neutral { color:var(--text3); }
-  .oi-signal-tag {
-    font-size:9px; padding:2px 6px; border-radius:2px;
-    font-family:'Space Mono',monospace; letter-spacing:1px;
-  }
-  .oi-signal-tag.build { background:rgba(0,229,160,0.1); color:var(--green); border:1px solid rgba(0,229,160,0.2); }
-  .oi-signal-tag.unwind { background:rgba(255,68,102,0.1); color:var(--red); border:1px solid rgba(255,68,102,0.2); }
-  .oi-signal-tag.flat { background:rgba(106,127,168,0.1); color:var(--text3); border:1px solid var(--border); }
-
-  /* Explain boxes */
-  .explain-box {
-    background:var(--bg2);
-    border:1px solid var(--border);
-    border-radius:4px;
-    padding:14px 16px;
-    margin-top:12px;
-    line-height:1.7;
-    font-size:13px;
-    color:var(--text2);
-  }
-  .explain-box strong { color:var(--text); }
-  .explain-box .highlight { color:var(--accent); font-weight:600; }
-  .explain-box .good { color:var(--green); }
-  .explain-box .bad { color:var(--red); }
-  .explain-box .warn { color:var(--yellow); }
-  .explain-box p { margin-bottom:10px; }
-  .explain-box p:last-child { margin-bottom:0; }
-  .explain-box ul { margin:8px 0 8px 16px; }
-  .explain-box li { margin-bottom:5px; }
-
-  /* IV Skew */
-  .iv-row {
-    display:flex; align-items:center; gap:10px;
-    padding:5px 0;
-    border-bottom:1px solid var(--border);
-  }
-  .iv-row:last-child { border-bottom:none; }
-  .iv-label { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text2); width:90px; flex-shrink:0; }
-  .iv-bar-wrap { flex:1; }
-  .iv-bar {
-    height:6px; border-radius:1px;
-    transition:width 0.4s ease;
-  }
-  .iv-val { font-family:'Space Mono',monospace; font-size:11px; color:var(--text); width:44px; text-align:right; flex-shrink:0; }
-  .iv-row.atm .iv-label { color:var(--yellow); }
-  .iv-row.atm .iv-val { color:var(--yellow); }
-
-  /* PCR gauge */
-  .pcr-gauge {
-    margin-top:14px;
-    padding:14px 16px;
-    background:var(--bg2);
-    border:1px solid var(--border);
-    border-radius:4px;
-  }
-  .pcr-track {
-    position:relative;
-    height:8px; border-radius:4px;
-    background: linear-gradient(to right,
-      var(--green) 0%, var(--green) 20%,
-      rgba(100,150,100,0.4) 20%, rgba(100,150,100,0.4) 35%,
-      var(--text3) 35%, var(--text3) 65%,
-      rgba(150,100,100,0.4) 65%, rgba(150,100,100,0.4) 80%,
-      var(--red) 80%);
-    margin:10px 0 20px;
-  }
-  .pcr-needle {
-    position:absolute; top:-3px;
-    width:14px; height:14px; border-radius:50%;
-    background:var(--yellow);
-    transform:translateX(-50%);
-    box-shadow:0 0 8px rgba(255,208,96,0.5);
-    transition:left 0.5s ease;
-  }
-  .pcr-labels {
-    display:flex; justify-content:space-between;
-    font-family:'Space Mono',monospace; font-size:8px; color:var(--text3);
-    margin-top:4px;
-  }
-  .pcr-zones {
-    display:flex; justify-content:space-between;
-    font-size:9px; color:var(--text3);
-    margin-top:10px; letter-spacing:0.5px;
-  }
-
-  /* Max pain countdown */
-  .mp-bar {
-    margin-top:12px;
-    background:var(--bg2);
-    border:1px solid var(--border);
-    border-radius:4px;
-    padding:14px 16px;
-  }
-  .mp-visual {
-    position:relative; height:40px; margin:12px 0;
-    background:var(--bg3); border-radius:3px;
-    border:1px solid var(--border);
-    overflow:hidden;
-  }
-  .mp-range { position:absolute; top:0; bottom:0; background:rgba(79,143,255,0.08); }
-  .mp-spot-mark {
-    position:absolute; top:0; bottom:0;
-    width:2px; background:var(--yellow);
-    box-shadow:0 0 6px rgba(255,208,96,0.5);
-  }
-  .mp-pain-mark {
-    position:absolute; top:0; bottom:0;
-    width:2px; background:var(--purple);
-    box-shadow:0 0 6px rgba(168,85,247,0.5);
-  }
-  .mp-labels {
-    display:flex; justify-content:space-between;
-    font-family:'Space Mono',monospace;
-    font-size:9px; color:var(--text3);
-  }
-  .mp-legend { display:flex; gap:16px; margin-top:8px; }
-  .mp-legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--text2); }
-  .mp-legend-dot { width:10px; height:2px; border-radius:1px; }
-
-  /* Checklist */
-  .checklist { margin-top:12px; }
-  .check-item {
-    display:flex; align-items:flex-start; gap:10px;
-    padding:8px 0;
-    border-bottom:1px solid var(--border);
-  }
-  .check-item:last-child { border-bottom:none; }
-  .check-icon { flex-shrink:0; font-size:14px; margin-top:1px; }
-  .check-text { font-size:13px; color:var(--text2); line-height:1.5; }
-  .check-text strong { color:var(--text); }
-
-  /* Loading */
-  .loading {
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    height:300px; gap:16px;
-  }
-  .loading-ring {
-    width:40px; height:40px; border-radius:50%;
-    border:2px solid var(--border2);
-    border-top-color:var(--accent);
-    animation:spin 0.8s linear infinite;
-  }
-  .loading-text {
-    font-family:'Space Mono',monospace;
-    font-size:11px; color:var(--text3); letter-spacing:2px;
-  }
-
-  /* Error */
-  .error-box {
-    margin:20px; padding:20px;
-    border:1px solid rgba(255,68,102,0.3);
-    border-radius:4px;
-    background:rgba(255,68,102,0.05);
-  }
-  .error-title { color:var(--red); font-weight:700; margin-bottom:8px; }
-  .error-msg { color:var(--text2); font-size:12px; line-height:1.6; }
-  .error-msg code {
-    display:block; margin-top:10px; padding:10px;
-    background:var(--bg3); border-radius:3px;
-    font-family:'Share Tech Mono',monospace; font-size:11px;
-    color:var(--cyan); border:1px solid var(--border);
-  }
-
-  /* Util */
-  .mono { font-family:'Space Mono',monospace; }
-  .pill {
-    display:inline-block; padding:2px 8px; border-radius:10px;
-    font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1px;
-    text-transform:uppercase; font-weight:700;
-  }
-  .pill.bull { background:rgba(0,229,160,0.15); color:var(--green); border:1px solid rgba(0,229,160,0.3); }
-  .pill.bear { background:rgba(255,68,102,0.15); color:var(--red);   border:1px solid rgba(255,68,102,0.3); }
-  .pill.neut { background:rgba(106,127,168,0.15); color:var(--text2); border:1px solid var(--border2); }
-  .pill.warn { background:rgba(255,208,96,0.15); color:var(--yellow); border:1px solid rgba(255,208,96,0.3); }
-
-  .divider { height:1px; background:var(--border); margin:12px 0; }
-  .flex-between { display:flex; justify-content:space-between; align-items:center; }
-  .text-sm { font-size:11px; }
-  .text-xs { font-size:10px; }
-  .color-green { color:var(--green); }
-  .color-red { color:var(--red); }
-  .color-yellow { color:var(--yellow); }
-  .color-accent { color:var(--accent); }
-  .color-muted { color:var(--text2); }
-  .color-dim { color:var(--text3); }
-  .mt8 { margin-top:8px; }
-  .mt12 { margin-top:12px; }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width:4px; }
-  ::-webkit-scrollbar-track { background:var(--bg); }
-  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f2f5;--bg2:#f7f8fa;--bg3:#e8eaee;--border:#dde1e8;
+  --text:#1e2330;--text2:#52607a;--text3:#8f9bb8;
+  --red:#c93535;--red-bg:#fdf1f1;--red-bd:#f5c6c6;
+  --green:#177a56;--green-bg:#f1faf6;--green-bd:#b8e8d4;
+  --blue:#1d55d4;--blue-bg:#eef3fd;--blue-bd:#b8ccf8;
+  --yellow:#c26b00;--yel-bg:#fdf6e8;--yel-bd:#f5d99a;
+  --purple:#6530c7;--pur-bg:#f3f0fd;--pur-bd:#d4c8f5;
+  --orange:#d44f0a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+.header{background:var(--bg2);border-bottom:2px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{background:#1a1f2e;color:white;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:2px}
+.header-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.index-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
+.tab:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.tab.active{background:var(--blue);border-color:var(--blue);color:white}
+.refresh-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all 0.15s}
+.refresh-btn:hover{border-color:var(--text);color:var(--text)}
+.refresh-btn.spinning{animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap}
+.main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 56px)}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+.command{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto}
+.spot-block{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:#2a3148;color:white}
+.index-name{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:6px;font-family:'JetBrains Mono',monospace}
+.spot-value{font-size:36px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:white;font-family:'JetBrains Mono',monospace}
+.spot-meta{margin-top:8px;display:flex;gap:16px}
+.spot-meta-item{font-size:11px;color:rgba(255,255,255,0.5)}
+.spot-meta-item span{color:rgba(255,255,255,0.85);font-weight:600}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr}
+.metric{padding:14px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.metric:nth-child(even){border-right:none}
+.metric-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:5px}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;line-height:1}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px;font-weight:500}
+.walls-section{padding:16px 18px;border-bottom:1px solid var(--border)}
+.walls-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px}
+.wall-card{border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.wall-card:last-child{margin-bottom:0}
+.wall-card.ce{background:var(--red-bg);border:1.5px solid var(--red-bd)}
+.wall-card.pe{background:var(--green-bg);border:1.5px solid var(--green-bd)}
+.wall-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.wall-card.ce .wall-type{color:var(--red)}
+.wall-card.pe .wall-type{color:var(--green)}
+.wall-strike{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+.wall-card.ce .wall-strike{color:var(--red)}
+.wall-card.pe .wall-strike{color:var(--green)}
+.wall-right{text-align:right}
+.wall-oi{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--text)}
+.wall-dist{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500}
+.zone-row{display:grid;grid-template-columns:1fr 1fr;padding:14px 18px;border-bottom:1px solid var(--border);gap:12px}
+.zone-box{background:var(--bg3);border-radius:8px;padding:10px 12px}
+.zone-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px}
+.zone-val{font-size:14px;font-weight:700}
+.strategy-section{padding:16px 18px}
+.strategy-card{border-radius:12px;border:1.5px solid var(--blue-bd);overflow:hidden}
+.strategy-head{background:var(--blue);padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.strategy-head-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);letter-spacing:1px;text-transform:uppercase}
+.strategy-head-type{font-size:11px;color:rgba(255,255,255,0.7);font-weight:500}
+.strategy-body{padding:14px;background:var(--blue-bg)}
+.strategy-name{font-size:18px;font-weight:800;color:var(--blue);margin-bottom:12px;letter-spacing:-0.5px}
+.leg{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--blue-bd)}
+.leg:last-child{border-bottom:none}
+.leg-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:1px;min-width:40px;text-align:center}
+.leg-badge.sell{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd)}
+.leg-badge.buy{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green-bd)}
+.leg-desc{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.leg-price{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:var(--yellow)}
+.strategy-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:white;border-radius:8px;padding:8px 10px;text-align:center;border:1px solid var(--border)}
+.stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700}
+.stat-val.risk{color:var(--red)}
+.stat-val.reward{color:var(--green)}
+.stat-val.rr{color:var(--blue)}
+.warroom{background:var(--bg);overflow-y:auto;padding-bottom:40px}
+.wr-section{background:var(--bg2);border-radius:12px;margin:12px 16px 0;border:1px solid var(--border);overflow:hidden}
+.wr-header{padding:14px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background 0.15s}
+.wr-header:hover{background:var(--bg3)}
+.wr-title{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--text)}
+.wr-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.wr-chevron{font-size:11px;color:var(--text3);transition:transform 0.2s;font-family:'JetBrains Mono',monospace}
+.wr-chevron.open{transform:rotate(90deg)}
+.wr-body{padding:0 18px 16px;display:none}
+.wr-body.open{display:block}
+.explain-box{background:var(--bg3);border-radius:8px;padding:14px 16px;margin-top:12px;line-height:1.7;font-size:13px;color:var(--text2);border:1px solid var(--border)}
+.explain-box strong{color:var(--text)}
+.explain-box .good{color:var(--green);font-weight:600}
+.explain-box .bad{color:var(--red);font-weight:600}
+.explain-box .warn{color:var(--yellow);font-weight:600}
+.explain-box p{margin-bottom:10px}
+.explain-box p:last-child{margin-bottom:0}
+.explain-box ul{margin:8px 0 8px 18px}
+.explain-box li{margin-bottom:5px}
+.heatmap{margin-top:14px}
+.hm-row{display:flex;align-items:flex-end;gap:8px;margin-bottom:4px}
+.hm-label{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;width:22px;text-align:right;flex-shrink:0;padding-bottom:2px}
+.hm-bars{flex:1;display:flex;gap:3px;align-items:flex-end}
+.hm-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center}
+.hm-bar{width:100%;border-radius:3px 3px 0 0;min-height:3px}
+.hm-bar.ce{background:var(--red)}
+.hm-bar.pe{background:var(--green);border-radius:0 0 3px 3px}
+.hm-bar.ce.atm{background:var(--orange)}
+.hm-bar.pe.atm{background:#0891b2}
+.hm-strike-row{display:flex;gap:3px;margin-left:30px;margin-top:4px}
+.hm-strike{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3)}
+.hm-strike.atm{color:var(--blue);font-weight:700}
+.hm-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.hm-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);font-weight:500}
+.hm-legend-dot{width:10px;height:10px;border-radius:3px}
+.oi-table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px}
+.oi-table th{background:var(--bg3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:8px 10px;border-bottom:2px solid var(--border);text-align:right}
+.oi-table th:first-child{text-align:left}
+.oi-table td{font-family:'JetBrains Mono',monospace;padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;color:var(--text)}
+.oi-table td:first-child{text-align:left;font-weight:600}
+.oi-table tr.atm-row td{background:var(--yel-bg);color:var(--yellow);font-weight:700}
+.oi-table tr:hover td{background:var(--bg3)}
+.oi-table tr.atm-row:hover td{background:var(--yel-bg)}
+.oi-change.up{color:var(--green)}.oi-change.dn{color:var(--red)}.oi-change.neutral{color:var(--text3)}
+.tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:0.5px;text-transform:uppercase;display:inline-block}
+.tag.build{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.tag.unwind{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.tag.flat{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.pcr-card{background:var(--bg3);border-radius:10px;padding:16px;margin-top:12px;border:1px solid var(--border)}
+.pcr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.pcr-label{font-size:12px;font-weight:600;color:var(--text2)}
+.pcr-number{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800}
+.pcr-track{height:10px;border-radius:5px;background:linear-gradient(to right,#16a34a 0%,#16a34a 20%,#86efac 20%,#86efac 35%,#d1d5db 35%,#d1d5db 65%,#fca5a5 65%,#fca5a5 80%,#dc2626 80%);position:relative;margin-bottom:6px}
+.pcr-needle{position:absolute;top:-4px;width:18px;height:18px;border-radius:50%;background:white;border:3px solid var(--text);transform:translateX(-50%);transition:left 0.5s ease;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.pcr-ticks{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)}
+.pcr-zones{display:flex;justify-content:space-between;font-size:10px;font-weight:600;margin-top:8px}
+.mp-card{background:var(--bg3);border-radius:10px;padding:16px;margin-top:12px;border:1px solid var(--border)}
+.mp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.mp-label{font-size:12px;font-weight:600;color:var(--text2)}
+.mp-number{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:800;color:var(--purple)}
+.mp-track{height:32px;background:white;border-radius:6px;position:relative;border:1px solid var(--border);overflow:hidden}
+.mp-fill{position:absolute;top:0;bottom:0;background:var(--pur-bg)}
+.mp-spot{position:absolute;top:0;bottom:0;width:3px;background:var(--yellow);border-radius:2px}
+.mp-pain{position:absolute;top:0;bottom:0;width:3px;background:var(--purple);border-radius:2px}
+.mp-labels{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);margin-top:6px}
+.mp-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.mp-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500}
+.mp-legend-dot{width:12px;height:3px;border-radius:2px}
+.iv-row{display:flex;align-items:center;gap:10px;padding:5px 0}
+.iv-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;color:var(--text2);width:60px;flex-shrink:0}
+.iv-label.atm{color:var(--blue);font-weight:700}
+.iv-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.iv-fill{height:100%;border-radius:3px;transition:width 0.4s}
+.iv-val{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;width:40px;text-align:right}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.check-item:last-child{border-bottom:none}
+.check-icon{flex-shrink:0;font-size:14px;margin-top:1px}
+.check-text{font-size:13px;color:var(--text2);line-height:1.5}
+.reason-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;font-weight:500}
+.reason-item.bull{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.reason-item.bear{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.reason-item.warn{background:var(--yel-bg);color:var(--yellow);border:1px solid var(--yel-bd)}
+.reason-item.neut{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:16px}
+.loading-ring{width:36px;height:36px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--blue);animation:spin 0.8s linear infinite}
+.loading-text{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:1px}
+.warn-box{margin:14px 14px 0;padding:12px 16px;background:var(--yel-bg);border:1.5px solid var(--yel-bd);border-radius:10px;font-size:12px;color:var(--yellow);font-weight:500;line-height:1.5}
+.warn-box strong{font-weight:700}
+.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px;margin-top:14px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.mono{font-family:'JetBrains Mono',monospace}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.mt12{margin-top:12px}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="header-left">
     <div class="logo">LNP</div>
-    <div class="header-title">NSE OI PANEL</div>
+    <div class="header-title">NSE OI Panel</div>
   </div>
   <div class="header-right">
     <div class="index-tabs">
@@ -560,893 +200,309 @@
       <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ REFRESH</button>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
     <span class="last-update" id="lastUpdate">—</span>
   </div>
 </div>
-
 <div class="main">
-  <!-- LEFT: COMMAND CENTER -->
   <div class="command" id="commandPanel">
-    <div class="loading" id="loadingLeft">
-      <div class="loading-ring"></div>
-      <div class="loading-text">FETCHING CHAIN DATA</div>
-    </div>
+    <div class="loading" id="loadingLeft"><div class="loading-ring"></div><div class="loading-text">LOADING CHAIN DATA</div></div>
     <div id="commandContent" style="display:none"></div>
   </div>
-
-  <!-- RIGHT: WAR ROOM -->
   <div class="warroom" id="warRoom">
-    <div class="loading" id="loadingRight">
-      <div class="loading-ring"></div>
-      <div class="loading-text">BUILDING ANALYSIS</div>
-    </div>
-    <div id="warContent" style="display:none"></div>
+    <div class="loading" id="loadingRight"><div class="loading-ring"></div><div class="loading-text">BUILDING ANALYSIS</div></div>
+    <div id="warContent" style="display:none;padding-bottom:24px"></div>
   </div>
 </div>
-
 <script>
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
-let currentIndex = 'NIFTY'
-let prevData = null   // previous fetch snapshot for OI delta
-let chainData = null  // current parsed chain
-
-// ═══════════════════════════════════════════════════════════
-// NSE FETCH
-// Calls /api/chain?symbol=NIFTY — the Vercel proxy function (chain.js)
-// ═══════════════════════════════════════════════════════════
-// NSE symbol map — exact names NSE API accepts
-const INDEX_SYMBOLS = {
-  'NIFTY':         'NIFTY',
-  'BANKNIFTY':     'BANKNIFTY',
-  'FINNIFTY':      'FINNIFTY',
-  'MIDCPNIFTY':    'MIDCPNIFTY',
-  'NIFTY NEXT 50': 'NIFTY NEXT 50',
-  'SENSEX':        'SENSEX'
+let currentIndex='NIFTY',prevData=null,chainData=null
+const INDEX_SYMBOLS={'NIFTY':'NIFTY','BANKNIFTY':'BANKNIFTY','FINNIFTY':'FINNIFTY','MIDCPNIFTY':'MIDCPNIFTY','NIFTY NEXT 50':'NIFTY NEXT 50','SENSEX':'SENSEX'}
+async function fetchChain(symbol){
+  const nseSymbol=INDEX_SYMBOLS[symbol]||symbol,encoded=encodeURIComponent(nseSymbol)
+  const nseUrl=`https://www.nseindia.com/api/option-chain-indices?symbol=${encoded}`
+  const strategies=[
+    ()=>fetch(`/api/chain?symbol=${encoded}`,{signal:AbortSignal.timeout(12000)}),
+    ()=>fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(nseUrl)}`,{signal:AbortSignal.timeout(12000)}),
+    ()=>fetch(`https://corsproxy.io/?${encodeURIComponent(nseUrl)}`,{signal:AbortSignal.timeout(12000)}),
+    ()=>fetch(`https://thingproxy.freeboard.io/fetch/${nseUrl}`,{signal:AbortSignal.timeout(12000)}),
+  ]
+  for(const attempt of strategies){try{const res=await attempt();if(!res.ok)continue;const json=await res.json();if(json&&json.records)return json}catch(e){continue}}
+  return null
 }
-
-async function fetchChain(symbol) {
-  const nseSymbol = INDEX_SYMBOLS[symbol] || symbol
-  try {
-    const res = await fetch(`/api/chain?symbol=${encodeURIComponent(nseSymbol)}`, {
-      signal: AbortSignal.timeout(15000)
-    })
-    if (!res.ok) throw new Error('API responded with ' + res.status)
-    const json = await res.json()
-    if (json && json.records) return json
-    throw new Error('Unexpected response format')
-  } catch(e) {
-    console.warn('NSE fetch failed:', e.message)
-    return null
-  }
+function parseChain(raw){
+  const records=raw.records,data=records.data||[],spot=records.underlyingValue||0,expiry=records.expiryDates?.[0]||''
+  const strikes={}
+  for(const row of data){if(row.expiryDate!==expiry)continue;const k=row.strikePrice;if(!strikes[k])strikes[k]={strike:k,ce:{},pe:{}};if(row.CE)strikes[k].ce=row.CE;if(row.PE)strikes[k].pe=row.PE}
+  const strikeList=Object.values(strikes).sort((a,b)=>a.strike-b.strike)
+  let atm=strikeList.reduce((best,s)=>Math.abs(s.strike-spot)<Math.abs(best.strike-spot)?s:best,strikeList[0])
+  let maxPainStrike=0,minPainVal=Infinity
+  for(const s of strikeList){let loss=0;for(const other of strikeList){if(other.strike<s.strike)loss+=(other.ce.openInterest||0)*(s.strike-other.strike);if(other.strike>s.strike)loss+=(other.pe.openInterest||0)*(other.strike-s.strike)}if(loss<minPainVal){minPainVal=loss;maxPainStrike=s.strike}}
+  const ceWall=strikeList.reduce((b,s)=>(s.ce.openInterest||0)>(b.ce.openInterest||0)?s:b,strikeList[0])
+  const peWall=strikeList.reduce((b,s)=>(s.pe.openInterest||0)>(b.pe.openInterest||0)?s:b,strikeList[0])
+  const totalCeOI=strikeList.reduce((s,r)=>s+(r.ce.openInterest||0),0)
+  const totalPeOI=strikeList.reduce((s,r)=>s+(r.pe.openInterest||0),0)
+  const pcr=totalCeOI>0?totalPeOI/totalCeOI:1
+  const atmIV=((atm.ce.impliedVolatility||0)+(atm.pe.impliedVolatility||0))/2
+  const atmIdx=strikeList.indexOf(atm)
+  return{spot,expiry,atm:atm.strike,maxPainStrike,ceWall,peWall,pcr,totalCeOI,totalPeOI,atmIV,
+    skewStrikes:strikeList.slice(Math.max(0,atmIdx-3),atmIdx+4),
+    nearStrikes:strikeList.slice(Math.max(0,atmIdx-5),atmIdx+6),
+    strikeList,atmRow:atm,timestamp:new Date()}
 }
-
-// ═══════════════════════════════════════════════════════════
-// PARSE CHAIN — extract all meaningful data
-// ═══════════════════════════════════════════════════════════
-function parseChain(raw) {
-  const records = raw.records
-  const data    = records.data || []
-  const spot    = records.underlyingValue || 0
-  const expiry  = records.expiryDates?.[0] || ''
-
-  // Collect strikes
-  const strikes = {}
-  for (const row of data) {
-    if (row.expiryDate !== expiry) continue
-    const k = row.strikePrice
-    if (!strikes[k]) strikes[k] = { strike:k, ce:{}, pe:{} }
-    if (row.CE) strikes[k].ce = row.CE
-    if (row.PE) strikes[k].pe = row.PE
+function computeStrategy(d){
+  const{spot,ceWall,peWall,maxPainStrike,pcr}=d
+  const ceWallStr=ceWall.strike,peWallStr=peWall.strike
+  const distToCe=ceWallStr-spot,distToPe=spot-peWallStr
+  const inRange=spot>peWallStr&&spot<ceWallStr,abovePain=spot>maxPainStrike
+  const step=ceWallStr>20000?100:50
+  let bullSignals=0,bearSignals=0,reasons=[]
+  if(pcr>1.3){bearSignals+=2;reasons.push({dir:'bear',text:`PCR ${pcr.toFixed(2)} — strongly bearish (heavy put buying)`})}
+  else if(pcr>1.1){bearSignals+=1;reasons.push({dir:'bear',text:`PCR ${pcr.toFixed(2)} — mildly bearish`})}
+  else if(pcr<0.7){bullSignals+=2;reasons.push({dir:'bull',text:`PCR ${pcr.toFixed(2)} — strongly bullish (heavy call buying)`})}
+  else if(pcr<0.9){bullSignals+=1;reasons.push({dir:'bull',text:`PCR ${pcr.toFixed(2)} — mildly bullish`})}
+  else{reasons.push({dir:'neut',text:`PCR ${pcr.toFixed(2)} — neutral, no strong directional bias`})}
+  if(distToCe<150){bearSignals+=2;reasons.push({dir:'bear',text:`Only ${Math.round(distToCe)}pts to CE wall — strong resistance nearby`})}
+  else if(distToCe<300){bearSignals+=1;reasons.push({dir:'warn',text:`${Math.round(distToCe)}pts to CE wall — watch resistance`})}
+  if(distToPe<150){bullSignals+=2;reasons.push({dir:'bull',text:`Only ${Math.round(distToPe)}pts to PE wall — strong support nearby`})}
+  if(!abovePain&&Math.abs(spot-maxPainStrike)<200){bullSignals+=1;reasons.push({dir:'bull',text:`Spot below max pain (${maxPainStrike}) — gravity pulls up`})}
+  else if(abovePain&&Math.abs(spot-maxPainStrike)<200){bearSignals+=1;reasons.push({dir:'bear',text:`Spot above max pain (${maxPainStrike}) — gravity pulls down`})}
+  let dir='range',zone='IN RANGE',bias='NEUTRAL'
+  if(!inRange&&spot>=ceWallStr){dir='bull';zone='ABOVE CE WALL';bias='STRONG BULL'}
+  else if(!inRange&&spot<=peWallStr){dir='bear';zone='BELOW PE WALL';bias='STRONG BEAR'}
+  else if(bullSignals>bearSignals+1){dir='bull';bias='BULLISH'}
+  else if(bearSignals>bullSignals+1){dir='bear';bias='BEARISH'}
+  else if(bearSignals===bullSignals&&bearSignals>0){dir='range';bias='RANGE BOUND'}
+  let strategy={}
+  if(dir==='bear'){
+    const ss=ceWallStr,bs=ceWallStr-step,sp=ceWall.ce?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.ce?.lastPrice||0
+    strategy={name:'BEAR CALL SPREAD',type:'Range / Bearish',rationale:`Sell the CE wall at ${ss} — ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts defending this level`,
+      legs:[{action:'SELL',desc:`${ss} CE`,price:sp.toFixed(1)},{action:'BUY',desc:`${bs} CE`,price:bp.toFixed(1)}],
+      risk:Math.abs((ss-bs)*25-Math.round((sp-bp)*25)),reward:Math.abs(Math.round((sp-bp)*25)),
+      exit:`Exit if ${ss} CE OI drops >20% OR spot closes above ${ss+step}`}
+  }else if(dir==='bull'){
+    const ss=peWallStr,bs=peWallStr+step,sp=peWall.pe?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.pe?.lastPrice||0
+    strategy={name:'BULL PUT SPREAD',type:'Range / Bullish',rationale:`Sell the PE wall at ${ss} — ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts defending this level`,
+      legs:[{action:'SELL',desc:`${ss} PE`,price:sp.toFixed(1)},{action:'BUY',desc:`${bs} PE`,price:bp.toFixed(1)}],
+      risk:Math.abs((bs-ss)*25-Math.round((sp-bp)*25)),reward:Math.abs(Math.round((sp-bp)*25)),
+      exit:`Exit if ${ss} PE OI drops >20% OR spot closes below ${ss-step}`}
+  }else{
+    const sc=ceWallStr,bc=ceWallStr+step,sp2=peWallStr,bp2=peWallStr-step
+    const scP=ceWall.ce?.lastPrice||0,spP=peWall.pe?.lastPrice||0,mg=Math.round((scP+spP)*25)
+    strategy={name:'IRON CONDOR',type:'Range Bound',rationale:`Market trapped between CE wall (${sc}) and PE wall (${sp2}). Collect premium from both sides.`,
+      legs:[{action:'SELL',desc:`${sc} CE`,price:scP.toFixed(1)},{action:'BUY',desc:`${bc} CE`,price:'hedge'},{action:'SELL',desc:`${sp2} PE`,price:spP.toFixed(1)},{action:'BUY',desc:`${bp2} PE`,price:'hedge'}],
+      risk:step*25-Math.abs(mg),reward:Math.abs(mg),exit:`Exit if spot breaks above ${sc} or below ${sp2}`}
   }
-
-  const strikeList = Object.values(strikes).sort((a,b)=>a.strike-b.strike)
-
-  // ATM = closest to spot
-  let atm = strikeList.reduce((best, s) =>
-    Math.abs(s.strike - spot) < Math.abs(best.strike - spot) ? s : best
-  , strikeList[0])
-
-  // Max pain
-  let maxPainStrike = 0, minPainVal = Infinity
-  for (const s of strikeList) {
-    let loss = 0
-    for (const other of strikeList) {
-      if (other.strike < s.strike) loss += (other.ce.openInterest||0) * (s.strike - other.strike)
-      if (other.strike > s.strike) loss += (other.pe.openInterest||0) * (other.strike - s.strike)
-    }
-    if (loss < minPainVal) { minPainVal = loss; maxPainStrike = s.strike }
-  }
-
-  // CE/PE walls (max OI strike)
-  let ceWall = strikeList.reduce((b,s) => (s.ce.openInterest||0) > (b.ce.openInterest||0) ? s : b, strikeList[0])
-  let peWall = strikeList.reduce((b,s) => (s.pe.openInterest||0) > (b.pe.openInterest||0) ? s : b, strikeList[0])
-
-  // PCR
-  const totalCeOI = strikeList.reduce((s,r)=>s+(r.ce.openInterest||0),0)
-  const totalPeOI = strikeList.reduce((s,r)=>s+(r.pe.openInterest||0),0)
-  const pcr = totalCeOI > 0 ? totalPeOI / totalCeOI : 1
-
-  // ATM IV (average of CE and PE ATM IV)
-  const atmIV = ((atm.ce.impliedVolatility||0) + (atm.pe.impliedVolatility||0)) / 2
-
-  // IV skew — strikes around ATM
-  const atmIdx = strikeList.indexOf(atm)
-  const skewStrikes = strikeList.slice(Math.max(0,atmIdx-3), atmIdx+4)
-
-  // Top OI strikes for change table
-  const topCE = [...strikeList].sort((a,b)=>(b.ce.openInterest||0)-(a.ce.openInterest||0)).slice(0,6)
-  const topPE = [...strikeList].sort((a,b)=>(b.pe.openInterest||0)-(a.pe.openInterest||0)).slice(0,6)
-
-  // Near strikes for table (ATM ± 5)
-  const nearStrikes = strikeList.slice(Math.max(0,atmIdx-5), atmIdx+6)
-
-  return {
-    spot, expiry, atm: atm.strike,
-    maxPainStrike, ceWall, peWall,
-    pcr, totalCeOI, totalPeOI, atmIV,
-    skewStrikes, topCE, topPE, nearStrikes,
-    strikeList, atm: atm.strike,
-    atmRow: atm,
-    timestamp: new Date()
-  }
+  return{dir,zone,bias,strategy,reasons,bullSignals,bearSignals}
 }
-
-// ═══════════════════════════════════════════════════════════
-// STRATEGY ENGINE
-// ═══════════════════════════════════════════════════════════
-function computeStrategy(d) {
-  const { spot, ceWall, peWall, maxPainStrike, pcr, atm, atmRow } = d
-  const ceWallStr = ceWall.strike
-  const peWallStr = peWall.strike
-  const distToCe  = ceWallStr - spot
-  const distToPe  = spot - peWallStr
-  const inRange   = spot > peWallStr && spot < ceWallStr
-  const abovePain = spot > maxPainStrike
-  const step      = ceWallStr > 25000 ? 100 : ceWallStr > 20000 ? 100 : 50
-
-  // Score signals
-  let bullSignals = 0, bearSignals = 0, reasons = []
-
-  if (pcr > 1.3)  { bearSignals += 2; reasons.push({ dir:'bear', text: `PCR ${pcr.toFixed(2)} is strongly bearish — heavy put buying` }) }
-  else if (pcr > 1.1) { bearSignals += 1; reasons.push({ dir:'bear', text: `PCR ${pcr.toFixed(2)} mildly bearish` }) }
-  else if (pcr < 0.7) { bullSignals += 2; reasons.push({ dir:'bull', text: `PCR ${pcr.toFixed(2)} is strongly bullish — heavy call buying` }) }
-  else if (pcr < 0.9) { bullSignals += 1; reasons.push({ dir:'bull', text: `PCR ${pcr.toFixed(2)} mildly bullish` }) }
-  else { reasons.push({ dir:'neut', text: `PCR ${pcr.toFixed(2)} neutral — no strong bias` }) }
-
-  if (distToCe < 150)  { bearSignals += 2; reasons.push({ dir:'bear', text: `Only ${Math.round(distToCe)}pts to CE wall — strong resistance near` }) }
-  else if (distToCe < 300) { bearSignals += 1; reasons.push({ dir:'warn', text: `${Math.round(distToCe)}pts to CE wall — watch resistance` }) }
-
-  if (distToPe < 150) { bullSignals += 2; reasons.push({ dir:'bull', text: `Only ${Math.round(distToPe)}pts to PE wall — strong support near` }) }
-
-  if (!abovePain && Math.abs(spot - maxPainStrike) < 200) {
-    bullSignals += 1; reasons.push({ dir:'bull', text: `Spot below max pain (${maxPainStrike}) — gravity pulls up` })
-  } else if (abovePain && Math.abs(spot - maxPainStrike) < 200) {
-    bearSignals += 1; reasons.push({ dir:'bear', text: `Spot above max pain (${maxPainStrike}) — gravity pulls down` })
-  }
-
-  // Determine direction
-  let dir = 'neutral', zone = 'IN RANGE', bias = 'NEUTRAL'
-  if (!inRange && spot >= ceWallStr) { dir = 'bull'; zone = 'ABOVE CE WALL'; bias = 'STRONG BULL' }
-  else if (!inRange && spot <= peWallStr) { dir = 'bear'; zone = 'BELOW PE WALL'; bias = 'STRONG BEAR' }
-  else if (bullSignals > bearSignals + 1) { dir = 'bull'; bias = 'BULLISH' }
-  else if (bearSignals > bullSignals + 1) { dir = 'bear'; bias = 'BEARISH' }
-  else if (bearSignals === bullSignals && bearSignals > 0) { dir = 'range'; bias = 'RANGE BOUND' }
-  else { dir = 'range'; bias = 'NEUTRAL' }
-
-  // Strategy
-  let strategy = {}
-  const cePrice = atmRow.ce?.lastPrice || 0
-  const pePrice = atmRow.pe?.lastPrice || 0
-
-  if (dir === 'bear') {
-    const sellStrike = ceWallStr
-    const buyStrike  = ceWallStr - step
-    const sellCE = ceWall.ce?.lastPrice || 0
-    const buyCE  = d.strikeList.find(s=>s.strike===buyStrike)?.ce?.lastPrice || 0
-    const maxLoss = (sellStrike - buyStrike) * 25 - Math.round((sellCE - buyCE) * 25)
-    const maxGain = Math.round((sellCE - buyCE) * 25)
-    strategy = {
-      name: 'BEAR CALL SPREAD',
-      type: 'Range / Bearish',
-      rationale: `Selling resistance at CE wall (${sellStrike}) — ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts defending this level`,
-      legs: [
-        { action:'SELL', desc:`${sellStrike} CE`, price: sellCE.toFixed(1) },
-        { action:'BUY',  desc:`${buyStrike} CE`,  price: buyCE.toFixed(1) }
-      ],
-      risk:   Math.abs(maxLoss),
-      reward: Math.abs(maxGain),
-      exit:   `Exit if ${sellStrike} CE OI drops >20% OR spot closes above ${sellStrike + step}`
-    }
-  } else if (dir === 'bull') {
-    const sellStrike = peWallStr
-    const buyStrike  = peWallStr + step
-    const sellPE = peWall.pe?.lastPrice || 0
-    const buyPE  = d.strikeList.find(s=>s.strike===buyStrike)?.pe?.lastPrice || 0
-    const maxLoss = (buyStrike - sellStrike) * 25 - Math.round((sellPE - buyPE) * 25)
-    const maxGain = Math.round((sellPE - buyPE) * 25)
-    strategy = {
-      name: 'BULL PUT SPREAD',
-      type: 'Range / Bullish',
-      rationale: `Selling support at PE wall (${sellStrike}) — ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts defending this level`,
-      legs: [
-        { action:'SELL', desc:`${sellStrike} PE`, price: sellPE.toFixed(1) },
-        { action:'BUY',  desc:`${buyStrike} PE`,  price: buyPE.toFixed(1) }
-      ],
-      risk:   Math.abs(maxLoss),
-      reward: Math.abs(maxGain),
-      exit:   `Exit if ${sellStrike} PE OI drops >20% OR spot closes below ${sellStrike - step}`
-    }
-  } else {
-    // Neutral — Iron Condor
-    const scStrike = ceWallStr, bcStrike = ceWallStr + step
-    const spStrike = peWallStr, bpStrike = peWallStr - step
-    const scPrice = ceWall.ce?.lastPrice || 0
-    const spPrice = peWall.pe?.lastPrice || 0
-    const maxGain = Math.round((scPrice + spPrice) * 25)
-    strategy = {
-      name: 'IRON CONDOR',
-      type: 'Range Bound',
-      rationale: `Market trapped between CE wall (${scStrike}) and PE wall (${spStrike}). Sell both walls, collect premium from both sides.`,
-      legs: [
-        { action:'SELL', desc:`${scStrike} CE`, price: scPrice.toFixed(1) },
-        { action:'BUY',  desc:`${bcStrike} CE`, price:'hedge' },
-        { action:'SELL', desc:`${spStrike} PE`, price: spPrice.toFixed(1) },
-        { action:'BUY',  desc:`${bpStrike} PE`, price:'hedge' },
-      ],
-      risk:   step * 25 - Math.abs(maxGain),
-      reward: Math.abs(maxGain),
-      exit:   `Exit if spot breaks above ${scStrike} or below ${spStrike}`
-    }
-  }
-
-  return { dir, zone, bias, strategy, reasons, bullSignals, bearSignals }
-}
-
-// ═══════════════════════════════════════════════════════════
-// RENDER COMMAND CENTER (LEFT PANEL)
-// ═══════════════════════════════════════════════════════════
-function renderCommand(d, s) {
-  const { spot, atm, maxPainStrike, pcr, ceWall, peWall, totalCeOI, totalPeOI } = d
-  const { dir, zone, bias, strategy, reasons } = s
-
-  const pcrTrend = pcr > 1.3 ? '↑↑ STRONG BEAR' : pcr > 1.1 ? '↑ MILD BEAR' : pcr < 0.7 ? '↓↓ STRONG BULL' : pcr < 0.9 ? '↓ MILD BULL' : '─ NEUTRAL'
-  const pcrColor = pcr > 1.1 ? 'var(--red)' : pcr < 0.9 ? 'var(--green)' : 'var(--text2)'
-
-  const biasColor = dir==='bull'?'var(--green)':dir==='bear'?'var(--red)':dir==='range'?'var(--yellow)':'var(--text2)'
-  const zoneColor = zone.includes('ABOVE')?'var(--green)':zone.includes('BELOW')?'var(--red)':'var(--accent)'
-
-  const ceOI_L = (ceWall.ce?.openInterest/100000||0).toFixed(1)
-  const peOI_L = (peWall.pe?.openInterest/100000||0).toFixed(1)
-  const distCe = Math.round(ceWall.strike - spot)
-  const distPe = Math.round(spot - peWall.strike)
-  const rrRatio = strategy.reward > 0 ? (strategy.reward/strategy.risk).toFixed(2) : '—'
-
-  const html = `
-    <div class="section-label">COMMAND CENTER</div>
-
-    <div class="spot-block">
-      <div class="spot-row">
-        <div>
-          <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;letter-spacing:2px;margin-bottom:4px">${currentIndex}</div>
-          <span class="spot-value">${spot.toLocaleString('en-IN', {maximumFractionDigits:2})}</span>
-        </div>
-        <div style="text-align:right">
-          <div class="spot-meta">EXPIRY: ${d.expiry}</div>
-          <div class="spot-meta" style="margin-top:4px">ATM: <span class="mono" style="color:var(--yellow)">${atm}</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="metrics-grid">
-      <div class="metric">
-        <div class="metric-label">MAX PAIN</div>
-        <div class="metric-value" style="color:var(--purple)">${maxPainStrike.toLocaleString('en-IN')}</div>
-        <div class="metric-sub">${maxPainStrike > spot ? '↑ '+Math.round(maxPainStrike-spot)+'pts above' : '↓ '+Math.round(spot-maxPainStrike)+'pts below'}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">REAL PCR</div>
-        <div class="metric-value" style="color:${pcrColor}">${pcr.toFixed(2)}</div>
-        <div class="metric-sub" style="color:${pcrColor}">${pcrTrend}</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">TOTAL CE OI</div>
-        <div class="metric-value" style="color:var(--red)">${(totalCeOI/100000).toFixed(1)}L</div>
-        <div class="metric-sub">all strikes</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">TOTAL PE OI</div>
-        <div class="metric-value" style="color:var(--green)">${(totalPeOI/100000).toFixed(1)}L</div>
-        <div class="metric-sub">all strikes</div>
-      </div>
-    </div>
-
-    <div class="walls">
-      <div class="wall-row ce">
-        <div class="wall-left">
-          <div class="wall-dot ce"></div>
-          <div>
-            <div class="wall-label">CE WALL — RESISTANCE</div>
-            <div class="wall-strike ce">${ceWall.strike.toLocaleString('en-IN')}</div>
-          </div>
-        </div>
-        <div class="wall-right">
-          <div class="wall-oi">${ceOI_L}L OI</div>
-          <div class="wall-dist">${distCe}pts away ↑</div>
-        </div>
-      </div>
-      <div class="wall-row pe">
-        <div class="wall-left">
-          <div class="wall-dot pe"></div>
-          <div>
-            <div class="wall-label">PE WALL — SUPPORT</div>
-            <div class="wall-strike pe">${peWall.strike.toLocaleString('en-IN')}</div>
-          </div>
-        </div>
-        <div class="wall-right">
-          <div class="wall-oi">${peOI_L}L OI</div>
-          <div class="wall-dist">${distPe}pts away ↓</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="zone-block">
-      <div class="zone-item">
-        <div class="zone-label">ZONE</div>
-        <div class="zone-val" style="color:${zoneColor}">${zone}</div>
-      </div>
-      <div class="zone-item">
-        <div class="zone-label">BIAS</div>
-        <div class="zone-val" style="color:${biasColor}">${bias}</div>
-      </div>
-    </div>
-
-    <div class="strategy-box">
-      <div class="strategy-header">
-        <span class="strategy-tag">⚡ SUGGESTED STRATEGY</span>
-        <span class="strategy-type">${strategy.type}</span>
-      </div>
+function renderCommand(d,s){
+  const{spot,atm,maxPainStrike,pcr,ceWall,peWall,totalCeOI,totalPeOI}=d,{dir,zone,bias,strategy}=s
+  const pcrTrend=pcr>1.3?'↑↑ Strong Bear':pcr>1.1?'↑ Mild Bear':pcr<0.7?'↓↓ Strong Bull':pcr<0.9?'↓ Mild Bull':'─ Neutral'
+  const pcrColor=pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)'
+  const biasColor=dir==='bull'?'var(--green)':dir==='bear'?'var(--red)':dir==='range'?'var(--yellow)':'var(--text2)'
+  const zoneColor=zone.includes('ABOVE')?'var(--green)':zone.includes('BELOW')?'var(--red)':'var(--blue)'
+  const ceOI_L=(ceWall.ce?.openInterest/100000||0).toFixed(1),peOI_L=(peWall.pe?.openInterest/100000||0).toFixed(1)
+  const distCe=Math.round(ceWall.strike-spot),distPe=Math.round(spot-peWall.strike)
+  const rrRatio=strategy.reward>0?(strategy.reward/strategy.risk).toFixed(2):'—'
+  return`<div class="spot-block">
+    <div class="index-name">${currentIndex}</div>
+    <div class="spot-value">${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}</div>
+    <div class="spot-meta"><div class="spot-meta-item">Expiry <span>${d.expiry}</span></div><div class="spot-meta-item">ATM <span>${atm}</span></div></div>
+  </div>
+  <div class="metrics-grid">
+    <div class="metric"><div class="metric-label">Max Pain</div><div class="metric-value" style="color:var(--purple)">${maxPainStrike.toLocaleString('en-IN')}</div><div class="metric-sub">${maxPainStrike>spot?'↑ '+Math.round(maxPainStrike-spot)+' pts above':'↓ '+Math.round(spot-maxPainStrike)+' pts below'}</div></div>
+    <div class="metric"><div class="metric-label">PCR</div><div class="metric-value" style="color:${pcrColor}">${pcr.toFixed(2)}</div><div class="metric-sub" style="color:${pcrColor}">${pcrTrend}</div></div>
+    <div class="metric"><div class="metric-label">Total CE OI</div><div class="metric-value" style="color:var(--red)">${(totalCeOI/100000).toFixed(1)}L</div><div class="metric-sub">all strikes</div></div>
+    <div class="metric"><div class="metric-label">Total PE OI</div><div class="metric-value" style="color:var(--green)">${(totalPeOI/100000).toFixed(1)}L</div><div class="metric-sub">all strikes</div></div>
+  </div>
+  <div class="walls-section">
+    <div class="walls-title">OI Walls</div>
+    <div class="wall-card ce"><div class="wall-left"><div class="wall-type">🔴 Resistance (CE Wall)</div><div class="wall-strike">${ceWall.strike.toLocaleString('en-IN')}</div></div><div class="wall-right"><div class="wall-oi">${ceOI_L}L OI</div><div class="wall-dist">${distCe} pts above ↑</div></div></div>
+    <div class="wall-card pe"><div class="wall-left"><div class="wall-type">🟢 Support (PE Wall)</div><div class="wall-strike">${peWall.strike.toLocaleString('en-IN')}</div></div><div class="wall-right"><div class="wall-oi">${peOI_L}L OI</div><div class="wall-dist">${distPe} pts below ↓</div></div></div>
+  </div>
+  <div class="zone-row">
+    <div class="zone-box"><div class="zone-label">Zone</div><div class="zone-val" style="color:${zoneColor}">${zone}</div></div>
+    <div class="zone-box"><div class="zone-label">Bias</div><div class="zone-val" style="color:${biasColor}">${bias}</div></div>
+  </div>
+  <div class="strategy-section">
+    <div class="strategy-card">
+      <div class="strategy-head"><span class="strategy-head-label">⚡ Suggested Strategy</span><span class="strategy-head-type">${strategy.type}</span></div>
       <div class="strategy-body">
         <div class="strategy-name">${strategy.name}</div>
-        <div class="strategy-legs">
-          ${strategy.legs.map(l=>`
-            <div class="leg">
-              <span class="leg-action ${l.action.toLowerCase()}">${l.action}</span>
-              <span class="leg-desc">${l.desc}</span>
-              <span class="leg-price">₹${l.price}</span>
-            </div>
-          `).join('')}
-        </div>
+        <div>${strategy.legs.map(l=>`<div class="leg"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
         <div class="strategy-stats">
-          <div class="stat">
-            <div class="stat-label">MAX RISK</div>
-            <div class="stat-val risk">₹${strategy.risk.toLocaleString('en-IN')}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">MAX REWARD</div>
-            <div class="stat-val reward">₹${strategy.reward.toLocaleString('en-IN')}</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">R:R RATIO</div>
-            <div class="stat-val rr">1:${rrRatio}</div>
-          </div>
+          <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strategy.risk.toLocaleString('en-IN')}</div></div>
+          <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${strategy.reward.toLocaleString('en-IN')}</div></div>
+          <div class="stat"><div class="stat-label">R : R</div><div class="stat-val rr">1 : ${rrRatio}</div></div>
         </div>
       </div>
     </div>
-  `
-  return html
+  </div>`
 }
-
-// ═══════════════════════════════════════════════════════════
-// RENDER WAR ROOM (RIGHT PANEL)
-// ═══════════════════════════════════════════════════════════
-function renderWarRoom(d, s) {
-  const { spot, atm, maxPainStrike, pcr, ceWall, peWall, skewStrikes, nearStrikes } = d
-  const { dir, zone, bias, strategy, reasons } = s
-
-  // OI Heatmap data
-  const heatStrikes = nearStrikes
-  const maxOI = Math.max(...heatStrikes.map(s=>Math.max(s.ce.openInterest||0, s.pe.openInterest||0)))
-
-  // IV skew
-  const ivStrikes = skewStrikes
-
-  // Max pain visual
-  const minStrike = nearStrikes[0]?.strike || spot - 500
-  const maxStrike = nearStrikes[nearStrikes.length-1]?.strike || spot + 500
-  const range = maxStrike - minStrike
-  const spotPct  = ((spot - minStrike) / range * 100).toFixed(1)
-  const mpPct    = ((maxPainStrike - minStrike) / range * 100).toFixed(1)
-  const cewPct   = ((ceWall.strike - minStrike) / range * 100).toFixed(1)
-  const pewPct   = ((peWall.strike - minStrike) / range * 100).toFixed(1)
-
-  // PCR gauge needle position
-  // 0.5=far left, 1.5=center, 2.5=far right → map to 0-100%
-  const pcrNeedle = Math.max(0, Math.min(100, ((pcr - 0.5) / 2.0) * 100)).toFixed(1)
-
-  // OI change table
-  const oiRows = nearStrikes.map(row => {
-    const ceOI  = row.ce?.openInterest || 0
-    const peOI  = row.pe?.openInterest || 0
-    const cePrev= prevData ? (prevData.strikes?.[row.strike]?.ce || ceOI) : ceOI
-    const pePrev= prevData ? (prevData.strikes?.[row.strike]?.pe || peOI) : peOI
-    const ceDiff = ceOI - cePrev
-    const peDiff = peOI - pePrev
-    const isAtm  = row.strike === atm
-    return { strike:row.strike, ceOI, peOI, ceDiff, peDiff, isAtm }
+function renderWarRoom(d,s){
+  const{spot,atm,maxPainStrike,pcr,ceWall,peWall,skewStrikes,nearStrikes}=d,{dir,strategy,reasons}=s
+  const maxOI=Math.max(...nearStrikes.map(r=>Math.max(r.ce.openInterest||0,r.pe.openInterest||0)))
+  const minStrike=nearStrikes[0]?.strike||spot-500,maxStrike=nearStrikes[nearStrikes.length-1]?.strike||spot+500
+  const range=maxStrike-minStrike
+  const spotPct=((spot-minStrike)/range*100).toFixed(1),mpPct=((maxPainStrike-minStrike)/range*100).toFixed(1)
+  const pcrNeedle=Math.max(0,Math.min(100,((pcr-0.5)/2.0)*100)).toFixed(1)
+  const pcrColor=pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)'
+  const pcrDesc=pcr>1.5?'Extreme fear — contrarian buy signal possible':pcr>1.3?'Heavy put buying — bearish sentiment':pcr>1.1?'More puts than calls — mild bearish':pcr>0.9?'Balanced — no strong bias':pcr>0.7?'More calls than puts — mild bullish':'Extreme greed — contrarian sell possible'
+  const mpDTE=getDTE(d.expiry),checklist=buildChecklist(d,s)
+  const oiRows=nearStrikes.map(row=>{
+    const ceOI=row.ce?.openInterest||0,peOI=row.pe?.openInterest||0
+    const cePrev=prevData?(prevData.strikes?.[row.strike]?.ce||ceOI):ceOI
+    const pePrev=prevData?(prevData.strikes?.[row.strike]?.pe||peOI):peOI
+    return{strike:row.strike,ceOI,peOI,ceDiff:ceOI-cePrev,peDiff:peOI-pePrev,isAtm:row.strike===atm}
   })
-
-  // Checklist for current strategy
-  const checklist = buildChecklist(d, s)
-
-  const pcrDesc = pcr > 1.5 ? 'EXTREME FEAR — Contrarian buy signal possible' :
-                  pcr > 1.3 ? 'Heavy put buying — bearish sentiment dominant' :
-                  pcr > 1.1 ? 'More puts than calls — mild bearish bias' :
-                  pcr > 0.9 ? 'Balanced — no strong directional signal from PCR' :
-                  pcr > 0.7 ? 'More calls than puts — mild bullish bias' :
-                              'EXTREME GREED — Contrarian sell signal possible'
-
-  const mpDTE = getDTE(d.expiry)
-
-  const html = `
-    <!-- SECTION 1: OI Heatmap -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.2);color:var(--green)">▦</div>
-          OI HEATMAP — WHERE IS THE MONEY?
-        </div>
-        <span class="wr-chevron open">▶</span>
-      </div>
-      <div class="wr-body open">
-        <div class="explain-box">
-          <p>Each bar shows how much Open Interest exists at that strike. <strong>Taller = more contracts = bigger wall.</strong> <span class="good">Green bars are Put OI (support)</span> and <span class="bad">Red bars are Call OI (resistance)</span>. The tallest red bar is where the market has a ceiling. The tallest green bar is the floor.</p>
-        </div>
-        <div class="heatmap" style="margin-top:16px">
-          <div class="hm-row">
-            <div class="hm-label" style="color:var(--red);font-size:8px">CE</div>
-            <div class="hm-bars">
-              ${heatStrikes.map(row=>{
-                const h = maxOI > 0 ? Math.round((row.ce.openInterest||0)/maxOI*60) : 2
-                const isAtm = row.strike===atm
-                return `<div class="hm-bar-wrap">
-                  <div class="hm-bar ce" style="height:${Math.max(2,h)}px;opacity:${isAtm?1:0.6};${isAtm?'background:var(--orange)':''}"></div>
-                </div>`
-              }).join('')}
-            </div>
-          </div>
-          <div class="hm-row" style="margin-bottom:0">
-            <div class="hm-label" style="color:var(--green);font-size:8px">PE</div>
-            <div class="hm-bars">
-              ${heatStrikes.map(row=>{
-                const h = maxOI > 0 ? Math.round((row.pe.openInterest||0)/maxOI*60) : 2
-                const isAtm = row.strike===atm
-                return `<div class="hm-bar-wrap">
-                  <div class="hm-bar pe" style="height:${Math.max(2,h)}px;opacity:${isAtm?1:0.6};${isAtm?'background:var(--cyan)':''}"></div>
-                </div>`
-              }).join('')}
-            </div>
-          </div>
-          <div class="hm-row" style="margin-bottom:0">
-            <div class="hm-label"></div>
-            <div class="hm-bars">
-              ${heatStrikes.map(row=>{
-                const isAtm = row.strike===atm
-                return `<div class="hm-bar-wrap">
-                  <div class="hm-strike ${isAtm?'atm':''}">${row.strike}</div>
-                </div>`
-              }).join('')}
-            </div>
-          </div>
-          <div class="hm-legend">
-            <div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--red)"></div> CE OI (Resistance)</div>
-            <div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--green)"></div> PE OI (Support)</div>
-            <div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--yellow)"></div> ATM Strike</div>
-          </div>
-        </div>
+  const maxIV=40
+  return`
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">📊</div>OI Heatmap — Where is the Money?</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-body open">
+      <div class="explain-box">Taller bar = more contracts = bigger wall. <span class="bad">Red = Call OI (resistance/ceiling)</span>. <span class="good">Green = Put OI (support/floor)</span>. The tallest red bar is where market has a ceiling. Tallest green bar is the floor.</div>
+      <div class="heatmap">
+        <div class="hm-row"><div class="hm-label" style="color:var(--red)">CE</div><div class="hm-bars">${nearStrikes.map(row=>{const h=maxOI>0?Math.round((row.ce.openInterest||0)/maxOI*70):3;const isAtm=row.strike===atm;return`<div class="hm-bar-wrap"><div class="hm-bar ce${isAtm?' atm':''}" style="height:${Math.max(3,h)}px"></div></div>`}).join('')}</div></div>
+        <div style="height:2px;background:var(--border);margin-left:30px;margin-bottom:2px"></div>
+        <div class="hm-row" style="align-items:flex-start"><div class="hm-label" style="color:var(--green)">PE</div><div class="hm-bars">${nearStrikes.map(row=>{const h=maxOI>0?Math.round((row.pe.openInterest||0)/maxOI*70):3;const isAtm=row.strike===atm;return`<div class="hm-bar-wrap"><div class="hm-bar pe${isAtm?' atm':''}" style="height:${Math.max(3,h)}px"></div></div>`}).join('')}</div></div>
+        <div class="hm-strike-row">${nearStrikes.map(row=>`<div class="hm-strike${row.strike===atm?' atm':''}">${row.strike}</div>`).join('')}</div>
+        <div class="hm-legend"><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--red)"></div>CE OI (Resistance)</div><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--green)"></div>PE OI (Support)</div><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--blue)"></div>ATM Strike</div></div>
       </div>
     </div>
-
-    <!-- SECTION 2: OI Change Table -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.2);color:var(--accent)">≡</div>
-          OI CHANGE TRACKER — ARE WALLS BUILDING OR BREAKING?
-        </div>
-        <span class="wr-chevron open">▶</span>
-      </div>
-      <div class="wr-body open">
-        <div class="explain-box">
-          <p>This table shows OI change since your <strong>last refresh</strong>. <span class="good">OI building ↑</span> at a wall = that wall is getting stronger = more reliable. <span class="bad">OI falling ↓</span> at a wall = writers are covering = wall is weakening = potential breakout.</p>
-          <p><strong class="warn">Most important signal:</strong> If CE Wall OI drops suddenly by 15-20% on one refresh — the institutions who built that wall are running. Exit bear trades immediately.</p>
-        </div>
-        <table class="oi-table">
-          <thead><tr>
-            <th>STRIKE</th>
-            <th>CE OI</th>
-            <th>CE Δ</th>
-            <th>CE SIGNAL</th>
-            <th>PE OI</th>
-            <th>PE Δ</th>
-            <th>PE SIGNAL</th>
-          </tr></thead>
-          <tbody>
-            ${oiRows.map(r=>{
-              const ceClass = r.ceDiff > 0 ? 'up' : r.ceDiff < 0 ? 'dn' : 'neutral'
-              const peClass = r.peDiff > 0 ? 'up' : r.peDiff < 0 ? 'dn' : 'neutral'
-              const ceSig   = r.ceDiff > 50000 ? '<span class="oi-signal-tag build">BUILDING</span>' : r.ceDiff < -50000 ? '<span class="oi-signal-tag unwind">UNWINDING</span>' : '<span class="oi-signal-tag flat">FLAT</span>'
-              const peSig   = r.peDiff > 50000 ? '<span class="oi-signal-tag build">BUILDING</span>' : r.peDiff < -50000 ? '<span class="oi-signal-tag unwind">UNWINDING</span>' : '<span class="oi-signal-tag flat">FLAT</span>'
-              const rowClass = r.isAtm ? 'class="atm-row"' : ''
-              return `<tr ${rowClass}>
-                <td>${r.strike}${r.isAtm?' ◆':''}</td>
-                <td>${(r.ceOI/100000).toFixed(1)}L</td>
-                <td class="oi-change ${ceClass}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td>
-                <td>${ceSig}</td>
-                <td>${(r.peOI/100000).toFixed(1)}L</td>
-                <td class="oi-change ${peClass}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td>
-                <td>${peSig}</td>
-              </tr>`
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
+  </div>
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📋</div>OI Change Tracker — Are Walls Building or Breaking?</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-body open">
+      <div class="explain-box">Shows OI change since your <strong>last refresh</strong>. <span class="good">OI building ↑</span> = wall getting stronger. <span class="bad">OI falling ↓</span> = wall weakening = breakout possible.<br><strong class="warn">Key alert:</strong> CE Wall OI drops 15–20% in one refresh = institutions exiting = exit bear trades immediately.</div>
+      <table class="oi-table"><thead><tr><th>Strike</th><th>CE OI</th><th>CE Δ</th><th>Signal</th><th>PE OI</th><th>PE Δ</th><th>Signal</th></tr></thead>
+      <tbody>${oiRows.map(r=>{
+        const cc=r.ceDiff>0?'up':r.ceDiff<0?'dn':'neutral',pc=r.peDiff>0?'up':r.peDiff<0?'dn':'neutral'
+        const ceSig=r.ceDiff>50000?'<span class="tag build">Building</span>':r.ceDiff<-50000?'<span class="tag unwind">Unwinding</span>':'<span class="tag flat">Flat</span>'
+        const peSig=r.peDiff>50000?'<span class="tag build">Building</span>':r.peDiff<-50000?'<span class="tag unwind">Unwinding</span>':'<span class="tag flat">Flat</span>'
+        return`<tr ${r.isAtm?'class="atm-row"':''}><td>${r.strike}${r.isAtm?' ◆':''}</td><td>${(r.ceOI/100000).toFixed(1)}L</td><td class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td><td>${ceSig}</td><td>${(r.peOI/100000).toFixed(1)}L</td><td class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td><td>${peSig}</td></tr>`
+      }).join('')}</tbody></table>
     </div>
-
-    <!-- SECTION 3: PCR Deep Dive -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);color:var(--purple)">◎</div>
-          PCR ANALYSIS — PUT CALL RATIO EXPLAINED
-        </div>
-        <span class="wr-chevron">▶</span>
+  </div>
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--pur-bg);border:1.5px solid var(--pur-bd)">⚖️</div>PCR — Put Call Ratio Explained</div><span class="wr-chevron">▶</span></div>
+    <div class="wr-body">
+      <div class="pcr-card">
+        <div class="pcr-top"><span class="pcr-label">Current PCR</span><span class="pcr-number" style="color:${pcrColor}">${pcr.toFixed(2)}</span></div>
+        <div class="pcr-track"><div class="pcr-needle" style="left:${pcrNeedle}%"></div></div>
+        <div class="pcr-ticks"><span>0.5</span><span>0.7</span><span>0.9</span><span>1.1</span><span>1.3</span><span>1.5+</span></div>
+        <div class="pcr-zones"><span style="color:var(--green)">Strong Bull</span><span style="color:#86efac">Mild Bull</span><span style="color:var(--text3)">Neutral</span><span style="color:#fca5a5">Mild Bear</span><span style="color:var(--red)">Strong Bear</span></div>
       </div>
-      <div class="wr-body">
-        <div class="pcr-gauge">
-          <div class="flex-between">
-            <span style="font-size:12px;color:var(--text2)">Current PCR</span>
-            <span class="mono" style="font-size:20px;font-weight:700;color:${pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text)'}">${pcr.toFixed(2)}</span>
-          </div>
-          <div class="pcr-track">
-            <div class="pcr-needle" style="left:${pcrNeedle}%"></div>
-          </div>
-          <div class="pcr-labels">
-            <span>0.5</span><span>0.7</span><span>0.9</span><span>1.1</span><span>1.3</span><span>1.5+</span>
-          </div>
-          <div class="pcr-zones">
-            <span style="color:var(--green)">BULL</span>
-            <span style="color:var(--text3)">Mild Bull</span>
-            <span style="color:var(--text3)">NEUTRAL</span>
-            <span style="color:var(--text3)">Mild Bear</span>
-            <span style="color:var(--red)">BEAR</span>
-          </div>
-        </div>
-        <div class="explain-box mt12">
-          <p><strong>What PCR ${pcr.toFixed(2)} means right now:</strong></p>
-          <p>${pcrDesc}</p>
-          <p>For every 100 Call contracts, there are <strong>${Math.round(pcr*100)} Put contracts</strong> traded today. ${pcr>1?`More people are buying puts than calls — bearish positioning.`:`More people are buying calls than puts — bullish positioning.`}</p>
-          <p><strong class="warn">Important nuance:</strong> Extreme PCR is often CONTRARIAN. PCR > 1.5 means so many people already bought puts that a squeeze upward becomes likely. PCR < 0.6 means so many bought calls that a pullback becomes likely. The market loves to hurt the maximum number of traders.</p>
-        </div>
-      </div>
+      <div class="explain-box mt12"><p><strong>PCR ${pcr.toFixed(2)} right now:</strong> ${pcrDesc}</p><p>For every 100 Call contracts, there are <strong>${Math.round(pcr*100)} Put contracts</strong> today. ${pcr>1?'More puts than calls — bearish positioning.':'More calls than puts — bullish positioning.'}</p><p><strong class="warn">Contrarian nuance:</strong> Extreme PCR (>1.5 or <0.6) often signals the opposite. Too many traders on one side = squeeze coming.</p></div>
     </div>
-
-    <!-- SECTION 4: Max Pain -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);color:var(--purple)">⊕</div>
-          MAX PAIN — WHERE MARKET WANTS TO EXPIRE
-        </div>
-        <span class="wr-chevron">▶</span>
+  </div>
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--pur-bg);border:1.5px solid var(--pur-bd)">🎯</div>Max Pain — Where Market Wants to Expire</div><span class="wr-chevron">▶</span></div>
+    <div class="wr-body">
+      <div class="mp-card">
+        <div class="mp-top"><span class="mp-label">Max Pain Strike</span><span class="mp-number">${maxPainStrike.toLocaleString('en-IN')}</span></div>
+        <div class="mp-track"><div class="mp-fill" style="left:${Math.min(parseFloat(spotPct),parseFloat(mpPct))}%;right:${100-Math.max(parseFloat(spotPct),parseFloat(mpPct))}%"></div><div class="mp-spot" style="left:${spotPct}%"></div><div class="mp-pain" style="left:${mpPct}%"></div></div>
+        <div class="mp-labels"><span>${minStrike}</span><span>${Math.round((minStrike+maxStrike)/2)}</span><span>${maxStrike}</span></div>
+        <div class="mp-legend"><div class="mp-legend-item"><div class="mp-legend-dot" style="background:var(--yellow)"></div>Spot (${Math.round(spot)})</div><div class="mp-legend-item"><div class="mp-legend-dot" style="background:var(--purple)"></div>Max Pain (${maxPainStrike})</div></div>
       </div>
-      <div class="wr-body">
-        <div class="mp-bar">
-          <div class="flex-between" style="margin-bottom:8px">
-            <span style="font-size:12px;color:var(--text2)">Max Pain Strike</span>
-            <span class="mono" style="font-size:20px;font-weight:700;color:var(--purple)">${maxPainStrike.toLocaleString('en-IN')}</span>
-          </div>
-          <div class="mp-visual">
-            <div class="mp-range" style="left:${Math.min(parseFloat(spotPct),parseFloat(mpPct))}%;right:${100-Math.max(parseFloat(spotPct),parseFloat(mpPct))}%"></div>
-            <div class="mp-spot-mark" style="left:${spotPct}%"></div>
-            <div class="mp-pain-mark" style="left:${mpPct}%"></div>
-          </div>
-          <div class="mp-labels">
-            <span>${minStrike}</span>
-            <span>${Math.round((minStrike+maxStrike)/2)}</span>
-            <span>${maxStrike}</span>
-          </div>
-          <div class="mp-legend">
-            <div class="mp-legend-item"><div class="mp-legend-dot" style="background:var(--yellow)"></div>Spot (${Math.round(spot)})</div>
-            <div class="mp-legend-item"><div class="mp-legend-dot" style="background:var(--purple)"></div>Max Pain (${maxPainStrike})</div>
-          </div>
-        </div>
-        <div class="explain-box mt12">
-          <p><strong>Max Pain is ${maxPainStrike}. Spot is ${Math.round(spot)}. Distance: ${Math.abs(Math.round(spot-maxPainStrike))}pts ${spot>maxPainStrike?'above':'below'} max pain.</strong></p>
-          <p>Max pain is the price where the most option contracts (both CE and PE) expire worthless. Option writers — usually large institutions and market makers — make money when options expire worthless. They have billions of rupees in incentive to push price toward max pain near expiry.</p>
-          <p><strong>Days to expiry: ${mpDTE}</strong></p>
-          <p>${mpDTE <= 1 ? '<span class="bad">EXPIRY DAY — Max pain gravity at maximum strength. Strong pull toward '+maxPainStrike+'</span>' : mpDTE <= 2 ? '<span class="warn">1 day to expiry — Max pain gravity building. Watch '+maxPainStrike+' as target.</span>' : 'Max pain effect is weak this far from expiry. More relevant from Wednesday onwards.'}</p>
-          <p><strong class="warn">Trading implication:</strong> ${spot > maxPainStrike ? `Spot is ${Math.round(spot-maxPainStrike)}pts above max pain. Bearish gravity — market may drift down toward ${maxPainStrike} into expiry.` : `Spot is ${Math.round(maxPainStrike-spot)}pts below max pain. Bullish gravity — market may drift up toward ${maxPainStrike} into expiry.`}</p>
-        </div>
-      </div>
+      <div class="explain-box mt12"><p><strong>Distance: ${Math.abs(Math.round(spot-maxPainStrike))} pts ${spot>maxPainStrike?'above':'below'} max pain.</strong> Days to expiry: <strong>${mpDTE}</strong></p><p>Institutions who sold options profit when options expire worthless. They have strong incentive to push price toward max pain, especially near expiry.</p><p>${mpDTE<=1?'<span class="bad">Expiry day — max pain gravity at maximum strength.</span>':mpDTE<=2?'<span class="warn">1 day to expiry — max pain gravity building.</span>':'Max pain effect weak this far from expiry. Most relevant from Wednesday onwards.'}</p><p><strong class="warn">Implication:</strong> ${spot>maxPainStrike?`Spot ${Math.round(spot-maxPainStrike)}pts above max pain — mild downward gravity toward ${maxPainStrike}.`:`Spot ${Math.round(maxPainStrike-spot)}pts below max pain — mild upward gravity toward ${maxPainStrike}.`}</p></div>
     </div>
-
-    <!-- SECTION 5: IV Skew -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.2);color:var(--cyan)">≈</div>
-          IV SKEW — ARE PUTS OR CALLS MORE EXPENSIVE?
-        </div>
-        <span class="wr-chevron">▶</span>
-      </div>
-      <div class="wr-body">
-        <div class="explain-box">
-          <p>Implied Volatility (IV) tells you how expensive an option is. <strong>Higher IV = more expensive = more fear/greed</strong> around that strike. Normally, puts are more expensive than calls (downside fear costs more). When this flips — unusual things are happening.</p>
-        </div>
-        <div style="margin-top:12px">
-          ${ivStrikes.map(row=>{
-            const ceIV = row.ce?.impliedVolatility || 0
-            const peIV = row.pe?.impliedVolatility || 0
-            const isAtm= row.strike === atm
-            const maxIV = 40 // scale
-            return `
-              <div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
-                <div class="flex-between" style="margin-bottom:4px">
-                  <span class="mono text-xs" style="color:${isAtm?'var(--yellow)':'var(--text2)'}">${row.strike}${isAtm?' ◆ ATM':''}</span>
-                </div>
-                <div class="iv-row ${isAtm?'atm':''}">
-                  <div class="iv-label" style="color:var(--red)">CE IV</div>
-                  <div class="iv-bar-wrap"><div class="iv-bar" style="width:${Math.min(100,ceIV/maxIV*100)}%;background:var(--red);opacity:0.7"></div></div>
-                  <div class="iv-val" style="color:var(--red)">${ceIV.toFixed(1)}%</div>
-                </div>
-                <div class="iv-row ${isAtm?'atm':''}" style="margin-top:3px">
-                  <div class="iv-label" style="color:var(--green)">PE IV</div>
-                  <div class="iv-bar-wrap"><div class="iv-bar" style="width:${Math.min(100,peIV/maxIV*100)}%;background:var(--green);opacity:0.7"></div></div>
-                  <div class="iv-val" style="color:var(--green)">${peIV.toFixed(1)}%</div>
-                </div>
-              </div>
-            `
-          }).join('')}
-        </div>
-        <div class="explain-box mt12">
-          <p><strong>Reading IV Skew:</strong> If PE IV is significantly higher than CE IV across all strikes — the market is pricing in more fear of a downward move. This is normal in Indian markets. When CE IV suddenly spikes above PE IV — someone is aggressively buying calls = bullish activity expected.</p>
-          <p><strong>ATM IV: ${d.atmIV.toFixed(1)}%</strong> — ${d.atmIV > 20 ? '<span class="bad">High IV — options are expensive. Better to SELL options (collect premium).</span>' : d.atmIV > 12 ? '<span class="warn">Moderate IV — balanced conditions.</span>' : '<span class="good">Low IV — options are cheap. Better to BUY options.</span>'}</p>
-        </div>
-      </div>
+  </div>
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📉</div>IV Skew — Are Puts or Calls More Expensive?</div><span class="wr-chevron">▶</span></div>
+    <div class="wr-body">
+      <div class="explain-box">IV (Implied Volatility) = how expensive an option is. <strong>Higher IV = more expensive = more fear/demand.</strong> Puts normally cost more than calls. When call IV spikes above put IV — someone big is buying calls aggressively.</div>
+      <div style="margin-top:14px">${skewStrikes.map(row=>{
+        const ceIV=row.ce?.impliedVolatility||0,peIV=row.pe?.impliedVolatility||0,isAtm=row.strike===atm
+        return`<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:${isAtm?'var(--blue)':'var(--text2)'};margin-bottom:6px;font-family:'JetBrains Mono',monospace">${row.strike}${isAtm?' ◆ ATM':''}</div>
+          <div class="iv-row"><div class="iv-label${isAtm?' atm':''}">CE IV</div><div class="iv-track"><div class="iv-fill" style="width:${Math.min(100,ceIV/maxIV*100)}%;background:var(--red)"></div></div><div class="iv-val" style="color:var(--red)">${ceIV.toFixed(1)}%</div></div>
+          <div class="iv-row" style="margin-top:4px"><div class="iv-label${isAtm?' atm':''}">PE IV</div><div class="iv-track"><div class="iv-fill" style="width:${Math.min(100,peIV/maxIV*100)}%;background:var(--green)"></div></div><div class="iv-val" style="color:var(--green)">${peIV.toFixed(1)}%</div></div>
+        </div>`}).join('')}</div>
+      <div class="explain-box mt12"><p><strong>ATM IV: ${d.atmIV.toFixed(1)}%</strong> — ${d.atmIV>20?'<span class="bad">High IV — options expensive. Better to SELL (collect premium).</span>':d.atmIV>12?'<span class="warn">Moderate IV — balanced conditions.</span>':'<span class="good">Low IV — options cheap. Better to BUY options.</span>'}</p></div>
     </div>
-
-    <!-- SECTION 6: Strategy Deep Dive -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(255,208,96,0.1);border:1px solid rgba(255,208,96,0.2);color:var(--yellow)">⚡</div>
-          STRATEGY EXPLAINED — WHY THIS TRADE?
-        </div>
-        <span class="wr-chevron open">▶</span>
-      </div>
-      <div class="wr-body open">
-        <div class="explain-box">
-          <p><strong>${strategy.name}</strong></p>
-          <p>${strategy.rationale}</p>
-        </div>
-
-        <div style="margin-top:12px">
-          <div class="section-label" style="padding:8px 0;border:none">SIGNAL REASONS</div>
-          ${reasons.map(r=>`
-            <div class="check-item">
-              <span class="check-icon">${r.dir==='bull'?'🟢':r.dir==='bear'?'🔴':r.dir==='warn'?'🟡':'⚪'}</span>
-              <span class="check-text">${r.text}</span>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="explain-box mt12">
-          <p><strong>What makes this trade work:</strong></p>
-          <ul>
-            ${checklist.filter(c=>c.type==='good').map(c=>`<li class="good">✅ ${c.text}</li>`).join('')}
-          </ul>
-          <p style="margin-top:10px"><strong>What kills this trade:</strong></p>
-          <ul>
-            ${checklist.filter(c=>c.type==='bad').map(c=>`<li class="bad">❌ ${c.text}</li>`).join('')}
-          </ul>
-          <p style="margin-top:10px"><strong class="warn">Exit Rule:</strong> ${strategy.exit}</p>
-        </div>
-      </div>
+  </div>
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--yel-bg);border:1.5px solid var(--yel-bd)">⚡</div>Strategy Explained — Why This Trade?</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-body open">
+      <div class="explain-box"><strong>${strategy.name}</strong><br>${strategy.rationale}</div>
+      <div class="sec-label">Signal Reasons</div>
+      ${reasons.map(r=>`<div class="reason-item ${r.dir}">${r.dir==='bull'?'🟢':r.dir==='bear'?'🔴':r.dir==='warn'?'🟡':'⚪'} ${r.text}</div>`).join('')}
+      <div class="explain-box mt12"><p><strong>What makes this trade work:</strong></p><ul>${buildChecklist(d,s).filter(c=>c.type==='good').map(c=>`<li class="good">✅ ${c.text}</li>`).join('')}</ul><p style="margin-top:10px"><strong>What kills this trade:</strong></p><ul>${buildChecklist(d,s).filter(c=>c.type==='bad').map(c=>`<li class="bad">❌ ${c.text}</li>`).join('')}</ul><p style="margin-top:10px"><strong class="warn">Exit Rule:</strong> ${strategy.exit}</p></div>
     </div>
-
-    <!-- SECTION 7: Learning Corner -->
-    <div class="wr-section">
-      <div class="wr-header" onclick="toggleSection(this)">
-        <div class="wr-title">
-          <div class="wr-icon" style="background:rgba(79,143,255,0.1);border:1px solid rgba(79,143,255,0.2);color:var(--accent)">📖</div>
-          LEARNING CORNER — OPTIONS CONCEPTS
-        </div>
-        <span class="wr-chevron">▶</span>
-      </div>
-      <div class="wr-body">
-        <div class="explain-box">
-          <p><strong>OI vs Volume — What's the difference?</strong></p>
-          <p><strong>Volume</strong> = how many contracts were traded TODAY. Resets to 0 at 9:15 every day.</p>
-          <p><strong>Open Interest (OI)</strong> = how many contracts are currently OPEN (not yet squared off). This builds over time. High OI = many people have active positions = this strike matters.</p>
-          <p>Think of it like this: Volume is how many people entered a shop today. OI is how many people are still inside the shop right now.</p>
-        </div>
-        <div class="explain-box mt12">
-          <p><strong>Why do Call Writers create a ceiling?</strong></p>
-          <p>When an institution sells 80L call contracts at 24,600, they collect premium. If Nifty closes above 24,600 on expiry, they have to pay the difference. So they <strong>actively sell Nifty futures</strong> when price approaches 24,600 to keep it below that level. This is called <strong>delta hedging</strong> — it is mechanical, predictable, and creates the wall you see in the OI data.</p>
-        </div>
-        <div class="explain-box mt12">
-          <p><strong>What is Theta decay?</strong></p>
-          <p>Every option loses value every day just by time passing — even if the underlying doesn't move. This is called Theta. On Monday a 24,600 CE might be worth ₹80. On Wednesday (same Nifty level) it might be ₹45. On Friday (expiry day) it might be ₹5. This is why option <strong>sellers</strong> (who wrote the CE wall) make money just by waiting. Time is their friend. Time is the buyer's enemy.</p>
-        </div>
-      </div>
+  </div>
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📖</div>Learning Corner — Options Basics</div><span class="wr-chevron">▶</span></div>
+    <div class="wr-body">
+      <div class="explain-box"><p><strong>OI vs Volume</strong></p><p><strong>Volume</strong> = contracts traded TODAY. Resets every morning.</p><p><strong>Open Interest (OI)</strong> = contracts currently OPEN (not yet closed). Builds over time. High OI = many active bets = that level matters.</p><p>Think: Volume = cars that entered the parking lot today. OI = cars still parked right now.</p></div>
+      <div class="explain-box mt12"><p><strong>Why does a CE Wall create a ceiling?</strong></p><p>When a big institution sells 80L call contracts at 24,600, they collect premium. If Nifty closes above 24,600, they must pay out. So they <strong>actively sell Nifty futures</strong> near 24,600 to protect themselves — called delta hedging. It's automatic, predictable, and creates the wall you see in OI data.</p></div>
+      <div class="explain-box mt12"><p><strong>What is Theta decay?</strong></p><p>Every option loses value every day from time passing alone — even if Nifty doesn't move. Monday ₹80 → Wednesday ₹45 → Expiry day ₹5. Time is the option seller's best friend and the buyer's enemy.</p></div>
     </div>
-  `
-  return html
+  </div>`
 }
-
-// ═══════════════════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════════════════
-function buildChecklist(d, s) {
-  const checks = []
-  const { pcr, ceWall, peWall, spot, atmIV } = d
-  const { dir } = s
-
-  if (dir === 'bear') {
-    checks.push({type:'good', text:`CE wall at ${ceWall.strike} has ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts — institutions defending this level`})
-    if (pcr > 1.0) checks.push({type:'good', text:`PCR ${pcr.toFixed(2)} favors bearish positioning`})
-    if (atmIV > 14) checks.push({type:'good', text:`IV at ${d.atmIV.toFixed(1)}% — premium collection is worthwhile`})
-    checks.push({type:'bad', text:`A sudden bullish breakout above ${ceWall.strike} — CE wall collapses`})
-    checks.push({type:'bad', text:`CE wall OI drops by 20%+ on next refresh — writers covering`})
-    if (pcr > 1.3) checks.push({type:'bad', text:`PCR is extreme (${pcr.toFixed(2)}) — contrarian squeeze risk`})
-  } else if (dir === 'bull') {
-    checks.push({type:'good', text:`PE wall at ${peWall.strike} has ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts — strong floor`})
-    if (pcr < 1.0) checks.push({type:'good', text:`PCR ${pcr.toFixed(2)} favors bullish positioning`})
-    checks.push({type:'bad', text:`Sudden breakdown below ${peWall.strike} — PE wall collapses`})
-    checks.push({type:'bad', text:`PE wall OI drops by 20%+ — floor weakening`})
-  } else {
-    checks.push({type:'good', text:`Market range defined: ${peWall.strike} to ${ceWall.strike} — both walls intact`})
-    checks.push({type:'good', text:`Selling both walls — collecting premium from both CE and PE`})
-    checks.push({type:'bad', text:`Any strong directional move breaking either wall`})
-    checks.push({type:'bad', text:`News event causing gap up or gap down beyond either wall`})
+function buildChecklist(d,s){
+  const checks=[],{pcr,ceWall,peWall,atmIV}=d,{dir}=s
+  if(dir==='bear'){
+    checks.push({type:'good',text:`CE wall at ${ceWall.strike} has ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts defending it`})
+    if(pcr>1.0)checks.push({type:'good',text:`PCR ${pcr.toFixed(2)} supports bearish trade`})
+    if(atmIV>14)checks.push({type:'good',text:`IV at ${atmIV.toFixed(1)}% — premium collection worthwhile`})
+    checks.push({type:'bad',text:`Bullish breakout above ${ceWall.strike} — CE wall collapses`})
+    checks.push({type:'bad',text:`CE wall OI drops 20%+ on next refresh — writers exiting`})
+  }else if(dir==='bull'){
+    checks.push({type:'good',text:`PE wall at ${peWall.strike} has ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts as floor`})
+    if(pcr<1.0)checks.push({type:'good',text:`PCR ${pcr.toFixed(2)} supports bullish trade`})
+    checks.push({type:'bad',text:`Breakdown below ${peWall.strike} — PE wall collapses`})
+    checks.push({type:'bad',text:`PE wall OI drops 20%+ — floor weakening`})
+  }else{
+    checks.push({type:'good',text:`Range defined: ${peWall.strike} to ${ceWall.strike} — both walls intact`})
+    checks.push({type:'good',text:`Collecting premium from both CE and PE sides`})
+    checks.push({type:'bad',text:`Strong directional move breaking either wall`})
+    checks.push({type:'bad',text:`News event causing gap up or gap down beyond either wall`})
   }
   return checks
 }
-
-function getDTE(expiryStr) {
-  try {
-    const parts = expiryStr.split('-')
-    const months = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11}
-    const d = new Date(parseInt(parts[2]), months[parts[1].toUpperCase()], parseInt(parts[0]))
-    const today = new Date(); today.setHours(0,0,0,0)
-    return Math.max(0, Math.round((d-today)/(1000*60*60*24)))
-  } catch(e) { return '?' }
+function getDTE(expiryStr){
+  try{const parts=expiryStr.split('-'),months={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11},d=new Date(parseInt(parts[2]),months[parts[1].toUpperCase()],parseInt(parts[0])),today=new Date();today.setHours(0,0,0,0);return Math.max(0,Math.round((d-today)/(1000*60*60*24)))}catch(e){return'?'}
 }
-
-function toggleSection(header) {
-  const body = header.nextElementSibling
-  const chev = header.querySelector('.wr-chevron')
-  const isOpen = body.classList.contains('open')
-  body.classList.toggle('open', !isOpen)
-  chev.classList.toggle('open', !isOpen)
-}
-
-function switchIndex(el, idx) {
-  currentIndex = idx
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-  el.classList.add('active')
-  prevData = null
-  loadData()
-}
-
-// ═══════════════════════════════════════════════════════════
-// MAIN LOAD
-// ═══════════════════════════════════════════════════════════
-async function loadData() {
-  const btn = document.getElementById('refreshBtn')
-  btn.classList.add('spinning')
-  document.getElementById('lastUpdate').textContent = 'Loading...'
-
-  // Show loading
-  document.getElementById('loadingLeft').style.display = 'flex'
-  document.getElementById('commandContent').style.display = 'none'
-  document.getElementById('loadingRight').style.display = 'flex'
-  document.getElementById('warContent').style.display = 'none'
-
-  try {
-    const raw = await fetchChain(currentIndex)
-    if (!raw) throw new Error('Could not reach NSE. This is a CORS issue — the app needs to run via the Vercel proxy to access NSE data. For now, loading demo data.')
-
-    const d = parseChain(raw)
-    chainData = d
-
-    const s = computeStrategy(d)
-
-    document.getElementById('commandContent').innerHTML = renderCommand(d, s)
-    document.getElementById('warContent').innerHTML = renderWarRoom(d, s)
-
-    document.getElementById('loadingLeft').style.display = 'none'
-    document.getElementById('commandContent').style.display = 'block'
-    document.getElementById('loadingRight').style.display = 'none'
-    document.getElementById('warContent').style.display = 'block'
-
-    document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit',second:'2-digit'})
-
-    // Save snapshot for next OI delta
-    if (chainData) {
-      prevData = { strikes: {} }
-      for (const row of d.nearStrikes) {
-        prevData.strikes[row.strike] = {
-          ce: row.ce?.openInterest || 0,
-          pe: row.pe?.openInterest || 0
-        }
-      }
-    }
-  } catch(e) {
-    loadDemo(e.message)
-  }
+function toggleSection(header){const body=header.nextElementSibling,chev=header.querySelector('.wr-chevron'),isOpen=body.classList.contains('open');body.classList.toggle('open',!isOpen);chev.classList.toggle('open',!isOpen)}
+function switchIndex(el,idx){currentIndex=idx;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');prevData=null;loadData()}
+async function loadData(){
+  const btn=document.getElementById('refreshBtn');btn.classList.add('spinning');document.getElementById('lastUpdate').textContent='Loading...'
+  document.getElementById('loadingLeft').style.display='flex';document.getElementById('commandContent').style.display='none'
+  document.getElementById('loadingRight').style.display='flex';document.getElementById('warContent').style.display='none'
+  try{
+    const raw=await fetchChain(currentIndex);if(!raw)throw new Error('NSE unreachable')
+    const d=parseChain(raw);chainData=d;const s=computeStrategy(d)
+    document.getElementById('commandContent').innerHTML=renderCommand(d,s)
+    document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
+    document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
+    document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
+    document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+    if(chainData){prevData={strikes:{}};for(const row of d.nearStrikes)prevData.strikes[row.strike]={ce:row.ce?.openInterest||0,pe:row.pe?.openInterest||0}}
+  }catch(e){loadDemo()}
   btn.classList.remove('spinning')
 }
-
-// Demo data for when NSE is unreachable (CORS in dev mode)
-function loadDemo(errMsg) {
-  const spot = 24387
-  const demoRaw = buildDemoData(spot)
-  const d = parseChain(demoRaw)
-  const s = computeStrategy(d)
-
-  document.getElementById('commandContent').innerHTML = `
-    <div class="error-box" style="margin:12px">
-      <div class="error-title">⚠ DEMO MODE — NSE data unavailable</div>
-      <div class="error-msg">
-        ${errMsg}<br><br>
-        <strong>To get live data:</strong> Deploy this app to Vercel with the proxy function (see instructions below). The layout and all calculations are shown with realistic demo data.
-        <code>Deploy to Vercel → add /api/chain.js proxy → live NSE data works</code>
-      </div>
-    </div>
-  ` + renderCommand(d, s)
-
-  document.getElementById('warContent').innerHTML = renderWarRoom(d, s)
-
-  document.getElementById('loadingLeft').style.display = 'none'
-  document.getElementById('commandContent').style.display = 'block'
-  document.getElementById('loadingRight').style.display = 'none'
-  document.getElementById('warContent').style.display = 'block'
-  document.getElementById('lastUpdate').textContent = 'DEMO DATA'
+function loadDemo(){
+  const spot=24387,demoRaw=buildDemoData(spot),d=parseChain(demoRaw),s=computeStrategy(d)
+  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE temporarily unreachable. Showing realistic demo data. Will retry on next 5-min refresh.</div>`+renderCommand(d,s)
+  document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
+  document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
+  document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
+  document.getElementById('lastUpdate').textContent='Demo Data'
 }
-
-function buildDemoData(spot) {
-  const step = 50
-  const base = Math.round(spot / step) * step
-  const data = []
-  const expiry = '26-Mar-2026'
-
-  const ceOIProfile = {0:45,1:82,2:61,3:38,4:22,5:14,6:9,[-1]:28,[-2]:18,[-3]:12,[-4]:8,[-5]:5}
-  const peOIProfile = {0:52,1:91,2:68,3:41,[-1]:31,[-2]:19,[-3]:12,1:91,2:68,3:41}
-
-  for (let i = -8; i <= 8; i++) {
-    const strike = base + i * step
-    const atmDist = Math.abs(i)
-    const ceOI = Math.max(5, Math.round((i >= 0 ? Math.max(8, 80 - i*10 + (i===2?15:0)) : Math.max(5, 30 - atmDist*5)) * 100000 + Math.random()*50000))
-    const peOI = Math.max(5, Math.round((i <= 0 ? Math.max(8, 80 + i*9 + (i===-2?18:0)) : Math.max(5, 30 - atmDist*5)) * 100000 + Math.random()*50000))
-    const atmIV = 14 + atmDist * 0.8
-    data.push({
-      strikePrice: strike, expiryDate: expiry,
-      CE: { strikePrice:strike, openInterest:ceOI, changeinOpenInterest:Math.round((Math.random()-0.4)*ceOI*0.1), lastPrice: Math.max(1, Math.round((spot - strike + 150 + Math.random()*20)*0.7)), impliedVolatility: atmIV + (i>0?0:1.5), totalTradedVolume: Math.round(ceOI*0.3) },
-      PE: { strikePrice:strike, openInterest:peOI, changeinOpenInterest:Math.round((Math.random()-0.4)*peOI*0.1), lastPrice: Math.max(1, Math.round((strike - spot + 150 + Math.random()*20)*0.7)), impliedVolatility: atmIV + (i<0?0:1.2), totalTradedVolume: Math.round(peOI*0.3) }
-    })
+function buildDemoData(spot){
+  const step=50,base=Math.round(spot/step)*step,data=[],expiry='26-Mar-2026'
+  for(let i=-8;i<=8;i++){
+    const strike=base+i*step,atmDist=Math.abs(i)
+    const ceOI=Math.max(5,Math.round((i>=0?Math.max(8,80-i*10+(i===2?15:0)):Math.max(5,30-atmDist*5))*100000+Math.random()*50000))
+    const peOI=Math.max(5,Math.round((i<=0?Math.max(8,80+i*9+(i===-2?18:0)):Math.max(5,30-atmDist*5))*100000+Math.random()*50000))
+    const atmIV=14+atmDist*0.8
+    data.push({strikePrice:strike,expiryDate:expiry,
+      CE:{strikePrice:strike,openInterest:ceOI,changeinOpenInterest:Math.round((Math.random()-0.4)*ceOI*0.1),lastPrice:Math.max(1,Math.round((spot-strike+150+Math.random()*20)*0.7)),impliedVolatility:atmIV+(i>0?0:1.5),totalTradedVolume:Math.round(ceOI*0.3)},
+      PE:{strikePrice:strike,openInterest:peOI,changeinOpenInterest:Math.round((Math.random()-0.4)*peOI*0.1),lastPrice:Math.max(1,Math.round((strike-spot+150+Math.random()*20)*0.7)),impliedVolatility:atmIV+(i<0?0:1.2),totalTradedVolume:Math.round(peOI*0.3)}})
   }
-  return { records: { data, underlyingValue: spot, expiryDates: [expiry] } }
+  return{records:{data,underlyingValue:spot,expiryDates:[expiry]}}
 }
-
-// ═══════════════════════════════════════════════════════════
-// AUTO-REFRESH every 5 minutes
-// ═══════════════════════════════════════════════════════════
 loadData()
-setInterval(loadData, 5 * 60 * 1000)
+setInterval(loadData,5*60*1000)
 </script>
 </body>
 </html>

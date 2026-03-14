@@ -769,7 +769,7 @@ function computeStrategy(d){
     if (confidence_pre >= 4) {
       const atmCeP2 = d.atmRow.ce?.lastPrice||0
       const atmPeP2 = d.atmRow.pe?.lastPrice||0
-      if (dir==='bull' || (!inRange(spot,peWallStr,ceWallStr) && spot>=ceWallStr)) {
+      if (dir==='bull' || (!isInRange(spot,peWallStr,ceWallStr) && spot>=ceWallStr)) {
         allStrategies.push({
           name:'SYNTHETIC LONG',type:'Futures Alternative',tag:'🔷 FUTURES ALT',tagColor:'#0891b2',
           rationale:`Buy ATM CE + Sell ATM PE = same payoff as buying Nifty futures but capital efficient. Profits unlimited on upside. Use when strongly bullish with high confidence.`,
@@ -780,7 +780,7 @@ function computeStrategy(d){
           avoid:'Never on expiry day. Always define your stop loss level before entering.'
         })
       }
-      if (dir==='bear' || (!inRange(spot,peWallStr,ceWallStr) && spot<=peWallStr)) {
+      if (dir==='bear' || (!isInRange(spot,peWallStr,ceWallStr) && spot<=peWallStr)) {
         allStrategies.push({
           name:'SYNTHETIC SHORT',type:'Futures Alternative',tag:'🔷 FUTURES ALT',tagColor:'#0891b2',
           rationale:`Buy ATM PE + Sell ATM CE = same payoff as shorting Nifty futures. Profits unlimited on downside. Use when strongly bearish with high confidence.`,
@@ -1037,9 +1037,9 @@ function buildQuickRead(d, s) {
 
   // Sentence 1 — Where is the market sitting right now
   let s1 = ''
-  if (!inRange(spot, peWallStr, ceWallStr) && spot >= ceWallStr) {
+  if (!isInRange(spot, peWallStr, ceWallStr) && spot >= ceWallStr) {
     s1 = `${currentIndex} has broken above the CE wall at ${ceWallStr} — this is a bullish breakout with ${ceOI_L}L contracts' worth of resistance now behind it.`
-  } else if (!inRange(spot, peWallStr, ceWallStr) && spot <= peWallStr) {
+  } else if (!isInRange(spot, peWallStr, ceWallStr) && spot <= peWallStr) {
     s1 = `${currentIndex} has broken below the PE wall at ${peWallStr} — this is a bearish breakdown with ${peOI_L}L contracts' worth of support now broken.`
   } else if (distToCe <= 100) {
     s1 = `${currentIndex} is just ${distToCe} pts away from a massive ${ceOI_L}L OI ceiling at ${ceWallStr} — it is knocking on the door of strong resistance.`
@@ -1110,7 +1110,7 @@ function buildQuickRead(d, s) {
   return { s1, s2, s3, emoji, bgColor, bdColor, txColor, bias, shortCoverAlert }
 }
 
-function inRange(spot, peWall, ceWall) {
+function isInRange(spot, peWall, ceWall) {
   return spot > peWall && spot < ceWall
 }
 

@@ -189,6 +189,43 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
+/* ── EXPIRY BAR ── */
+.expiry-bar{background:#0f172a;border-bottom:1px solid #1e3a5f;padding:6px 20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.expiry-item{display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;border:1px solid transparent}
+.expiry-item:hover{background:rgba(255,255,255,0.08)}
+.expiry-item.dte-0{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);color:#fca5a5}
+.expiry-item.dte-1{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3);color:#fde68a}
+.expiry-item.dte-2{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);color:#fef3c7}
+.expiry-item.dte-ok{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)}
+.expiry-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.expiry-sep{color:rgba(255,255,255,0.15);font-size:10px;margin:0 2px}
+.expiry-bar-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-right:4px}
+
+/* ── ALERT TICKER BAR ── */
+.alert-bar{background:#0a0f1e;border-bottom:1px solid #1e3a5f;padding:5px 20px;display:flex;align-items:center;gap:12px;min-height:32px;overflow:hidden}
+.alert-bar-label{font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;flex-shrink:0;white-space:nowrap}
+.alert-ticker{flex:1;overflow:hidden;position:relative;height:20px}
+.alert-ticker-inner{display:flex;gap:24px;position:absolute;white-space:nowrap;animation:tickerScroll 30s linear infinite}
+.alert-ticker-inner:hover{animation-play-state:paused}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.alert-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;flex-shrink:0}
+.alert-chip.spike{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.alert-chip.warn{background:rgba(245,158,11,0.15);color:#fde68a;border:1px solid rgba(245,158,11,0.25)}
+.alert-chip.info{background:rgba(29,85,212,0.15);color:#93c5fd;border:1px solid rgba(29,85,212,0.25)}
+.alert-chip.safe{background:rgba(23,122,86,0.15);color:#86efac;border:1px solid rgba(23,122,86,0.25)}
+.alert-chip.manip{background:rgba(124,58,237,0.15);color:#c4b5fd;border:1px solid rgba(124,58,237,0.25)}
+
+/* ── EXPIRY SELECTOR in command panel ── */
+.expiry-select-wrap{padding:10px 18px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.expiry-select-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px}
+.expiry-pills{display:flex;gap:5px;flex-wrap:wrap}
+.expiry-pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all 0.15s}
+.expiry-pill:hover{border-color:var(--blue);color:var(--blue)}
+.expiry-pill.active{background:var(--blue);border-color:var(--blue);color:white}
+.expiry-pill.monthly{border-style:dashed}
+.expiry-pill.expiring{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
+.expiry-pill.expiring.active{background:var(--red);color:white}
+
 /* ── TELEGRAM ── */
 .tg-btn{font-size:12px;font-weight:700;padding:5px 13px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(41,182,246,0.15);color:#7dd3fc;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;display:flex;align-items:center;gap:6px}
 .tg-btn:hover{background:rgba(41,182,246,0.3);border-color:#7dd3fc;color:white}
@@ -301,6 +338,23 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     </div>
   </div>
 </div>
+<!-- ══ EXPIRY CALENDAR BAR ══ -->
+<div class="expiry-bar" id="expiryBar">
+  <span class="expiry-bar-label">Expiries</span>
+  <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Loading...</span>
+</div>
+
+<!-- ══ LIVE ALERT TICKER ══ -->
+<div class="alert-bar" id="alertBar">
+  <span class="alert-bar-label">⚡ Alerts</span>
+  <div class="alert-ticker">
+    <div class="alert-ticker-inner" id="alertTicker">
+      <span class="alert-chip info">Waiting for data to load...</span>
+      <span class="alert-chip info">Waiting for data to load...</span>
+    </div>
+  </div>
+</div>
+
 <div class="main">
   <div class="command" id="commandPanel">
     <div class="loading" id="loadingLeft"><div class="loading-ring"></div><div class="loading-text">LOADING CHAIN DATA</div></div>
@@ -312,7 +366,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   </div>
 </div>
 <script>
-let currentIndex='NIFTY',prevData=null,chainData=null
+let currentIndex   = 'NIFTY'
+let prevData       = null
+let chainData      = null
+let allExpiries    = []         // all expiries from NSE for current index
+let selectedExpiry = null       // currently selected expiry
+let prevOISnapshot = {}         // for spike detection {strike: {ce, pe}}
+let alertHistory   = []         // rolling alerts for ticker
+let oiSpikeAlerts  = []         // prominent OI spike cards shown in panel
 // Strategy persistence tracker — stores last 5 strategy names
 // When same strategy appears 3+ times in a row = CONFIRMED signal
 let strategyHistory = []   // ['BEAR CALL SPREAD', 'BEAR CALL SPREAD', 'IRON CONDOR', ...]
@@ -356,7 +417,15 @@ async function fetchChain(symbol){
   return null
 }
 function parseChain(raw){
-  const records=raw.records,data=records.data||[],spot=records.underlyingValue||0,expiry=records.expiryDates?.[0]||''
+  const records   = raw.records
+  const data      = records.data||[]
+  const spot      = records.underlyingValue||0
+  const allExpDates = records.expiryDates||[]
+  // Use selectedExpiry if set and valid, otherwise nearest
+  const expiry    = (selectedExpiry && allExpDates.includes(selectedExpiry))
+                    ? selectedExpiry : (allExpDates[0]||'')
+  // Update global expiry list
+  allExpiries = allExpDates
   const strikes={}
   for(const row of data){if(row.expiryDate!==expiry)continue;const k=row.strikePrice;if(!strikes[k])strikes[k]={strike:k,ce:{},pe:{}};if(row.CE)strikes[k].ce=row.CE;if(row.PE)strikes[k].pe=row.PE}
   const strikeList=Object.values(strikes).sort((a,b)=>a.strike-b.strike)
@@ -370,9 +439,9 @@ function parseChain(raw){
   const pcr=totalCeOI>0?totalPeOI/totalCeOI:1
   const atmIV=((atm.ce.impliedVolatility||0)+(atm.pe.impliedVolatility||0))/2
   const atmIdx=strikeList.indexOf(atm)
-  return{spot,expiry,atm:atm.strike,maxPainStrike,ceWall,peWall,pcr,totalCeOI,totalPeOI,atmIV,
+  return{spot,expiry,allExpiries,atm:atm.strike,maxPainStrike,ceWall,peWall,pcr,totalCeOI,totalPeOI,atmIV,
     skewStrikes:strikeList.slice(Math.max(0,atmIdx-3),atmIdx+4),
-    nearStrikes:strikeList.slice(Math.max(0,atmIdx-7),atmIdx+8),   // ATM ±7 = 15 strikes
+    nearStrikes:strikeList.slice(Math.max(0,atmIdx-7),atmIdx+8),
     strikeList,atmRow:atm,timestamp:new Date()}
 }
 function computeStrategy(d){
@@ -380,7 +449,9 @@ function computeStrategy(d){
   const ceWallStr=ceWall.strike,peWallStr=peWall.strike
   const distToCe=ceWallStr-spot,distToPe=spot-peWallStr
   const inRange=spot>peWallStr&&spot<ceWallStr,abovePain=spot>maxPainStrike
-  const step=ceWallStr>20000?100:50
+  const step      = ceWallStr>20000?100:50
+  const dte       = getDTE(d.expiry)
+  const dteLabel  = dte===0?'EXPIRY DAY':dte===1?'TOMORROW':dte<=3?'NEAR EXPIRY':dte<=7?'THIS WEEK':'FAR EXPIRY'
   let bullSignals=0,bearSignals=0,reasons=[]
   if(pcr>1.3){bearSignals+=2;reasons.push({dir:'bear',text:`PCR ${pcr.toFixed(2)} — strongly bearish (heavy put buying)`})}
   else if(pcr>1.1){bearSignals+=1;reasons.push({dir:'bear',text:`PCR ${pcr.toFixed(2)} — mildly bearish`})}
@@ -585,9 +656,66 @@ function computeStrategy(d){
     })
   }
 
+  // ── EXPIRY DAY OVERRIDE ──
+  if (dte === 0) {
+    allStrategies = []
+    const atmCeP = d.atmRow.ce?.lastPrice||0
+    const atmPeP = d.atmRow.pe?.lastPrice||0
+    allStrategies.push({
+      name:'STRADDLE SELL (EXPIRY DAY)',type:'Expiry Day — Sell Premium',tag:'🔴 EXPIRY ONLY',tagColor:'var(--red)',
+      rationale:`Expiry day — both ATM CE and PE will decay to near-zero by 3:30pm. Sell both and collect full premium. Works best when market stays near max pain (${d.maxPainStrike}).`,
+      legs:[{action:'SELL',desc:`${d.atm} CE (ATM)`,price:atmCeP.toFixed(1)},{action:'SELL',desc:`${d.atm} PE (ATM)`,price:atmPeP.toFixed(1)}],
+      risk:step*25,reward:Math.round((atmCeP+atmPeP)*25),rr:'High reward, capped loss with SL',
+      exit:`Exit BOTH if spot moves more than ${step*2}pts from ${d.atm}. Hard exit by 3:00pm.`,
+      when:'Only on expiry Thursday. Only if spot is within 100pts of max pain.',
+      avoid:'Never without a stop loss. Never if large news after 12pm. Exit by 3:00pm hard.'
+    })
+    allStrategies.push({
+      name:'STRANGLE SELL (EXPIRY SAFER)',type:'Expiry Day — Wider Range',tag:'🟡 EXPIRY SAFER',tagColor:'var(--yellow)',
+      rationale:`Sell OTM CE wall (${ceWallStr}) + OTM PE wall (${peWallStr}). Wider range = safer. Both expire worthless if market stays between the two walls.`,
+      legs:[{action:'SELL',desc:`${ceWallStr} CE`,price:(ceWall.ce?.lastPrice||0).toFixed(1)},{action:'SELL',desc:`${peWallStr} PE`,price:(peWall.pe?.lastPrice||0).toFixed(1)}],
+      risk:step*25,reward:Math.round(((ceWall.ce?.lastPrice||0)+(peWall.pe?.lastPrice||0))*25),rr:'Lower premium but safer range',
+      exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}. Exit by 3:00pm.`,
+      when:'Expiry day when both CE wall and PE wall OI is still intact.',
+      avoid:'Exit by 3:00pm regardless. Never hold into final auction.'
+    })
+  }
+
+  // ── SYNTHETIC / FUTURES STRATEGIES — high conviction only ──
+  if (dte >= 2) {
+    const confidence_pre = bullSignals + bearSignals >= 3 ? (Math.abs(bullSignals-bearSignals)>=2?4:3) : 2
+    if (confidence_pre >= 4) {
+      const atmCeP2 = d.atmRow.ce?.lastPrice||0
+      const atmPeP2 = d.atmRow.pe?.lastPrice||0
+      if (dir==='bull' || (!inRange(spot,peWallStr,ceWallStr) && spot>=ceWallStr)) {
+        allStrategies.push({
+          name:'SYNTHETIC LONG',type:'Futures Alternative',tag:'🔷 FUTURES ALT',tagColor:'#0891b2',
+          rationale:`Buy ATM CE + Sell ATM PE = same payoff as buying Nifty futures but capital efficient. Profits unlimited on upside. Use when strongly bullish with high confidence.`,
+          legs:[{action:'BUY',desc:`${d.atm} CE (ATM)`,price:atmCeP2.toFixed(1)},{action:'SELL',desc:`${d.atm} PE (ATM)`,price:atmPeP2.toFixed(1)}],
+          risk:Math.round(Math.abs(atmCeP2-atmPeP2)*25),reward:Math.round(atmCeP2*25*3),rr:'Unlimited upside',
+          exit:`Exit if spot falls below ${peWallStr} OR CE reaches 2x premium`,
+          when:'Confidence 4-5/5 + confirmed bullish + DTE ≥ 2 days',
+          avoid:'Never on expiry day. Always define your stop loss level before entering.'
+        })
+      }
+      if (dir==='bear' || (!inRange(spot,peWallStr,ceWallStr) && spot<=peWallStr)) {
+        allStrategies.push({
+          name:'SYNTHETIC SHORT',type:'Futures Alternative',tag:'🔷 FUTURES ALT',tagColor:'#0891b2',
+          rationale:`Buy ATM PE + Sell ATM CE = same payoff as shorting Nifty futures. Profits unlimited on downside. Use when strongly bearish with high confidence.`,
+          legs:[{action:'BUY',desc:`${d.atm} PE (ATM)`,price:atmPeP2.toFixed(1)},{action:'SELL',desc:`${d.atm} CE (ATM)`,price:atmCeP2.toFixed(1)}],
+          risk:Math.round(Math.abs(atmPeP2-atmCeP2)*25),reward:Math.round(atmPeP2*25*3),rr:'Unlimited downside',
+          exit:`Exit if spot rises above ${ceWallStr} OR PE reaches 2x premium`,
+          when:'Confidence 4-5/5 + confirmed bearish + DTE ≥ 2 days',
+          avoid:'Never on expiry day. Always define your stop loss before entering.'
+        })
+      }
+    }
+  }
+
   // Primary = first strategy, secondary = second
   const strategy = allStrategies[0]
   const strategy2 = allStrategies[1] || null
+  if (strategy) { strategy.dteLabel = dteLabel; strategy.dte = dte }
   // Confidence score 1-5 based on signal alignment
   const totalSig = bullSignals + bearSignals
   const dominance = Math.abs(bullSignals - bearSignals)
@@ -598,7 +726,7 @@ function computeStrategy(d){
   else if (totalSig >= 1) confidence = 2
   else confidence = 1
 
-  return{dir,zone,bias,strategy,strategy2,allStrategies,reasons,bullSignals,bearSignals,confidence}
+  return{dir,zone,bias,strategy,strategy2,allStrategies,reasons,bullSignals,bearSignals,confidence,dte,dteLabel}
 }
 // OI history — store last 5 snapshots for sparkline
 let oiHistory = []  // [{time, ceWallOI, peWallOI, ceWallStrike, peWallStrike}]
@@ -669,8 +797,23 @@ function renderCommand(d,s){
   return`<div class="spot-block">
     <div class="index-name">${currentIndex}</div>
     <div class="spot-value">${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}</div>
-    <div class="spot-meta"><div class="spot-meta-item">Expiry <span>${d.expiry}</span></div><div class="spot-meta-item">ATM <span>${atm}</span></div></div>
+    <div class="spot-meta">
+      <div class="spot-meta-item">Expiry <span>${d.expiry}</span></div>
+      <div class="spot-meta-item">ATM <span>${atm}</span></div>
+      <div class="spot-meta-item">
+        <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:${s.dte===0?'rgba(239,68,68,0.3)':s.dte<=2?'rgba(245,158,11,0.25)':'rgba(255,255,255,0.1)'};color:${s.dte===0?'#fca5a5':s.dte<=2?'#fde68a':'rgba(255,255,255,0.7)'}">${s.dteLabel} · ${s.dte}D</span>
+      </div>
+    </div>
+    ${s.dte===0?`<div style="background:rgba(239,68,68,0.15);border-top:1px solid rgba(239,68,68,0.3);padding:6px 20px;font-size:11px;font-weight:700;color:#fca5a5">⚠️ EXPIRY DAY — Theta decay is maximum. Only sell premium. Exit all positions by 3:00 PM.</div>`:''}
+    ${s.dte===1?`<div style="background:rgba(245,158,11,0.1);border-top:1px solid rgba(245,158,11,0.2);padding:6px 20px;font-size:11px;font-weight:700;color:#fde68a">⏳ 1 DAY TO EXPIRY — Spreads are ideal. Theta accelerating. Adjust or exit by EOD tomorrow.</div>`:''}
   </div>
+  <div class="expiry-select-wrap" id="expirySelectWrap">
+    <div class="expiry-select-label">Select Expiry</div>
+    <div class="expiry-pills" id="expiryPills">
+      <!-- filled by renderExpiryPills() -->
+    </div>
+  </div>
+
   <div class="metrics-grid">
     <div class="metric"><div class="metric-label">Max Pain</div><div class="metric-value" style="color:var(--purple)">${maxPainStrike.toLocaleString('en-IN')}</div><div class="metric-sub">${maxPainStrike>spot?'↑ '+Math.round(maxPainStrike-spot)+' pts above':'↓ '+Math.round(spot-maxPainStrike)+' pts below'}</div></div>
     <div class="metric"><div class="metric-label">PCR</div><div class="metric-value" style="color:${pcrColor}">${pcr.toFixed(2)}</div><div class="metric-sub" style="color:${pcrColor}">${pcrTrend}</div></div>
@@ -852,6 +995,54 @@ function renderWarRoom(d,s){
   const sp = getStrategyPersistence(s.strategy.name)
 
   return`
+  <!-- ═══ OI SPIKE ALERTS — shown when sudden changes detected ═══ -->
+  ${oiSpikeAlerts.length > 0 ? oiSpikeAlerts.map(card => `
+  <div style="margin:12px 16px 0;background:${card.bg};border:2px solid ${card.bd};border-radius:12px;overflow:hidden">
+    <!-- Header -->
+    <div style="background:${card.color};padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">${card.emoji}</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:white">${card.intensity} OI ${card.isSurge?'SURGE':'DROP'} — ${card.strike} ${card.side}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-top:1px">${Math.abs(card.pct).toFixed(0)}% change · ${card.isSurge?'+':'−'}${card.absL}L contracts · Total now: ${card.totalOI}L</div>
+        </div>
+      </div>
+      <div style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,0.2);color:white">${card.isSurge?'BUILDING':'UNWINDING'}</div>
+    </div>
+    <!-- Plain English body -->
+    <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:16px;flex-shrink:0">📋</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:${card.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">What happened</div>
+          <div style="font-size:13px;color:var(--text);font-weight:600;line-height:1.6">${card.what}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:16px;flex-shrink:0">🏦</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:${card.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Who did this & why</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">${card.who}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:16px;flex-shrink:0">💡</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:${card.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Why it matters for you</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">${card.why}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:white;border-radius:8px;border:1px solid ${card.bd}">
+        <span style="font-size:16px;flex-shrink:0">⚡</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:${card.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">What to do</div>
+          <div style="font-size:13px;color:var(--text);font-weight:600;line-height:1.6">${card.action}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);font-style:italic;padding:0 2px">${card.expiryNote}</div>
+    </div>
+  </div>`).join('') : ''}
+
   <!-- ═══ QUICK READ TIP ═══ -->
   <div style="margin:12px 16px 0;background:${qr.bgColor};border:1.5px solid ${qr.bdColor};border-radius:12px;padding:14px 18px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
@@ -1180,6 +1371,16 @@ function renderWarRoom(d,s){
       <div class="explain-box"><p><strong>OI vs Volume</strong></p><p><strong>Volume</strong> = contracts traded TODAY. Resets every morning.</p><p><strong>Open Interest (OI)</strong> = contracts currently OPEN (not yet closed). Builds over time. High OI = many active bets = that level matters.</p><p>Think: Volume = cars that entered the parking lot today. OI = cars still parked right now.</p></div>
       <div class="explain-box mt12"><p><strong>Why does a CE Wall create a ceiling?</strong></p><p>When a big institution sells 80L call contracts at 24,600, they collect premium. If Nifty closes above 24,600, they must pay out. So they <strong>actively sell Nifty futures</strong> near 24,600 to protect themselves — called delta hedging. It's automatic, predictable, and creates the wall you see in OI data.</p></div>
       <div class="explain-box mt12"><p><strong>What is Theta decay?</strong></p><p>Every option loses value every day from time passing alone — even if Nifty doesn't move. Monday ₹80 → Wednesday ₹45 → Expiry day ₹5. Time is the option seller's best friend and the buyer's enemy.</p></div>
+      <div class="explain-box mt12">
+        <p><strong>⚠️ Manipulation & Traps to Watch For</strong></p>
+        <p><strong class="bad">1. Pin Risk (near expiry):</strong> Market makers push price toward max pain on expiry day to maximise options expiring worthless. Don't fight max pain on Thursdays.</p>
+        <p><strong class="bad">2. False Breakout (Bull Trap):</strong> Price spikes above CE wall then reverses immediately. This is institutions testing stop losses. Wait for a candle CLOSE above the wall — not just a wick.</p>
+        <p><strong class="bad">3. False Breakdown (Bear Trap):</strong> Same in reverse. Price dips below PE wall then recovers. Smart money hunting stop losses below. Wait for close below.</p>
+        <p><strong class="warn">4. Gamma Squeeze:</strong> When a large CE wall suddenly breaks (OI drops 20%+), all the shorts who built that wall are forced to cover fast. This creates an explosive, fast upward move. The alert ticker will warn you when this is happening.</p>
+        <p><strong class="warn">5. IV Crush:</strong> After any big event (RBI policy, budget, earnings), Implied Volatility collapses suddenly. Even if you predicted the direction correctly, your option premium can FALL because IV crashed. This is why buying options before events is risky — sell premium instead.</p>
+        <p><strong class="warn">6. Sudden OI Spike:</strong> If OI at one strike jumps by 10L+ contracts within one 2-minute refresh, a large institution just entered. The direction (CE or PE) tells you their conviction. The alert ticker will flag this automatically.</p>
+        <p><strong class="bad">7. Expiry Week Shenanigans:</strong> In the last 2 days before expiry, OI data becomes less reliable as positions roll over. Walls can shift rapidly. Reduce size and widen stops on Wednesday/Thursday.</p>
+      </div>
     </div>
   </div>`
 }
@@ -1398,8 +1599,18 @@ async function loadData(){
       }
       storeOISnapshot(d)  // store for sparkline history
       // Track strategy name for persistence detection
-      strategyHistory.push(s.strategy.name)
-      if (strategyHistory.length > 5) strategyHistory.shift()
+      if (s.strategy) {
+        strategyHistory.push(s.strategy.name)
+        if (strategyHistory.length > 5) strategyHistory.shift()
+      }
+      // Render expiry bar + expiry pills
+      renderExpiryBar(d.allExpiries || [])
+      renderExpiryPills(d.allExpiries || [])
+      // Detect alerts + render ticker
+      const alerts = detectAlerts(d)
+      renderAlertTicker(alerts)
+      // Store OI snapshot for spike detection next refresh
+      storeOIForSpike(d)
     }
   }catch(e){loadDemo()}
   btn.classList.remove('spinning')
@@ -1465,6 +1676,312 @@ function updateCountdownDisplay() {
   const s = countdownSeconds % 60
   el.textContent = m + ':' + String(s).padStart(2,'0')
   el.classList.toggle('urgent', countdownSeconds <= 20)
+}
+
+// ══════════════════════════════════════════════════════
+// EXPIRY CALENDAR BAR — shows all expiries for all indexes
+// ══════════════════════════════════════════════════════
+// NO hardcoded expiry days — everything derived from NSE live data
+// NSE can change expiry days anytime — we never assume, always read from API
+// allExpiries is populated from records.expiryDates in every API response
+
+// ── Detect expiry type purely from data ──────────────────────────
+// NSE can change expiry days anytime — we never assume
+// Weekly = gap to next expiry ≤ 8 days
+// Monthly = gap to next expiry > 8 days OR it's the last expiry in its month
+// Special = gap > 15 days (holiday-adjusted, bank holiday week etc)
+function getExpiryType(expStr, allExpDates) {
+  const idx = allExpDates.indexOf(expStr)
+  if (idx < 0) return 'unknown'
+  const dte      = getDTE(expStr)
+  const nextExp  = allExpDates[idx + 1]
+  if (!nextExp) return 'monthly'   // last available = treat as monthly
+  const nextDTE  = getDTE(nextExp)
+  const gap      = nextDTE - dte
+  if (gap <= 8)  return 'weekly'
+  if (gap <= 15) return 'monthly'
+  return 'special'   // holiday week, special session etc
+}
+
+// Get the day of week from expiry string "26-Mar-2026" → "Thursday"
+function getExpiryDayName(expStr) {
+  try {
+    const parts  = expStr.split('-')
+    const months = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11}
+    const d      = new Date(parseInt(parts[2]), months[parts[1].toUpperCase()], parseInt(parts[0]))
+    return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]
+  } catch(e) { return '' }
+}
+
+function renderExpiryBar(allExpDates) {
+  const bar = document.getElementById('expiryBar')
+  if (!bar || !allExpDates || allExpDates.length === 0) return
+
+  let html = `<span class="expiry-bar-label">${currentIndex} Expiries</span>`
+
+  // Show all available expiries from NSE — no hardcoding
+  allExpDates.slice(0, 6).forEach(exp => {
+    const dte      = getDTE(exp)
+    const type     = getExpiryType(exp, allExpDates)
+    const dayName  = getExpiryDayName(exp)
+    const isSelected = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
+    const cls      = dte === 0 ? 'dte-0' : dte === 1 ? 'dte-1' : dte <= 2 ? 'dte-2' : 'dte-ok'
+    const dotColor = dte === 0 ? '#ef4444' : dte === 1 ? '#f97316' : dte <= 3 ? '#f59e0b' : '#22c55e'
+    const typeLabel = type === 'monthly' ? ' · M' : type === 'special' ? ' · S' : ''
+    const dteLabel  = dte === 0 ? '🔴 TODAY' : dte === 1 ? '🟡 TOMORROW' : `${dte}D`
+    const tooltip   = `${exp} (${dayName}) · ${type} expiry · ${dte} days away`
+    html += `<span class="expiry-item ${cls}" title="${tooltip}"
+      onclick="selectExpiry('${exp}')"
+      style="${isSelected?'border-color:rgba(255,255,255,0.7);color:white;background:rgba(255,255,255,0.15);font-weight:700':''}">
+      <span class="expiry-dot" style="background:${dotColor}"></span>
+      <span>${exp}</span>
+      <span style="font-size:9px;opacity:0.75">${dteLabel}${typeLabel}</span>
+    </span>`
+  })
+
+  // Add note if NSE has more expiries not shown
+  if (allExpDates.length > 6) {
+    html += `<span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:4px">+${allExpDates.length-6} more</span>`
+  }
+
+  bar.innerHTML = html
+}
+
+function isMonthlyExpiry(expStr) {
+  // Data-driven — check gap to next expiry
+  return getExpiryType(expStr, allExpiries) !== 'weekly'
+}
+
+function selectExpiry(exp) {
+  selectedExpiry = exp
+  strategyHistory = []
+  oiHistory = []
+  loadData()
+}
+
+function renderExpiryPills(allExpDates) {
+  const wrap = document.getElementById('expiryPills')
+  if (!wrap || !allExpDates || allExpDates.length === 0) return
+  wrap.innerHTML = allExpDates.slice(0, 6).map(exp => {
+    const dte       = getDTE(exp)
+    const type      = getExpiryType(exp, allExpDates)
+    const dayName   = getExpiryDayName(exp)
+    const isSelected = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
+    const isExpiring = dte <= 1
+    const isMon     = type !== 'weekly'
+    // Label: show date + day name + DTE + type — no hardcoded assumptions
+    const typeStr   = type === 'monthly' ? 'Monthly' : type === 'special' ? 'Special' : 'Weekly'
+    const dteStr    = dte === 0 ? '⚠️ Today' : dte === 1 ? '⚡ Tomorrow' : `${dte}D`
+    const label     = `${exp} · ${dayName} · ${typeStr} · ${dteStr}`
+    return `<span class="expiry-pill${isSelected?' active':''}${isExpiring?' expiring':''}${isMon?' monthly':''}"
+      onclick="selectExpiry('${exp}')" title="${label}">${exp} (${dteStr})</span>`
+  }).join('')
+}
+
+// ══════════════════════════════════════════════════════
+// ALERT ENGINE — OI spike detector + manipulation warnings
+// ══════════════════════════════════════════════════════
+function detectAlerts(d) {
+  const alerts     = []    // ticker chips
+  const spikeCards = []    // prominent panel cards for big OI changes
+  const dte        = getDTE(d.expiry)
+  const now        = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+
+  // ════════════════════════════════════════════════════
+  // 1. OI SPIKE DETECTION — most important
+  //    Compare current OI to snapshot from last refresh
+  //    If change ≥ 15% on a liquid strike = ALERT
+  // ════════════════════════════════════════════════════
+  if (Object.keys(prevOISnapshot).length > 0) {
+    d.nearStrikes.forEach(row => {
+      const ceOI = row.ce?.openInterest || 0
+      const peOI = row.pe?.openInterest || 0
+      const prev = prevOISnapshot[row.strike] || { ce: ceOI, pe: peOI }
+      const ceAbs = ceOI - prev.ce
+      const peAbs = peOI - prev.pe
+      const cePct = prev.ce > 10000 ? (ceAbs / prev.ce * 100) : 0
+      const pePct = prev.pe > 10000 ? (peAbs / prev.pe * 100) : 0
+      const ceL   = (ceOI/100000).toFixed(1)
+      const peL   = (peOI/100000).toFixed(1)
+      const ceAbsL= Math.abs(ceAbs/100000).toFixed(2)
+      const peAbsL= Math.abs(peAbs/100000).toFixed(2)
+
+      // CE spike
+      if (Math.abs(cePct) >= 15 && ceOI > 50000) {
+        const isSurge = cePct > 0
+        // Ticker chip
+        alerts.push({
+          type: isSurge ? 'spike' : 'warn',
+          msg: `⚡ ${row.strike} CE OI ${isSurge?'▲':'▼'}${Math.abs(cePct).toFixed(0)}% (${isSurge?'+':''}${ceAbsL}L) — ${isSurge?'Resistance building':'Wall breaking'}`
+        })
+        // Full plain English explanation card
+        spikeCards.push(buildSpikeCard({
+          strike: row.strike, side: 'CE',
+          pct: cePct, absL: ceAbsL, totalOI: ceL,
+          isSurge, spot: d.spot, expiry: d.expiry, dte
+        }))
+      }
+
+      // PE spike
+      if (Math.abs(pePct) >= 15 && peOI > 50000) {
+        const isSurge = pePct > 0
+        alerts.push({
+          type: isSurge ? 'spike' : 'warn',
+          msg: `⚡ ${row.strike} PE OI ${isSurge?'▲':'▼'}${Math.abs(pePct).toFixed(0)}% (${isSurge?'+':''}${peAbsL}L) — ${isSurge?'Support building':'Floor breaking'}`
+        })
+        spikeCards.push(buildSpikeCard({
+          strike: row.strike, side: 'PE',
+          pct: pePct, absL: peAbsL, totalOI: peL,
+          isSurge, spot: d.spot, expiry: d.expiry, dte
+        }))
+      }
+    })
+  }
+
+  // Save spike cards globally so warroom can render them
+  oiSpikeAlerts = spikeCards
+
+  // ════════════════════════════════════════════════════
+  // 2. PCR EXTREMES
+  // ════════════════════════════════════════════════════
+  if (d.pcr > 1.8) alerts.push({ type:'manip', msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Extreme fear. Possible panic or pre-expiry pinning manipulation.` })
+  else if (d.pcr > 1.5) alerts.push({ type:'warn', msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Heavy put buying. Bearish positioning dominant.` })
+  if (d.pcr < 0.5) alerts.push({ type:'manip', msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Extreme greed. Possible squeeze setup.` })
+  else if (d.pcr < 0.7) alerts.push({ type:'warn', msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Heavy call buying. Bullish positioning dominant.` })
+
+  // ════════════════════════════════════════════════════
+  // 3. OI IMBALANCE
+  // ════════════════════════════════════════════════════
+  const ratio = d.totalCeOI > 0 ? d.totalPeOI / d.totalCeOI : 1
+  if (ratio > 2.5) alerts.push({ type:'manip', msg:`⚠️ PE OI is ${ratio.toFixed(1)}x CE OI — Institutions heavily writing puts. Pinning near ${d.peWall.strike} likely.` })
+  if (ratio < 0.4) alerts.push({ type:'manip', msg:`⚠️ CE OI is ${(1/ratio).toFixed(1)}x PE OI — Institutions heavily writing calls. Market may be capped below ${d.ceWall.strike}.` })
+
+  // ════════════════════════════════════════════════════
+  // 4. EXPIRY WARNINGS — data-driven DTE, no hardcoded dates
+  // ════════════════════════════════════════════════════
+  if (dte === 0) alerts.push({ type:'warn', msg:`🔴 EXPIRY TODAY — Max pain ${d.maxPainStrike}. Only sell premium. Exit buys by 3:00pm.` })
+  if (dte === 1) alerts.push({ type:'warn', msg:`⏳ EXPIRY TOMORROW — Theta accelerating. Spreads preferred over naked buys.` })
+
+  // ════════════════════════════════════════════════════
+  // 5. WALL PROXIMITY
+  // ════════════════════════════════════════════════════
+  const distCe = Math.round(d.ceWall.strike - d.spot)
+  const distPe = Math.round(d.spot - d.peWall.strike)
+  if (distCe >= 0 && distCe <= 50) alerts.push({ type:'warn', msg:`🔴 Only ${distCe}pts to CE wall (${d.ceWall.strike}) — breakout or rejection zone.` })
+  if (distPe >= 0 && distPe <= 50) alerts.push({ type:'warn', msg:`🟢 Only ${distPe}pts to PE wall (${d.peWall.strike}) — bounce or breakdown zone.` })
+
+  // ════════════════════════════════════════════════════
+  // 6. ROTATING EDUCATION TIPS
+  // ════════════════════════════════════════════════════
+  const tips = [
+    { type:'info', msg:`📖 Pin Risk: Near expiry, institutions push price toward max pain (${d.maxPainStrike}) to maximise options expiring worthless.` },
+    { type:'info', msg:`📖 Gamma Squeeze: CE wall OI drops 20%+ suddenly = shorts covering = explosive upward move coming.` },
+    { type:'info', msg:`📖 False Breakout: Price wick above CE wall then reversal = trap. Wait for CANDLE CLOSE above wall.` },
+    { type:'info', msg:`📖 Whale Entry: Sudden 10L+ OI surge at one strike = big institutional entry. Their direction = their conviction.` },
+    { type:'info', msg:`📖 IV Crush: After RBI/budget, IV collapses. Even right direction = option loses value. Sell premium near events.` },
+    { type:'info', msg:`📖 Max Pain: ${d.maxPainStrike} is where most contracts expire worthless. Gravity pulls price here near expiry.` },
+  ]
+  const tipIdx = Math.floor(Date.now() / 120000) % tips.length  // rotate every 2 min
+  alerts.push(tips[tipIdx])
+  alerts.push(tips[(tipIdx+1) % tips.length])
+
+  return alerts
+}
+
+// ════════════════════════════════════════════════════
+// BUILD SPIKE CARD — full plain English explanation
+// This is the most important function for a new trader
+// Explains WHAT happened, WHY it matters, WHAT to do
+// ════════════════════════════════════════════════════
+function buildSpikeCard({ strike, side, pct, absL, totalOI, isSurge, spot, expiry, dte }) {
+  const isCE      = side === 'CE'
+  const isAbove   = strike > spot
+  const distPts   = Math.abs(Math.round(strike - spot))
+  const magnitude = Math.abs(pct)
+  const intensity = magnitude >= 40 ? 'MASSIVE' : magnitude >= 25 ? 'LARGE' : 'NOTABLE'
+
+  // ── WHAT HAPPENED (one clear sentence) ──
+  const what = isSurge
+    ? `${intensity} ${side} OI SURGE: ${absL}L new contracts added at ${strike} ${isCE?'CE':'PE'} in the last 2 minutes.`
+    : `${intensity} ${side} OI DROP: ${absL}L contracts closed at ${strike} ${isCE?'CE':'PE'} in the last 2 minutes.`
+
+  // ── WHO DID THIS ──
+  const who = isSurge
+    ? `This is ${isCE ? 'institutions SELLING calls (writing resistance)' : 'institutions SELLING puts (writing support)'} — they collected premium and don't want ${isCE?`price above ${strike}`:`price below ${strike}`}.`
+    : `This is ${isCE ? 'call writers COVERING (buying back their shorts)' : 'put writers COVERING (buying back their shorts)'} — they are EXITING their position.`
+
+  // ── WHY IT MATTERS ──
+  let why = ''
+  if (isSurge && isCE) {
+    why = isAbove
+      ? `${strike} CE is ABOVE current spot (${Math.round(spot)}). A new resistance wall is being built ${distPts}pts above you. This makes a rally harder.`
+      : `${strike} CE is BELOW current spot — very unusual. Institutions writing ITM calls = very strong bearish conviction.`
+  } else if (isSurge && !isCE) {
+    why = !isAbove
+      ? `${strike} PE is BELOW current spot (${Math.round(spot)}). A new support floor is being built ${distPts}pts below. This makes a selloff harder.`
+      : `${strike} PE is ABOVE current spot — unusual. Institutions writing ITM puts = very strong bullish conviction.`
+  } else if (!isSurge && isCE) {
+    why = `The resistance wall at ${strike} is WEAKENING. Writers are buying back their calls. This means the ceiling is losing institutional support — a breakout above ${strike} becomes more likely.`
+  } else {
+    why = `The support floor at ${strike} is WEAKENING. Writers are buying back their puts. This means the floor is losing institutional support — a breakdown below ${strike} becomes more likely.`
+  }
+
+  // ── WHAT TO DO ──
+  let action = ''
+  if (!isSurge && isCE && isAbove) {
+    action = `⚡ BULLISH SIGNAL — If spot is near ${strike} and CE OI is dropping, consider a CE buy or Bull Spread above ${strike}. The ceiling is being removed.`
+  } else if (!isSurge && !isCE && !isAbove) {
+    action = `⚡ BEARISH SIGNAL — If spot is near ${strike} and PE OI is dropping, consider a PE buy or Bear Spread below ${strike}. The floor is being removed.`
+  } else if (isSurge && isCE && isAbove) {
+    action = `🛡️ BEARISH — New resistance added at ${strike}. If already in a CE trade targeting above ${strike}, reduce or exit. Don't fight fresh institutional supply.`
+  } else if (isSurge && !isCE && !isAbove) {
+    action = `🛡️ BULLISH — New support added at ${strike}. If already in a PE trade targeting below ${strike}, reduce or exit. Don't fight fresh institutional support.`
+  } else {
+    action = `Watch price action near ${strike} for the next few candles. The OI change confirms institutional interest at this level.`
+  }
+
+  // ── EXPIRY CONTEXT ──
+  const expiryNote = dte === 0
+    ? `⚠️ This is happening on EXPIRY DAY — OI changes are particularly significant as positions are being forcibly squared off.`
+    : dte <= 2
+    ? `⏳ Expiry is in ${dte} day${dte===1?'':'s'} (${expiry}) — OI changes now are final positioning, high conviction signals.`
+    : `Expiry is ${dte} days away (${expiry}) — institutions have time to build/unwind further.`
+
+  return {
+    strike, side, pct, absL, totalOI, isSurge, intensity,
+    what, who, why, action, expiryNote,
+    color: isSurge ? (isCE?'var(--red)':'var(--green)') : 'var(--purple)',
+    bg:    isSurge ? (isCE?'var(--red-bg)':'var(--green-bg)') : 'var(--pur-bg)',
+    bd:    isSurge ? (isCE?'var(--red-bd)':'var(--green-bd)') : 'var(--pur-bd)',
+    emoji: isSurge ? (isCE?'🔴':'🟢') : '⚡'
+  }
+}
+
+function renderAlertTicker(alerts) {
+  const ticker = document.getElementById('alertTicker')
+  if (!ticker || alerts.length === 0) return
+
+  // Build chips — duplicate for seamless loop
+  const chips = alerts.map(a =>
+    `<span class="alert-chip ${a.type}">${a.msg}</span>`
+  ).join('')
+  ticker.innerHTML = chips + chips  // duplicate for seamless scroll
+
+  // Adjust animation speed based on content length
+  const totalChars = alerts.reduce((s, a) => s + a.msg.length, 0)
+  const duration = Math.max(20, totalChars * 0.3)
+  ticker.style.animation = `tickerScroll ${duration}s linear infinite`
+}
+
+// Store OI snapshot for spike detection
+function storeOIForSpike(d) {
+  prevOISnapshot = {}
+  d.nearStrikes.forEach(row => {
+    prevOISnapshot[row.strike] = {
+      ce: row.ce?.openInterest || 0,
+      pe: row.pe?.openInterest || 0
+    }
+  })
 }
 
 // ── TELEGRAM ──────────────────────────────────────────

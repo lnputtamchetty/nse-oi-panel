@@ -1567,12 +1567,14 @@ function toggleGuide(header) {
 
 function toggleSection(header){const body=header.nextElementSibling,chev=header.querySelector('.wr-chevron'),isOpen=body.classList.contains('open');body.classList.toggle('open',!isOpen);chev.classList.toggle('open',!isOpen)}
 function switchIndex(el,idx){
-  currentIndex=idx
+  currentIndex   = idx
+  selectedExpiry = null   // reset — each index has different expiry dates
+  strategyHistory= []
+  oiHistory      = []
+  prevOISnapshot = {}
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
   el.classList.add('active')
-  prevData=null
-  strategyHistory=[]   // reset persistence — new index = fresh start
-  oiHistory=[]         // reset OI sparkline too
+  prevData = null
   loadData()
 }
 async function loadData(){
@@ -1623,26 +1625,36 @@ async function loadData(){
 }
 // Realistic demo spot prices per index
 const DEMO_SPOTS = {
-  'NIFTY':         { spot: 24387, step: 50,  expiry: '27-Mar-2026' },
-  'BANKNIFTY':     { spot: 51840, step: 100, expiry: '26-Mar-2026' },
-  'FINNIFTY':      { spot: 23150, step: 50,  expiry: '25-Mar-2026' },
-  'MIDCPNIFTY':    { spot: 12380, step: 25,  expiry: '28-Mar-2026' },
-  'NIFTY NEXT 50': { spot: 65200, step: 100, expiry: '27-Mar-2026' },
-  'SENSEX':        { spot: 80120, step: 100, expiry: '28-Mar-2026' }
+  'NIFTY':         { spot: 24387, step: 50,  expiries: ['27-Mar-2026','03-Apr-2026','09-Apr-2026','17-Apr-2026','24-Apr-2026','28-May-2026','25-Jun-2026'] },
+  'BANKNIFTY':     { spot: 51840, step: 100, expiries: ['26-Mar-2026','01-Apr-2026','08-Apr-2026','15-Apr-2026','29-Apr-2026','27-May-2026','24-Jun-2026'] },
+  'FINNIFTY':      { spot: 23150, step: 50,  expiries: ['24-Mar-2026','31-Mar-2026','07-Apr-2026','14-Apr-2026','28-Apr-2026','26-May-2026','23-Jun-2026'] },
+  'MIDCPNIFTY':    { spot: 12380, step: 25,  expiries: ['23-Mar-2026','30-Mar-2026','06-Apr-2026','13-Apr-2026','27-Apr-2026','25-May-2026','22-Jun-2026'] },
+  'NIFTY NEXT 50': { spot: 65200, step: 100, expiries: ['27-Mar-2026','03-Apr-2026','09-Apr-2026','17-Apr-2026','24-Apr-2026','28-May-2026','25-Jun-2026'] },
+  'SENSEX':        { spot: 80120, step: 100, expiries: ['27-Mar-2026','03-Apr-2026','09-Apr-2026','17-Apr-2026','24-Apr-2026','28-May-2026','25-Jun-2026'] }
 }
 
 function loadDemo(){
-  const cfg   = DEMO_SPOTS[currentIndex] || DEMO_SPOTS['NIFTY']
-  const demoRaw = buildDemoData(cfg.spot, cfg.step, cfg.expiry)
-  const d = parseChain(demoRaw)
-  const s = computeStrategy(d)
-  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE temporarily unreachable. Showing realistic demo data for ${currentIndex}. Will retry on next 2-min refresh.</div>`+renderCommand(d,s)
+  const cfg      = DEMO_SPOTS[currentIndex] || DEMO_SPOTS['NIFTY']
+  const expiries = cfg.expiries || [cfg.expiry || '27-Mar-2026']
+  // Use selectedExpiry if valid, otherwise first in list
+  const activeExpiry = (selectedExpiry && expiries.includes(selectedExpiry))
+    ? selectedExpiry : expiries[0]
+  const demoRaw  = buildDemoData(cfg.spot, cfg.step, activeExpiry, expiries)
+  const d        = parseChain(demoRaw)
+  const s        = computeStrategy(d)
+  document.getElementById('commandContent').innerHTML=`<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE unreachable. Showing demo data for ${currentIndex}. Start nse-proxy.js for live data.</div>`+renderCommand(d,s)
   document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
   document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
   document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
   document.getElementById('lastUpdate').textContent='⚪ Demo Data — start nse-proxy.js for live'
+  // Render expiry selector with demo expiries — fully functional even in demo mode
+  renderExpiryBar(expiries)
+  renderExpiryPills(expiries)
+  // Detect alerts on demo data too
+  const alerts = detectAlerts(d)
+  renderAlertTicker(alerts)
 }
-function buildDemoData(spot, step=50, expiry='27-Mar-2026'){
+function buildDemoData(spot, step=50, expiry='27-Mar-2026', allExpiries=['27-Mar-2026']){
   const base=Math.round(spot/step)*step, data=[]
   // Scale OI to index size — BankNifty has higher absolute OI than Nifty
   const oiScale = spot > 40000 ? 2.5 : spot > 20000 ? 1.0 : 0.6
@@ -1657,7 +1669,7 @@ function buildDemoData(spot, step=50, expiry='27-Mar-2026'){
       CE:{strikePrice:strike,openInterest:ceOI,changeinOpenInterest:Math.round((Math.random()-0.4)*ceOI*0.1),lastPrice:Math.max(1,Math.round((spot-strike+step*3+Math.random()*20)*0.7*premScale)),impliedVolatility:atmIV+(i>0?0:1.5),totalTradedVolume:Math.round(ceOI*0.3)},
       PE:{strikePrice:strike,openInterest:peOI,changeinOpenInterest:Math.round((Math.random()-0.4)*peOI*0.1),lastPrice:Math.max(1,Math.round((strike-spot+step*3+Math.random()*20)*0.7*premScale)),impliedVolatility:atmIV+(i<0?0:1.2),totalTradedVolume:Math.round(peOI*0.3)}})
   }
-  return{records:{data,underlyingValue:spot,expiryDates:[expiry]}}
+  return{records:{data,underlyingValue:spot,expiryDates:allExpiries}}
 }
 // ── COUNTDOWN TIMER ──────────────────────────────
 let countdownSeconds = 120
@@ -1760,7 +1772,8 @@ function isMonthlyExpiry(expStr) {
 function selectExpiry(exp) {
   selectedExpiry = exp
   strategyHistory = []
-  oiHistory = []
+  oiHistory      = []
+  prevOISnapshot = {}  // reset spike detection for new expiry
   loadData()
 }
 

@@ -657,6 +657,89 @@ function renderWarRoom(d,s){
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">📊</div>OI Heatmap — Where is the Money?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">
+
+      <!-- LEARNING DROPDOWN — collapsed by default -->
+      <div style="margin-top:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div onclick="toggleGuide(this)" style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;cursor:pointer;background:var(--bg3);user-select:none;transition:background 0.15s" onmouseover="this.style.background='var(--border)'" onmouseout="this.style.background='var(--bg3)'">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:14px">📚</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text)">OI Guide — What is OI? What do colors mean? How to read this chart?</span>
+          </div>
+          <span id="guideChevron" style="font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;transition:transform 0.2s">▶</span>
+        </div>
+        <div id="oiGuideBody" style="display:none;background:var(--bg2)">
+          <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+
+            <!-- What is OI -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:13px 15px">
+              <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:8px">📖 What is Open Interest (OI)?</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.75">
+                <p style="margin-bottom:7px"><strong style="color:var(--text)">OI = number of active option contracts not yet closed.</strong> Like a scoreboard of how many people have open bets at each strike price.</p>
+                <p style="margin-bottom:7px">Example: If 80 lakh CE contracts exist at 24,600 — that means institutions wrote 80 lakh contracts there and do NOT want Nifty above 24,600. They will actively sell Nifty futures when price approaches 24,600 to protect themselves. This creates a real mechanical ceiling.</p>
+                <p style="margin-bottom:0"><strong style="color:var(--text)">Higher OI = stronger wall. Lower OI = weaker wall.</strong></p>
+              </div>
+            </div>
+
+            <!-- Color guide -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:13px 15px">
+              <div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:10px">🎨 What Each Color Means</div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px">
+                  <div style="width:22px;height:22px;background:#b91c1c;border-radius:4px;flex-shrink:0;border:2px solid var(--yellow)"></div>
+                  <div><span style="font-size:12px;font-weight:700;color:var(--red)">Dark Red + Yellow Border = CE WALL</span><br><span style="font-size:11px;color:var(--text2)">Strongest resistance. Most call OI. Ceiling for today. Price will struggle to cross this.</span></div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px">
+                  <div style="width:22px;height:22px;background:var(--red);border-radius:4px;flex-shrink:0;opacity:0.6"></div>
+                  <div><span style="font-size:12px;font-weight:700;color:var(--red)">Regular Red = Normal Call OI</span><br><span style="font-size:11px;color:var(--text2)">Minor resistance at that strike. Grows UPWARD — taller = more resistance. Darker = stronger.</span></div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--green-bg);border:1px solid var(--green-bd);border-radius:7px">
+                  <div style="width:22px;height:22px;background:#15803d;border-radius:4px;flex-shrink:0;border:2px solid var(--yellow)"></div>
+                  <div><span style="font-size:12px;font-weight:700;color:var(--green)">Dark Green + Yellow Border = PE WALL</span><br><span style="font-size:11px;color:var(--text2)">Strongest support. Most put OI. Floor for today. Institutions will buy Nifty here to defend it.</span></div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--green-bg);border:1px solid var(--green-bd);border-radius:7px">
+                  <div style="width:22px;height:22px;background:var(--green);border-radius:4px;flex-shrink:0;opacity:0.6"></div>
+                  <div><span style="font-size:12px;font-weight:700;color:var(--green)">Regular Green = Normal Put OI</span><br><span style="font-size:11px;color:var(--text2)">Minor support at that strike. Grows DOWNWARD — deeper = more support. Darker = stronger.</span></div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:7px">
+                  <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">
+                    <div style="width:22px;height:9px;background:#ea580c;border-radius:2px 2px 0 0"></div>
+                    <div style="width:22px;height:2px;background:var(--yellow)"></div>
+                    <div style="width:22px;height:9px;background:#0891b2;border-radius:0 0 2px 2px"></div>
+                  </div>
+                  <div><span style="font-size:12px;font-weight:700;color:var(--yellow)">Orange + Teal + Yellow line = ATM Strike</span><br><span style="font-size:11px;color:var(--text2)">Strike closest to current Nifty price. Yellow center line = current price level. Your reference point.</span></div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--pur-bg);border:1px solid var(--pur-bd);border-radius:7px">
+                  <div style="width:22px;height:22px;background:var(--purple);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700">MP</div>
+                  <div><span style="font-size:12px;font-weight:700;color:var(--purple)">MP label = Max Pain Strike</span><br><span style="font-size:11px;color:var(--text2)">Where most options expire worthless. Institutions push price here near expiry.</span></div>
+                </div>
+
+                <div style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:7px">
+                  <span style="font-size:12px;font-weight:700;color:var(--text)">📏 Bar height + opacity = wall strength</span><br>
+                  <span style="font-size:11px;color:var(--text2)">Taller AND darker = strongest wall. All bars are scaled relative to the biggest OI in the visible range. Hover any bar to see the exact OI value in lakhs.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- How to use -->
+            <div style="background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:13px 15px">
+              <div style="font-size:12px;font-weight:800;color:var(--blue);margin-bottom:8px">💡 3 Things to Look For</div>
+              <div style="display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--text2);line-height:1.65">
+                <div style="display:flex;gap:8px"><span style="flex-shrink:0">1️⃣</span><div><strong style="color:var(--text)">Biggest red bar = ceiling.</strong> If buying CEs, target must be BELOW this.</div></div>
+                <div style="display:flex;gap:8px"><span style="flex-shrink:0">2️⃣</span><div><strong style="color:var(--text)">Deepest green bar = floor.</strong> If buying PEs, target must be ABOVE this.</div></div>
+                <div style="display:flex;gap:8px"><span style="flex-shrink:0">3️⃣</span><div><strong style="color:var(--text)">ATM bar vs OTM bars.</strong> ATM bigger = range-bound day. OTM bigger = big move expected toward that level.</div></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
       <!-- HEATMAP INFO BAR -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;margin-top:8px">
         <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px;padding:7px 10px;text-align:center">
@@ -880,6 +963,14 @@ function buildChecklist(d,s){
 function getDTE(expiryStr){
   try{const parts=expiryStr.split('-'),months={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11},d=new Date(parseInt(parts[2]),months[parts[1].toUpperCase()],parseInt(parts[0])),today=new Date();today.setHours(0,0,0,0);return Math.max(0,Math.round((d-today)/(1000*60*60*24)))}catch(e){return'?'}
 }
+function toggleGuide(header) {
+  const body  = document.getElementById('oiGuideBody')
+  const chev  = document.getElementById('guideChevron')
+  const isOpen = body.style.display !== 'none'
+  body.style.display = isOpen ? 'none' : 'block'
+  chev.style.transform = isOpen ? '' : 'rotate(90deg)'
+}
+
 function toggleSection(header){const body=header.nextElementSibling,chev=header.querySelector('.wr-chevron'),isOpen=body.classList.contains('open');body.classList.toggle('open',!isOpen);chev.classList.toggle('open',!isOpen)}
 function switchIndex(el,idx){currentIndex=idx;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');prevData=null;loadData()}
 async function loadData(){

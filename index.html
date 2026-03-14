@@ -19,11 +19,13 @@
   --orange:#d44f0a;
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
-.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:2px solid #1d3461;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:1px solid #1d3461;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
+.expiry-row{background:#0a1020;border-bottom:1px solid #1a2a40;padding:5px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:52px;z-index:99}
+.expiry-row-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.25);white-space:nowrap;flex-shrink:0}
 .header-left{display:flex;align-items:center;gap:12px}
 .logo{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:5px 12px;border-radius:7px;letter-spacing:3px;box-shadow:0 2px 8px rgba(239,68,68,0.4)}
 .header-title{display:flex;flex-direction:column;gap:1px}
-.header-title-main{font-size:17px;font-weight:800;letter-spacing:0.5px;color:white;line-height:1.1}
+.header-title-main{font-size:15px;font-weight:800;letter-spacing:0.3px;color:white;line-height:1.1}
 .header-title-main span.kamak{color:#f59e0b}
 .header-title-main span.dot{color:rgba(255,255,255,0.3);margin:0 6px}
 .header-title-main span.oi{color:#60a5fa}
@@ -38,7 +40,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .refresh-btn.spinning{animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.4);white-space:nowrap}
-.main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 56px)}
+.main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 118px)}
 @media(max-width:900px){.main{grid-template-columns:1fr}}
 .command{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto}
 .spot-block{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:#2a3148;color:white}
@@ -190,7 +192,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 /* ── EXPIRY BAR ── */
-/* expiry-bar is now inside the header — no separate bar */
 .expiry-bar{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .expiry-item{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;border:1px solid transparent;white-space:nowrap}
 .expiry-item:hover{background:rgba(255,255,255,0.1)}
@@ -407,13 +408,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
-    <!-- Expiry selector in header -->
-    <div style="display:flex;align-items:center;gap:4px;border-left:1px solid rgba(255,255,255,0.12);padding-left:10px">
-      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);white-space:nowrap">Expiry</span>
-      <div class="expiry-bar" id="expiryBar">
-        <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Loading...</span>
-      </div>
-    </div>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
     <button class="tg-btn" onclick="openTgModal()">✈️ Telegram</button>
     <div style="position:relative">
@@ -426,7 +420,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     </div>
   </div>
 </div>
-<!-- ══ LIVE ALERT TICKER ══ -->
+
+<!-- ══ ROW 2: EXPIRY BAR — its own clean strip ══ -->
+<div class="expiry-row">
+  <span class="expiry-row-label">Expiries</span>
+  <div class="expiry-bar" id="expiryBar">
+    <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Loading...</span>
+  </div>
+</div>
+
+<!-- ══ ROW 3: ALERT TICKER ══ -->
 <div class="alert-bar" id="alertBar">
   <span class="alert-bar-label">⚡ Alerts</span>
   <div class="alert-ticker">

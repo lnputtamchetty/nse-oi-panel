@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LNP · NSE OI PANEL</title>
+<title>LNP KAMAKSHIVA · NSE OI Panel for Indian Indexes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
@@ -19,20 +19,25 @@
   --orange:#d44f0a;
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
-.header{background:var(--bg2);border-bottom:2px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:2px solid #1d3461;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
 .header-left{display:flex;align-items:center;gap:12px}
-.logo{background:#1a1f2e;color:white;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;letter-spacing:2px}
-.header-title{font-size:16px;font-weight:700;letter-spacing:-0.3px}
+.logo{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:5px 12px;border-radius:7px;letter-spacing:3px;box-shadow:0 2px 8px rgba(239,68,68,0.4)}
+.header-title{display:flex;flex-direction:column;gap:1px}
+.header-title-main{font-size:17px;font-weight:800;letter-spacing:0.5px;color:white;line-height:1.1}
+.header-title-main span.kamak{color:#f59e0b}
+.header-title-main span.dot{color:rgba(255,255,255,0.3);margin:0 6px}
+.header-title-main span.oi{color:#60a5fa}
+.header-title-sub{font-size:10px;font-weight:500;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase}
 .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .index-tabs{display:flex;gap:4px;flex-wrap:wrap}
-.tab{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
-.tab:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
-.tab.active{background:var(--blue);border-color:var(--blue);color:white}
-.refresh-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all 0.15s}
-.refresh-btn:hover{border-color:var(--text);color:var(--text)}
+.tab{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
+.tab:hover{border-color:rgba(255,255,255,0.5);color:white;background:rgba(255,255,255,0.15)}
+.tab.active{background:white;border-color:white;color:#1d55d4;font-weight:800}
+.refresh-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.15s}
+.refresh-btn:hover{border-color:white;color:white;background:rgba(255,255,255,0.2)}
 .refresh-btn.spinning{animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);white-space:nowrap}
+.last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.4);white-space:nowrap}
 .main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 56px)}
 @media(max-width:900px){.main{grid-template-columns:1fr}}
 .command{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto}
@@ -186,8 +191,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 /* ── COUNTDOWN TIMER ── */
 .countdown-wrap{display:flex;align-items:center;gap:6px}
-.countdown{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:3px 8px;border-radius:6px;min-width:48px;text-align:center;transition:color 0.3s,border-color 0.3s}
-.countdown.urgent{color:var(--blue);border-color:var(--blue-bd);background:var(--blue-bg)}
+.countdown{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:3px 8px;border-radius:6px;min-width:48px;text-align:center;transition:all 0.3s}
+.countdown.urgent{color:#f59e0b;border-color:#f59e0b;background:rgba(245,158,11,0.15)}
 
 /* ── CONFIDENCE METER ── */
 .confidence-wrap{display:flex;align-items:center;gap:6px;margin-bottom:10px}
@@ -234,7 +239,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 <div class="header">
   <div class="header-left">
     <div class="logo">LNP</div>
-    <div class="header-title">NSE OI Panel</div>
+    <div class="header-title">
+      <div class="header-title-main">
+        <span class="kamak">KAMAKSHIVA</span>
+        <span class="dot">·</span>
+        <span class="oi">NSE OI PANEL</span>
+      </div>
+      <div class="header-title-sub">Indian Indexes &nbsp;·&nbsp; Real-Time Option Chain Intelligence</div>
+    </div>
   </div>
   <div class="header-right">
     <div class="index-tabs">
@@ -636,6 +648,74 @@ function renderCommand(d,s){
     ${s.strategy2 ? renderStrategyCard(s.strategy2, false) : ''}
   </div>`
 }
+function buildQuickRead(d, s) {
+  const { spot, atm, maxPainStrike, pcr, ceWall, peWall, totalCeOI, totalPeOI, atmIV } = d
+  const { dir, zone, bias, confidence, bullSignals, bearSignals } = s
+
+  const ceWallStr  = ceWall.strike
+  const peWallStr  = peWall.strike
+  const distToCe   = Math.round(ceWallStr - spot)
+  const distToPe   = Math.round(spot - peWallStr)
+  const mpDist     = Math.round(spot - maxPainStrike)
+  const mpDir      = spot > maxPainStrike ? 'above' : 'below'
+  const mpPull     = spot > maxPainStrike ? 'pulling it down' : 'pulling it up'
+  const ceOI_L     = ((ceWall.ce?.openInterest||0)/100000).toFixed(1)
+  const peOI_L     = ((peWall.pe?.openInterest||0)/100000).toFixed(1)
+  const dte        = getDTE(d.expiry)
+
+  // Sentence 1 — Where is the market sitting right now
+  let s1 = ''
+  if (!inRange(spot, peWallStr, ceWallStr) && spot >= ceWallStr) {
+    s1 = `${currentIndex} has broken above the CE wall at ${ceWallStr} — this is a bullish breakout with ${ceOI_L}L contracts' worth of resistance now behind it.`
+  } else if (!inRange(spot, peWallStr, ceWallStr) && spot <= peWallStr) {
+    s1 = `${currentIndex} has broken below the PE wall at ${peWallStr} — this is a bearish breakdown with ${peOI_L}L contracts' worth of support now broken.`
+  } else if (distToCe <= 100) {
+    s1 = `${currentIndex} is just ${distToCe} pts away from a massive ${ceOI_L}L OI ceiling at ${ceWallStr} — it is knocking on the door of strong resistance.`
+  } else if (distToPe <= 100) {
+    s1 = `${currentIndex} is just ${distToPe} pts above a strong ${peOI_L}L OI floor at ${peWallStr} — it is sitting right on top of major support.`
+  } else {
+    s1 = `${currentIndex} is trading comfortably in range, with a ${ceOI_L}L OI ceiling at ${ceWallStr} (${distToCe} pts away) and a ${peOI_L}L OI floor at ${peWallStr} (${distToPe} pts away).`
+  }
+
+  // Sentence 2 — What institutions and PCR are telling us
+  let s2 = ''
+  const pcrBias = pcr > 1.3 ? `heavy put buying (PCR ${pcr.toFixed(2)}) signals bearish institutional positioning` :
+                  pcr > 1.1 ? `mild put buying (PCR ${pcr.toFixed(2)}) leans slightly bearish` :
+                  pcr < 0.7 ? `heavy call buying (PCR ${pcr.toFixed(2)}) signals strong bullish positioning` :
+                  pcr < 0.9 ? `mild call buying (PCR ${pcr.toFixed(2)}) leans slightly bullish` :
+                              `balanced PCR (${pcr.toFixed(2)}) shows no strong directional conviction`
+
+  const mpSentence = Math.abs(mpDist) < 250 && dte <= 3
+    ? ` With expiry in ${dte} day${dte===1?'':'s'}, max pain at ${maxPainStrike} (${Math.abs(mpDist)} pts ${mpDir}) is ${mpPull} toward ${maxPainStrike}.`
+    : ''
+
+  s2 = `Right now, ${pcrBias}${mpSentence}`
+
+  // Sentence 3 — The plain English verdict
+  let s3 = ''
+  if (confidence >= 4) {
+    s3 = dir === 'bull' ? `Overall picture is clearly bullish — strategy confidence is high.` :
+         dir === 'bear' ? `Overall picture is clearly bearish — strategy confidence is high.` :
+         `Strong range-bound conditions — ideal for premium selling strategies.`
+  } else if (confidence === 3) {
+    s3 = `Signals are mixed — trade smaller size and wait for clearer confirmation before entering.`
+  } else {
+    s3 = `Too many conflicting signals right now — best to observe and wait for the picture to become clearer.`
+  }
+
+  // Emoji indicator
+  const emoji = dir==='bull' ? '🟢' : dir==='bear' ? '🔴' : dir==='range' ? '🟡' : '⚪'
+  const bgColor = dir==='bull' ? 'var(--green-bg)' : dir==='bear' ? 'var(--red-bg)' : 'var(--yel-bg)'
+  const bdColor = dir==='bull' ? 'var(--green-bd)' : dir==='bear' ? 'var(--red-bd)' : 'var(--yel-bd)'
+  const txColor = dir==='bull' ? 'var(--green)' : dir==='bear' ? 'var(--red)' : 'var(--yellow)'
+
+  return { s1, s2, s3, emoji, bgColor, bdColor, txColor, bias }
+}
+
+function inRange(spot, peWall, ceWall) {
+  return spot > peWall && spot < ceWall
+}
+
 function renderWarRoom(d,s){
   const{spot,atm,maxPainStrike,pcr,ceWall,peWall,skewStrikes,nearStrikes}=d,{dir,strategy,reasons}=s
   const maxOI=Math.max(...nearStrikes.map(r=>Math.max(r.ce.openInterest||0,r.pe.openInterest||0)))
@@ -653,7 +733,35 @@ function renderWarRoom(d,s){
     return{strike:row.strike,ceOI,peOI,ceDiff:ceOI-cePrev,peDiff:peOI-pePrev,isAtm:row.strike===atm}
   })
   const maxIV=40
+  const qr = buildQuickRead(d, s)
+
   return`
+  <!-- ═══ QUICK READ TIP ═══ -->
+  <div style="margin:12px 16px 0;background:${qr.bgColor};border:1.5px solid ${qr.bdColor};border-radius:12px;padding:14px 18px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:18px">${qr.emoji}</span>
+      <div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${qr.txColor}">Quick Read — ${currentIndex}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">Plain English summary · updates every 2 min</div>
+      </div>
+      <div style="margin-left:auto;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${qr.txColor};color:white">${qr.bias}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <span style="font-size:13px;flex-shrink:0;margin-top:1px">📍</span>
+        <span style="font-size:13px;color:var(--text);line-height:1.6;font-weight:500">${qr.s1}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <span style="font-size:13px;flex-shrink:0;margin-top:1px">📊</span>
+        <span style="font-size:13px;color:var(--text2);line-height:1.6">${qr.s2}</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start;padding-top:7px;border-top:1px solid ${qr.bdColor}">
+        <span style="font-size:13px;flex-shrink:0;margin-top:1px">💡</span>
+        <span style="font-size:13px;color:var(--text);line-height:1.6;font-weight:600">${qr.s3}</span>
+      </div>
+    </div>
+  </div>
+
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">📊</div>OI Heatmap — Where is the Money?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">

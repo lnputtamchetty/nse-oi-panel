@@ -1874,6 +1874,7 @@ async function loadData(){
     document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
     document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
     const srcLabel = dataSource==='local'?' 🟢 Live (Local)':dataSource==='vercel'?' 🟡 Live (Server)':dataSource==='proxy'?' 🟠 Live (Proxy)':''
+    window._liveDataLoaded = true
     document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+srcLabel
     // Re-enable Telegram send button if modal is open
     const tgBtn = document.getElementById('tgSendBtn')
@@ -2323,6 +2324,9 @@ const TG_TOKEN_KEY  = 'lnp_tg_token'
 const TG_CHATID_KEY = 'lnp_tg_chatid'
 
 function openTgModal() {
+  // If no data yet — load demo immediately so send always works
+  if (!chainData) loadDemo()
+
   // Load saved credentials
   const savedToken  = localStorage.getItem(TG_TOKEN_KEY)  || ''
   const savedChatId = localStorage.getItem(TG_CHATID_KEY) || ''
@@ -2330,20 +2334,16 @@ function openTgModal() {
   document.getElementById('tgChatId').value = savedChatId
   document.getElementById('tgSetup').classList.toggle('show', !savedToken || !savedChatId)
 
-  // Show data status
+  // Data is now always available
   const status = document.getElementById('tgStatus')
   const btn    = document.getElementById('tgSendBtn')
-  if (!chainData) {
-    status.textContent = '⏳ Waiting for data to load — click Refresh first, then try again'
-    status.className   = 'tg-status err'
-    btn.disabled       = true
-    btn.textContent    = '⏳ No data yet'
-  } else {
-    status.textContent = `✅ Data ready — ${currentIndex} @ ${chainData.spot?.toLocaleString('en-IN')}`
-    status.className   = 'tg-status ok'
-    btn.disabled       = false
-    btn.textContent    = '✈️ Send to Telegram'
-  }
+  const isDemo = !window._liveDataLoaded
+  status.textContent = isDemo
+    ? `⚪ Demo data — ${currentIndex} @ ${chainData?.spot?.toLocaleString('en-IN')} (live data loads at market open)`
+    : `✅ Live data — ${currentIndex} @ ${chainData?.spot?.toLocaleString('en-IN')}`
+  status.className = isDemo ? 'tg-status' : 'tg-status ok'
+  btn.disabled    = false
+  btn.textContent = '✈️ Send to Telegram'
 
   document.getElementById('tgOverlay').classList.add('open')
 }
@@ -2456,11 +2456,7 @@ async function sendToTelegram() {
   const status = document.getElementById('tgStatus')
   const btn    = document.getElementById('tgSendBtn')
 
-  if (!chainData) {
-    status.textContent = '⏳ No data loaded — click Refresh first, then try again'
-    status.className = 'tg-status err'
-    return
-  }
+  if (!chainData) loadDemo()  // ensure data exists
 
   if (!token || !chatId) {
     status.textContent = '⚠️ Please enter Bot Token and Chat ID'
@@ -2806,14 +2802,57 @@ function renderAlertHistoryList() {
 }
 
 // ── TEST ALERT ────────────────────────────────────────────────
-function testAlert() {
-  fireAlert({
+async function testAlert() {
+  const alert = {
     type: 'spike',
     msg: `⚡ TEST: ${currentIndex} 24600 CE OI ▲22% (+8.4L) — Resistance building`,
     title: `TEST ALERT — ${currentIndex}`,
     detail: 'This is a test alert to verify your sound and popup settings are working correctly.',
     action: 'No action needed — this is a test.'
-  })
+  }
+  // Always fire locally (sound + popup)
+  fireAlert(alert)
+
+  // Always try Telegram if credentials exist — regardless of toggle
+  const token  = localStorage.getItem(TG_TOKEN_KEY)
+  const chatId = localStorage.getItem(TG_CHATID_KEY)
+  const statusEl = document.getElementById('alertTestStatus')
+
+  if (!token || !chatId) {
+    if (statusEl) {
+      statusEl.textContent = '⚠️ No Telegram credentials — enter Token + Chat ID in the ✈️ Telegram modal first'
+      statusEl.style.color = 'var(--yellow)'
+    }
+    return
+  }
+
+  if (statusEl) { statusEl.textContent = 'Sending to Telegram...'; statusEl.style.color = 'var(--text3)' }
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `⚡ *LNP TEST ALERT — ${currentIndex}*
+
+This is a test message from your LNP KAMAKSHIVA OI Panel.
+
+If you see this — Telegram alerts are working correctly! ✅
+
+_Token and Chat ID are saved. Enable "Telegram Alert" toggle to receive automatic alerts._`,
+        parse_mode: 'Markdown'
+      })
+    })
+    const json = await res.json()
+    if (json.ok) {
+      if (statusEl) { statusEl.textContent = '✅ Test message sent to Telegram successfully!'; statusEl.style.color = 'var(--green)' }
+    } else {
+      if (statusEl) { statusEl.textContent = '❌ Telegram error: ' + (json.description || 'Unknown error'); statusEl.style.color = 'var(--red)' }
+    }
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = '❌ Network error — check your internet connection'; statusEl.style.color = 'var(--red)' }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3189,7 +3228,8 @@ setInterval(loadData, 2*60*1000)
         <div style="font-size:12px;color:var(--text3);padding:10px;text-align:center">No alerts yet — waiting for data</div>
       </div>
 
-      <button class="alert-test-btn" onclick="testAlert()">🔊 Test Sound & Popup Now</button>
+      <button class="alert-test-btn" onclick="testAlert()">🔊 Test Sound + Popup + Telegram Now</button>
+      <div id="alertTestStatus" style="font-size:11px;color:var(--text3);text-align:center;margin-top:6px;min-height:16px;line-height:1.5"></div>
     </div>
   </div>
 </div>

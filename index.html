@@ -190,30 +190,33 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
 /* ── EXPIRY BAR ── */
-.expiry-bar{background:#0f172a;border-bottom:1px solid #1e3a5f;padding:6px 20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.expiry-item{display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;border:1px solid transparent}
-.expiry-item:hover{background:rgba(255,255,255,0.08)}
+/* expiry-bar is now inside the header — no separate bar */
+.expiry-bar{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.expiry-item{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;border:1px solid transparent;white-space:nowrap}
+.expiry-item:hover{background:rgba(255,255,255,0.1)}
 .expiry-item.dte-0{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);color:#fca5a5}
 .expiry-item.dte-1{background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3);color:#fde68a}
 .expiry-item.dte-2{background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.2);color:#fef3c7}
-.expiry-item.dte-ok{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6)}
-.expiry-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.expiry-item.dte-ok{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55)}
+.expiry-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .expiry-sep{color:rgba(255,255,255,0.15);font-size:10px;margin:0 2px}
-.expiry-bar-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.3);margin-right:4px}
+.expiry-bar-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);margin-right:2px;white-space:nowrap}
 
 /* ── ALERT TICKER BAR ── */
-.alert-bar{background:#0a0f1e;border-bottom:1px solid #1e3a5f;padding:5px 20px;display:flex;align-items:center;gap:12px;min-height:32px;overflow:hidden}
-.alert-bar-label{font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;flex-shrink:0;white-space:nowrap}
-.alert-ticker{flex:1;overflow:hidden;position:relative;height:20px}
-.alert-ticker-inner{display:flex;gap:24px;position:absolute;white-space:nowrap;animation:tickerScroll 30s linear infinite}
+.alert-bar{background:#060c1a;border-bottom:2px solid #1e3a5f;padding:7px 20px;display:flex;align-items:center;gap:14px;min-height:40px;overflow:hidden}
+.alert-bar-label{font-size:10px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.5);text-transform:uppercase;flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.alert-bar-label::before{content:'';width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;animation:pulseDot 1.5s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+.alert-ticker{flex:1;overflow:hidden;position:relative;height:24px}
+.alert-ticker-inner{display:flex;gap:28px;position:absolute;white-space:nowrap;animation:tickerScroll 30s linear infinite;top:0;left:0}
 .alert-ticker-inner:hover{animation-play-state:paused}
 @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.alert-chip{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;flex-shrink:0}
-.alert-chip.spike{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
-.alert-chip.warn{background:rgba(245,158,11,0.15);color:#fde68a;border:1px solid rgba(245,158,11,0.25)}
-.alert-chip.info{background:rgba(29,85,212,0.15);color:#93c5fd;border:1px solid rgba(29,85,212,0.25)}
-.alert-chip.safe{background:rgba(23,122,86,0.15);color:#86efac;border:1px solid rgba(23,122,86,0.25)}
-.alert-chip.manip{background:rgba(124,58,237,0.15);color:#c4b5fd;border:1px solid rgba(124,58,237,0.25)}
+.alert-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:700;flex-shrink:0;line-height:1.4}
+.alert-chip.spike{background:rgba(239,68,68,0.25);color:#fca5a5;border:1.5px solid rgba(239,68,68,0.4)}
+.alert-chip.warn{background:rgba(245,158,11,0.2);color:#fde68a;border:1.5px solid rgba(245,158,11,0.35)}
+.alert-chip.info{background:rgba(29,85,212,0.2);color:#93c5fd;border:1.5px solid rgba(29,85,212,0.3)}
+.alert-chip.safe{background:rgba(23,122,86,0.2);color:#86efac;border:1.5px solid rgba(23,122,86,0.3)}
+.alert-chip.manip{background:rgba(124,58,237,0.2);color:#c4b5fd;border:1.5px solid rgba(124,58,237,0.35)}
 
 /* ── EXPIRY SELECTOR in command panel ── */
 .expiry-select-wrap{padding:12px 18px;border-bottom:2px solid var(--blue-bd);background:var(--blue-bg)}
@@ -237,6 +240,68 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .pine-copy-btn{width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-size:12px;font-weight:800;cursor:pointer;letter-spacing:1px;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:6px}
 .pine-copy-btn:hover{opacity:0.9;transform:translateY(-1px)}
 .pine-copy-btn.copied{background:linear-gradient(135deg,#22c55e,#16a34a)}
+
+/* ── ALERT SYSTEM ── */
+.alert-settings-btn{font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.12);color:#fca5a5;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.alert-settings-btn:hover{background:rgba(239,68,68,0.25);border-color:#fca5a5;color:white}
+.alert-settings-btn.active{background:rgba(239,68,68,0.3);border-color:#ef4444;color:white}
+.alert-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:white;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;display:none}
+.alert-badge.show{display:flex}
+
+/* Alert Settings Modal */
+.alert-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:flex-start;justify-content:flex-end;padding:70px 20px 0 0}
+.alert-modal-overlay.open{display:flex}
+.alert-modal{background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;width:380px;max-width:95vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.alert-modal-head{background:linear-gradient(135deg,#1a0a0a,#3a0f0f);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:2;border-radius:14px 14px 0 0}
+.alert-modal-title{font-size:14px;font-weight:800;color:white;display:flex;align-items:center;gap:8px}
+.alert-modal-close{font-size:18px;color:rgba(255,255,255,0.5);cursor:pointer;background:none;border:none;line-height:1;padding:0}
+.alert-modal-close:hover{color:white}
+.alert-modal-body{padding:16px 18px}
+.alert-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.alert-toggle-row:last-of-type{border-bottom:none}
+.alert-toggle-left{flex:1}
+.alert-toggle-label{font-size:13px;font-weight:700;color:var(--text)}
+.alert-toggle-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.alert-toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.alert-toggle input{opacity:0;width:0;height:0}
+.alert-slider{position:absolute;inset:0;background:var(--border);border-radius:22px;cursor:pointer;transition:0.3s}
+.alert-slider:before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s}
+.alert-toggle input:checked+.alert-slider{background:var(--blue)}
+.alert-toggle input:checked+.alert-slider:before{transform:translateX(18px)}
+.alert-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.alert-threshold-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.alert-threshold-label{font-size:12px;font-weight:600;color:var(--text2)}
+.alert-threshold-input{width:70px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;background:var(--bg3);color:var(--text);font-family:'JetBrains Mono',monospace;text-align:center}
+.alert-threshold-input:focus{border-color:var(--blue);outline:none}
+.alert-email-input{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);margin-top:6px}
+.alert-email-input:focus{border-color:var(--blue);outline:none}
+.alert-test-btn{width:100%;padding:9px;border-radius:8px;border:none;background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);margin-top:8px;transition:all 0.15s}
+.alert-test-btn:hover{background:var(--border)}
+
+/* Alert Popup Toast */
+.alert-toast-container{position:fixed;top:80px;right:20px;z-index:99999;display:flex;flex-direction:column;gap:8px;max-width:360px;pointer-events:none}
+.alert-toast{background:#0f172a;border:2px solid var(--toast-color,#ef4444);border-radius:12px;padding:14px 16px;color:white;box-shadow:0 8px 32px rgba(0,0,0,0.4);pointer-events:all;animation:toastIn 0.3s ease-out;position:relative;overflow:hidden}
+.alert-toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--toast-color,#ef4444)}
+@keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+.toast-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--toast-color,#ef4444);margin-bottom:4px}
+.toast-title{font-size:13px;font-weight:800;color:white;margin-bottom:4px;line-height:1.3}
+.toast-body{font-size:11px;color:rgba(255,255,255,0.7);line-height:1.5;margin-bottom:8px}
+.toast-actions{display:flex;gap:6px}
+.toast-btn{font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:white;cursor:pointer;transition:all 0.15s}
+.toast-btn:hover{background:rgba(255,255,255,0.2)}
+.toast-btn.primary{background:var(--toast-color,#ef4444);border-color:var(--toast-color,#ef4444)}
+.toast-dismiss{position:absolute;top:8px;right:10px;font-size:14px;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none;line-height:1;padding:0}
+.toast-dismiss:hover{color:white}
+
+/* Alert History Panel */
+.alert-history{border-top:1px solid var(--border);margin-top:10px}
+.alert-history-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border);font-size:12px}
+.alert-history-item:last-child{border-bottom:none}
+.alert-history-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.alert-history-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;width:42px}
+.alert-history-msg{color:var(--text2);flex:1;line-height:1.5}
+.alert-history-new{color:var(--text);font-weight:600}
 
 /* ── TELEGRAM ── */
 .tg-btn{font-size:12px;font-weight:700;padding:5px 13px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.25);background:rgba(41,182,246,0.15);color:#7dd3fc;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;display:flex;align-items:center;gap:6px}
@@ -342,20 +407,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
+    <!-- Expiry selector in header -->
+    <div style="display:flex;align-items:center;gap:4px;border-left:1px solid rgba(255,255,255,0.12);padding-left:10px">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.25);white-space:nowrap">Expiry</span>
+      <div class="expiry-bar" id="expiryBar">
+        <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Loading...</span>
+      </div>
+    </div>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
     <button class="tg-btn" onclick="openTgModal()">✈️ Telegram</button>
+    <div style="position:relative">
+      <button class="alert-settings-btn" id="alertSettingsBtn" onclick="openAlertModal()">🔔 Alerts</button>
+      <div class="alert-badge" id="alertBadge">0</div>
+    </div>
     <div class="countdown-wrap">
       <span class="last-update" id="lastUpdate">—</span>
       <span class="countdown" id="countdownTimer">2:00</span>
     </div>
   </div>
 </div>
-<!-- ══ EXPIRY CALENDAR BAR ══ -->
-<div class="expiry-bar" id="expiryBar">
-  <span class="expiry-bar-label">Expiries</span>
-  <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Loading...</span>
-</div>
-
 <!-- ══ LIVE ALERT TICKER ══ -->
 <div class="alert-bar" id="alertBar">
   <span class="alert-bar-label">⚡ Alerts</span>
@@ -768,33 +838,81 @@ function renderConfidence(score) {
   </div>`
 }
 
+// Unique ID counter for strategy card toggles
+let _cardId = 0
+
 function renderStrategyCard(strat, isPrimary) {
+  const cardId = 'sc_' + (++_cardId)
+  const bdColor = isPrimary ? 'var(--blue-bd)' : 'var(--border)'
+  const bodyBg  = isPrimary ? 'var(--blue-bg)' : 'var(--bg3)'
+  const nameCol = isPrimary ? 'var(--blue)' : 'var(--text)'
+
+  // Build good/bad checklist inline
+  const goodItems = (strat.goodChecks||[]).map(t=>`<li style="color:var(--green);margin-bottom:3px;font-size:12px">✅ ${t}</li>`).join('')
+  const badItems  = (strat.badChecks||[]).map(t=>`<li style="color:var(--red);margin-bottom:3px;font-size:12px">❌ ${t}</li>`).join('')
+
   return `<div class="strategy-card" style="margin-bottom:${isPrimary?'10px':'0'}">
     <div class="strategy-head" style="background:${isPrimary?'var(--blue)':'var(--bg3)'}">
-      <span class="strategy-head-label" style="color:${isPrimary?'rgba(255,255,255,0.8)':'var(--text3)'}">${isPrimary?'⚡ PRIMARY STRATEGY':'🛡️ ALTERNATIVE STRATEGY'}</span>
+      <span class="strategy-head-label" style="color:${isPrimary?'rgba(255,255,255,0.8)':'var(--text3)'}">${isPrimary?'⚡ PRIMARY':'🛡️ ALTERNATIVE'}</span>
       <div style="display:flex;align-items:center;gap:6px">
         ${isPrimary && strategyHistory.length >= 1 ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${getStrategyPersistence(strat.name).bgColor};color:${getStrategyPersistence(strat.name).color};border:1px solid ${getStrategyPersistence(strat.name).bdColor}">${getStrategyPersistence(strat.name).label}</span>` : ''}
         <span class="strategy-head-type" style="color:${isPrimary?'rgba(255,255,255,0.7)':'var(--text3)'}">${strat.type}</span>
       </div>
     </div>
-    <div class="strategy-body" style="background:${isPrimary?'var(--blue-bg)':'var(--bg3)'}">
+    <div class="strategy-body" style="background:${bodyBg}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <div class="strategy-name" style="margin-bottom:0;color:${isPrimary?'var(--blue)':'var(--text)'}">${strat.name}</div>
+        <div class="strategy-name" style="margin-bottom:0;color:${nameCol}">${strat.name}</div>
         <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:${isPrimary?'var(--blue-bg)':'var(--bg2)'};color:${strat.tagColor||'var(--blue)'};border:1px solid ${isPrimary?'var(--blue-bd)':'var(--border)'}">${strat.tag||''}</span>
       </div>
       ${isPrimary && strat.confidence !== undefined ? renderConfidence(strat.confidence) : ''}
-      <div>${strat.legs.map(l=>`<div class="leg" style="border-color:${isPrimary?'var(--blue-bd)':'var(--border)'}"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
+      <div>${strat.legs.map(l=>`<div class="leg" style="border-color:${bdColor}"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
       <div class="strategy-stats">
         <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strat.risk.toLocaleString('en-IN')}</div></div>
         <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${strat.reward.toLocaleString('en-IN')}</div></div>
         <div class="stat"><div class="stat-label">R : R</div><div class="stat-val rr">${strat.rr||'—'}</div></div>
       </div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid ${isPrimary?'var(--blue-bd)':'var(--border)'}">
-        <div style="font-size:11px;color:var(--green);margin-bottom:4px">✅ When: ${strat.when||'—'}</div>
-        <div style="font-size:11px;color:var(--red)">⚠️ Avoid: ${strat.avoid||'—'}</div>
+
+      <!-- ▼ EXPAND ARROW — explains the strategy inline -->
+      <div style="margin-top:10px;border-top:1px solid ${bdColor}">
+        <div onclick="toggleStratDetail('${cardId}')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:8px 2px;cursor:pointer;user-select:none">
+          <span style="font-size:12px;font-weight:700;color:${isPrimary?'var(--blue)':'var(--text2)'}">▼ Why this strategy? When to enter? When to exit?</span>
+          <span id="${cardId}_chev" style="font-size:11px;color:var(--text3);transition:transform 0.2s;display:inline-block">▶</span>
+        </div>
+        <div id="${cardId}" style="display:none">
+          <div style="padding:10px 12px;background:white;border-radius:8px;border:1px solid ${bdColor};margin-bottom:8px">
+            <p style="font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px"><em>${strat.rationale}</em></p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✅ Enter when</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.6">${strat.when||'—'}</div>
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">⚠️ Avoid if</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.6">${strat.avoid||'—'}</div>
+              </div>
+            </div>
+            ${goodItems||badItems ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+              <div><ul style="margin-left:14px">${goodItems}</ul></div>
+              <div><ul style="margin-left:14px">${badItems}</ul></div>
+            </div>` : ''}
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;font-weight:600;color:var(--yellow)">
+              🚪 Exit Rule: ${strat.exit||'—'}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>`
+}
+
+function toggleStratDetail(id) {
+  const el   = document.getElementById(id)
+  const chev = document.getElementById(id + '_chev')
+  if (!el) return
+  const isOpen = el.style.display !== 'none'
+  el.style.display  = isOpen ? 'none' : 'block'
+  if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)'
 }
 
 function renderCommand(d,s){
@@ -824,11 +942,6 @@ function renderCommand(d,s){
     ${s.dte===0?`<div style="background:rgba(239,68,68,0.15);border-top:1px solid rgba(239,68,68,0.3);padding:6px 20px;font-size:11px;font-weight:700;color:#fca5a5">⚠️ EXPIRY DAY — Theta decay is maximum. Only sell premium. Exit all positions by 3:00 PM.</div>`:''}
     ${s.dte===1?`<div style="background:rgba(245,158,11,0.1);border-top:1px solid rgba(245,158,11,0.2);padding:6px 20px;font-size:11px;font-weight:700;color:#fde68a">⏳ 1 DAY TO EXPIRY — Spreads are ideal. Theta accelerating. Adjust or exit by EOD tomorrow.</div>`:''}
   </div>
-  <div class="expiry-select-wrap" id="expirySelectWrap" style="display:none">
-    <div class="expiry-select-label">📅 Select Expiry — click to switch between weekly & monthly</div>
-    <div class="expiry-pills" id="expiryPills"></div>
-  </div>
-
   <div class="metrics-grid">
     <div class="metric"><div class="metric-label">Max Pain</div><div class="metric-value" style="color:var(--purple)">${maxPainStrike.toLocaleString('en-IN')}</div><div class="metric-sub">${maxPainStrike>spot?'↑ '+Math.round(maxPainStrike-spot)+' pts above':'↓ '+Math.round(spot-maxPainStrike)+' pts below'}</div></div>
     <div class="metric"><div class="metric-label">PCR</div><div class="metric-value" style="color:${pcrColor}">${pcr.toFixed(2)}</div><div class="metric-sub" style="color:${pcrColor}">${pcrTrend}</div></div>
@@ -839,49 +952,38 @@ function renderCommand(d,s){
     <div class="walls-title">OI Walls</div>
     <div class="wall-card ce"><div class="wall-left"><div class="wall-type">🔴 Resistance (CE Wall)</div><div class="wall-strike">${ceWall.strike.toLocaleString('en-IN')}</div></div><div class="wall-right"><div class="wall-oi">${ceOI_L}L OI</div><div class="wall-dist">${distCe} pts above ↑</div></div></div>
     <div class="wall-card pe"><div class="wall-left"><div class="wall-type">🟢 Support (PE Wall)</div><div class="wall-strike">${peWall.strike.toLocaleString('en-IN')}</div></div><div class="wall-right"><div class="wall-oi">${peOI_L}L OI</div><div class="wall-dist">${distPe} pts below ↓</div></div></div>
-
-    <!-- ── PINE SCRIPT INPUT COPIER ── -->
-    <div class="pine-copy-bar">
-      <div class="pine-copy-title">📋 Copy to <span>TradingView Pine Script</span> — fills OI Panel inputs automatically</div>
-      <div class="pine-values-grid">
-        <div class="pine-val-item">
-          <div class="pine-val-label">🔴 CE Wall</div>
-          <div class="pine-val-number">${ceWall.strike}</div>
-        </div>
-        <div class="pine-val-item">
-          <div class="pine-val-label">🟢 PE Wall</div>
-          <div class="pine-val-number">${peWall.strike}</div>
-        </div>
-        <div class="pine-val-item">
-          <div class="pine-val-label">🎯 Max Pain</div>
-          <div class="pine-val-number">${maxPainStrike}</div>
-        </div>
-        <div class="pine-val-item">
-          <div class="pine-val-label">⚖️ Real PCR</div>
-          <div class="pine-val-number">${pcr.toFixed(2)}</div>
-        </div>
-        <div class="pine-val-item">
-          <div class="pine-val-label">CE OI (Lakhs)</div>
-          <div class="pine-val-number">${ceOI_L}</div>
-        </div>
-        <div class="pine-val-item">
-          <div class="pine-val-label">PE OI (Lakhs)</div>
-          <div class="pine-val-number">${peOI_L}</div>
-        </div>
-      </div>
-      <button class="pine-copy-btn" id="pineCopyBtn" onclick="copyPineValues(${ceWall.strike}, ${peWall.strike}, ${maxPainStrike}, ${pcr}, ${ceOI_L}, ${peOI_L})">
-        📋 Copy Values — paste into Pine Script settings
-      </button>
-      <div id="pineCopyStatus" style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-top:6px;min-height:16px"></div>
-    </div>
   </div>
   <div class="zone-row">
     <div class="zone-box"><div class="zone-label">Zone</div><div class="zone-val" style="color:${zoneColor}">${zone}</div></div>
     <div class="zone-box"><div class="zone-label">Bias</div><div class="zone-val" style="color:${biasColor}">${bias}</div></div>
   </div>
   <div class="strategy-section">
-    ${renderStrategyCard({...strategy, confidence: s.confidence}, true)}
-    ${s.strategy2 ? renderStrategyCard(s.strategy2, false) : ''}
+    ${(()=>{
+      const cl = buildChecklist(d,s)
+      const goodChecks = cl.filter(c=>c.type==='good').map(c=>c.text)
+      const badChecks  = cl.filter(c=>c.type==='bad').map(c=>c.text)
+      return renderStrategyCard({...strategy, confidence:s.confidence, goodChecks, badChecks}, true)
+           + (s.strategy2 ? renderStrategyCard(s.strategy2, false) : '')
+    })()}
+  </div>
+
+  <!-- ── PINE SCRIPT COPY — bottom of left panel ── -->
+  <div style="padding:14px 18px 20px">
+    <div class="pine-copy-bar">
+      <div class="pine-copy-title">📋 Copy to <span>TradingView · KAMAKSHIVA</span> — fill OI Panel inputs</div>
+      <div class="pine-values-grid">
+        <div class="pine-val-item"><div class="pine-val-label">🔴 CE Wall</div><div class="pine-val-number">${ceWall.strike}</div></div>
+        <div class="pine-val-item"><div class="pine-val-label">🟢 PE Wall</div><div class="pine-val-number">${peWall.strike}</div></div>
+        <div class="pine-val-item"><div class="pine-val-label">🎯 Max Pain</div><div class="pine-val-number">${maxPainStrike}</div></div>
+        <div class="pine-val-item"><div class="pine-val-label">⚖️ PCR</div><div class="pine-val-number">${pcr.toFixed(2)}</div></div>
+        <div class="pine-val-item"><div class="pine-val-label">CE OI (L)</div><div class="pine-val-number">${ceOI_L}</div></div>
+        <div class="pine-val-item"><div class="pine-val-label">PE OI (L)</div><div class="pine-val-number">${peOI_L}</div></div>
+      </div>
+      <button class="pine-copy-btn" id="pineCopyBtn" onclick="copyPineValues(${ceWall.strike}, ${peWall.strike}, ${maxPainStrike}, ${pcr}, ${ceOI_L}, ${peOI_L})">
+        📋 Copy Values → Paste into Pine Script settings
+      </button>
+      <div id="pineCopyStatus" style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center;margin-top:6px;min-height:16px"></div>
+    </div>
   </div>`
 }
 function getStrategyPersistence(currentStrategyName) {
@@ -1482,29 +1584,13 @@ function renderWarRoom(d,s){
     </div>
   </div>
   <div class="wr-section">
-    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--yel-bg);border:1.5px solid var(--yel-bd)">⚡</div>Strategy Explained — Why This Trade?</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--yel-bg);border:1.5px solid var(--yel-bd)">🧠</div>Signal Reasons — Why This Bias?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">
-      <!-- Signal reasons + checklist merged — no separate rationale box -->
-      <div style="margin-bottom:10px">
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
         ${reasons.map(r=>`<div class="reason-item ${r.dir}">${r.dir==='bull'?'🟢':r.dir==='bear'?'🔴':r.dir==='warn'?'🟡':'⚪'} ${r.text}</div>`).join('')}
       </div>
-      <div class="explain-box">
-        <p style="margin-bottom:6px"><em style="color:var(--text3)">${strategy.rationale}</em></p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-          <div>
-            <strong style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:1px">✅ Works when</strong>
-            <ul style="margin:6px 0 0 14px;font-size:12px">
-              ${buildChecklist(d,s).filter(c=>c.type==='good').map(c=>`<li class="good" style="margin-bottom:3px">${c.text}</li>`).join('')}
-            </ul>
-          </div>
-          <div>
-            <strong style="font-size:11px;color:var(--red);text-transform:uppercase;letter-spacing:1px">❌ Fails when</strong>
-            <ul style="margin:6px 0 0 14px;font-size:12px">
-              ${buildChecklist(d,s).filter(c=>c.type==='bad').map(c=>`<li class="bad" style="margin-bottom:3px">${c.text}</li>`).join('')}
-            </ul>
-          </div>
-        </div>
-        <p style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)"><strong class="warn">Exit Rule:</strong> ${strategy.exit}</p>
+      <div style="margin-top:10px;font-size:11px;color:var(--text3);padding:8px 10px;background:var(--bg3);border-radius:7px;border:1px solid var(--border)">
+        💡 Tap <strong>▼ Why this strategy?</strong> on each card above to see full explanation, entry rules and exit rules inline.
       </div>
     </div>
   </div>
@@ -1696,7 +1782,17 @@ function buildChecklist(d,s){
   return checks
 }
 function getDTE(expiryStr){
-  try{const parts=expiryStr.split('-'),months={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11},d=new Date(parseInt(parts[2]),months[parts[1].toUpperCase()],parseInt(parts[0])),today=new Date();today.setHours(0,0,0,0);return Math.max(0,Math.round((d-today)/(1000*60*60*24)))}catch(e){return'?'}
+  try{
+    if(!expiryStr||expiryStr==='?') return '?'
+    const parts=expiryStr.split('-')
+    if(parts.length!==3) return '?'
+    const months={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11}
+    const mm = months[parts[1].toUpperCase()]
+    if(mm===undefined) return '?'
+    const d=new Date(parseInt(parts[2]),mm,parseInt(parts[0]))
+    const today=new Date();today.setHours(0,0,0,0)
+    return Math.max(0,Math.round((d-today)/(1000*60*60*24)))
+  }catch(e){return'?'}
 }
 function copyPineValues(ceWall, peWall, maxPain, pcr, ceOI_L, peOI_L) {
   const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
@@ -1796,11 +1892,10 @@ async function loadData(){
         strategyHistory.push(s.strategy.name)
         if (strategyHistory.length > 5) strategyHistory.shift()
       }
-      // Render expiry bar + expiry pills
-      renderExpiryBar(d.allExpiries || [])
+      // Render expiry pills in header
       renderExpiryPills(d.allExpiries || [])
       // Detect alerts + render ticker
-      const alerts = detectAlerts(d)
+      const alerts = detectAndFireAlerts(d)
       renderAlertTicker(alerts)
       // Store OI snapshot for spike detection next refresh
       storeOIForSpike(d)
@@ -1810,13 +1905,35 @@ async function loadData(){
   startCountdown()  // restart countdown after each load
 }
 // Realistic demo spot prices per index
+// ── DEMO EXPIRIES — generated dynamically from today, never stale ──
+// NSE expiry days: NIFTY=Thu(4), BANKNIFTY=Wed(3), FINNIFTY=Tue(2), MIDCAP=Mon(1), SENSEX=Fri(5)
+// JS getDay(): 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+function genDemoExpiries(targetDay, count=8) {
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+  const dates = []
+  const d = new Date()
+  d.setHours(0,0,0,0)
+  // Find next occurrence of targetDay
+  let daysAhead = targetDay - d.getDay()
+  if (daysAhead <= 0) daysAhead += 7
+  d.setDate(d.getDate() + daysAhead)
+  for (let i = 0; i < count; i++) {
+    const dd = String(d.getDate()).padStart(2,'0')
+    const mm = months[d.getMonth()]
+    const yy = d.getFullYear()
+    dates.push(`${dd}-${mm}-${yy}`)
+    d.setDate(d.getDate() + 7)  // next week same day
+  }
+  return dates
+}
+
 const DEMO_SPOTS = {
-  'NIFTY':         { spot: 24387, step: 50,  expiries: ['27-Mar-2026','03-Apr-2026','09-Apr-2026','17-Apr-2026','24-Apr-2026','28-May-2026','25-Jun-2026'] },
-  'BANKNIFTY':     { spot: 51840, step: 100, expiries: ['26-Mar-2026','01-Apr-2026','08-Apr-2026','15-Apr-2026','29-Apr-2026','27-May-2026','24-Jun-2026'] },
-  'FINNIFTY':      { spot: 23150, step: 50,  expiries: ['24-Mar-2026','31-Mar-2026','07-Apr-2026','14-Apr-2026','28-Apr-2026','26-May-2026','23-Jun-2026'] },
-  'MIDCPNIFTY':    { spot: 12380, step: 25,  expiries: ['23-Mar-2026','30-Mar-2026','06-Apr-2026','13-Apr-2026','27-Apr-2026','25-May-2026','22-Jun-2026'] },
-  'NIFTY NEXT 50': { spot: 65200, step: 100, expiries: ['27-Mar-2026','03-Apr-2026','09-Apr-2026','17-Apr-2026','24-Apr-2026','28-May-2026','25-Jun-2026'] },
-  'SENSEX':        { spot: 80120, step: 100, expiries: ['27-Mar-2026','03-Apr-2026','09-Apr-2026','17-Apr-2026','24-Apr-2026','28-May-2026','25-Jun-2026'] }
+  'NIFTY':         { spot: 24387, step: 50,  expiries: genDemoExpiries(4) },  // Thursday
+  'BANKNIFTY':     { spot: 51840, step: 100, expiries: genDemoExpiries(3) },  // Wednesday
+  'FINNIFTY':      { spot: 23150, step: 50,  expiries: genDemoExpiries(2) },  // Tuesday
+  'MIDCPNIFTY':    { spot: 12380, step: 25,  expiries: genDemoExpiries(1) },  // Monday
+  'NIFTY NEXT 50': { spot: 65200, step: 100, expiries: genDemoExpiries(4) },  // Thursday
+  'SENSEX':        { spot: 80120, step: 100, expiries: genDemoExpiries(5) }   // Friday
 }
 
 function loadDemo(){
@@ -1833,11 +1950,10 @@ function loadDemo(){
   document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
   document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
   document.getElementById('lastUpdate').textContent='⚪ Demo Data — start nse-proxy.js for live'
-  // Render expiry selector with demo expiries — fully functional even in demo mode
-  renderExpiryBar(expiries)
+  // Render expiry pills in header
   renderExpiryPills(expiries)
   // Detect alerts on demo data too
-  const alerts = detectAlerts(d)
+  const alerts = detectAndFireAlerts(d)
   renderAlertTicker(alerts)
 }
 function buildDemoData(spot, step=50, expiry='27-Mar-2026', allExpiries=['27-Mar-2026']){
@@ -1909,10 +2025,14 @@ function getExpiryType(expStr, allExpDates) {
 // Get the day of week from expiry string "26-Mar-2026" → "Thursday"
 function getExpiryDayName(expStr) {
   try {
+    if(!expStr) return ''
     const parts  = expStr.split('-')
+    if(parts.length!==3) return ''
     const months = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11}
-    const d      = new Date(parseInt(parts[2]), months[parts[1].toUpperCase()], parseInt(parts[0]))
-    return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]
+    const mm = months[parts[1].toUpperCase()]
+    if(mm===undefined) return ''
+    const d = new Date(parseInt(parts[2]), mm, parseInt(parts[0]))
+    return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]
   } catch(e) { return '' }
 }
 
@@ -1923,29 +2043,27 @@ function renderExpiryBar(allExpDates) {
   let html = `<span class="expiry-bar-label">${currentIndex} Expiries</span>`
 
   // Show all available expiries from NSE — no hardcoding
-  allExpDates.slice(0, 6).forEach(exp => {
+  // Show ALL expiries — no limit, no "+N more"
+  allExpDates.forEach(exp => {
     const dte      = getDTE(exp)
     const type     = getExpiryType(exp, allExpDates)
     const dayName  = getExpiryDayName(exp)
     const isSelected = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
     const cls      = dte === 0 ? 'dte-0' : dte === 1 ? 'dte-1' : dte <= 2 ? 'dte-2' : 'dte-ok'
     const dotColor = dte === 0 ? '#ef4444' : dte === 1 ? '#f97316' : dte <= 3 ? '#f59e0b' : '#22c55e'
-    const typeLabel = type === 'monthly' ? ' · M' : type === 'special' ? ' · S' : ''
-    const dteLabel  = dte === 0 ? '🔴 TODAY' : dte === 1 ? '🟡 TOMORROW' : `${dte}D`
-    const tooltip   = `${exp} (${dayName}) · ${type} expiry · ${dte} days away`
+    const typeLabel = type === 'monthly' ? ' M' : type === 'special' ? ' S' : ' W'
+    const typeBg    = type === 'monthly' ? 'rgba(124,58,237,0.3)' : type === 'special' ? 'rgba(245,158,11,0.3)' : 'rgba(29,85,212,0.2)'
+    const dteLabel  = dte === 0 ? '🔴 TODAY' : dte === 1 ? '🟡 TMRW' : `${dte}D`
+    const tooltip   = `${exp} (${dayName}) · ${type} expiry · ${dte} days away · Click to load this expiry`
     html += `<span class="expiry-item ${cls}" title="${tooltip}"
       onclick="selectExpiry('${exp}')"
-      style="${isSelected?'border-color:rgba(255,255,255,0.7);color:white;background:rgba(255,255,255,0.15);font-weight:700':''}">
+      style="${isSelected?'border-color:rgba(255,255,255,0.8);color:white;background:rgba(255,255,255,0.18);font-weight:800':''}">
       <span class="expiry-dot" style="background:${dotColor}"></span>
       <span>${exp}</span>
-      <span style="font-size:9px;opacity:0.75">${dteLabel}${typeLabel}</span>
+      <span style="font-size:8px;padding:1px 4px;border-radius:3px;background:${typeBg};color:rgba(255,255,255,0.8);font-weight:700">${typeLabel}</span>
+      <span style="font-size:9px;opacity:0.8">${dteLabel}</span>
     </span>`
   })
-
-  // Add note if NSE has more expiries not shown
-  if (allExpDates.length > 6) {
-    html += `<span style="font-size:10px;color:rgba(255,255,255,0.3);margin-left:4px">+${allExpDates.length-6} more</span>`
-  }
 
   bar.innerHTML = html
 }
@@ -1964,12 +2082,9 @@ function selectExpiry(exp) {
 }
 
 function renderExpiryPills(allExpDates) {
-  const wrap  = document.getElementById('expiryPills')
-  const wrapOuter = document.getElementById('expirySelectWrap')
+  // Pills now live in the header expiry bar — no separate left panel wrap needed
+  const wrap  = document.getElementById('expiryBar')
   if (!wrap || !allExpDates || allExpDates.length === 0) return
-
-  // Show the wrap now that we have data
-  if (wrapOuter) wrapOuter.style.display = 'block'
 
   wrap.innerHTML = allExpDates.slice(0, 8).map(exp => {
     const dte        = getDTE(exp)
@@ -2001,15 +2116,7 @@ function renderExpiryPills(allExpDates) {
     </div>`
   }).join('')
 
-  // Add helper note below pills
-  const existing = document.getElementById('expiryNote')
-  if (!existing) {
-    const note = document.createElement('div')
-    note.id = 'expiryNote'
-    note.style.cssText = 'font-size:10px;color:var(--text3);margin-top:6px;line-height:1.5'
-    note.innerHTML = `<strong style="color:var(--text2)">W</strong> = Weekly expiry &nbsp;·&nbsp; <strong style="color:var(--purple)">M</strong> = Monthly expiry &nbsp;·&nbsp; Click any pill to switch — all data reloads for that expiry`
-    wrap.parentNode.appendChild(note)
-  }
+
 }
 
 // ══════════════════════════════════════════════════════
@@ -2417,6 +2524,437 @@ async function sendToTelegram() {
   btn.textContent = '✈️ Send to Telegram'
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ALERT SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+// Storage keys
+const ALERT_SETTINGS_KEY = 'lnp_alert_settings'
+let alertHistory = []         // last 20 fired alerts
+let alertUnseenCount = 0      // badge counter
+
+// Default settings
+const DEFAULT_ALERT_SETTINGS = {
+  soundEnabled: true,
+  popupEnabled: true,
+  tgEnabled: false,
+  emailEnabled: false,
+  onOISpike: true,
+  onShortCover: true,
+  onPCR: true,
+  onWallProx: true,
+  onExpiry: true,
+  oiSpikeThreshold: 15,
+  wallProxThreshold: 50,
+  emailjsServiceId: '',
+  emailjsTemplateId: '',
+  emailjsPublicKey: '',
+  alertEmailTo: ''
+}
+
+function getAlertSettings() {
+  try {
+    const saved = localStorage.getItem(ALERT_SETTINGS_KEY)
+    return saved ? { ...DEFAULT_ALERT_SETTINGS, ...JSON.parse(saved) } : { ...DEFAULT_ALERT_SETTINGS }
+  } catch(e) { return { ...DEFAULT_ALERT_SETTINGS } }
+}
+
+function saveAlertSettings() {
+  const s = {
+    soundEnabled:       document.getElementById('alertSoundEnabled')?.checked,
+    popupEnabled:       document.getElementById('alertPopupEnabled')?.checked,
+    tgEnabled:          document.getElementById('alertTgEnabled')?.checked,
+    emailEnabled:       document.getElementById('alertEmailEnabled')?.checked,
+    onOISpike:          document.getElementById('alertOnOISpike')?.checked,
+    onShortCover:       document.getElementById('alertOnShortCover')?.checked,
+    onPCR:              document.getElementById('alertOnPCR')?.checked,
+    onWallProx:         document.getElementById('alertOnWallProx')?.checked,
+    onExpiry:           document.getElementById('alertOnExpiry')?.checked,
+    oiSpikeThreshold:   parseInt(document.getElementById('alertOISpikeThreshold')?.value)||15,
+    wallProxThreshold:  parseInt(document.getElementById('alertWallProxThreshold')?.value)||50,
+    emailjsServiceId:   document.getElementById('emailjsServiceId')?.value||'',
+    emailjsTemplateId:  document.getElementById('emailjsTemplateId')?.value||'',
+    emailjsPublicKey:   document.getElementById('emailjsPublicKey')?.value||'',
+    alertEmailTo:       document.getElementById('alertEmailTo')?.value||''
+  }
+  localStorage.setItem(ALERT_SETTINGS_KEY, JSON.stringify(s))
+  // Show/hide email setup
+  const emailSection = document.getElementById('emailSetupSection')
+  if (emailSection) emailSection.style.display = s.emailEnabled ? 'block' : 'none'
+}
+
+function loadAlertSettingsIntoModal() {
+  const s = getAlertSettings()
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.checked = val }
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val }
+  set('alertSoundEnabled', s.soundEnabled)
+  set('alertPopupEnabled', s.popupEnabled)
+  set('alertTgEnabled', s.tgEnabled)
+  set('alertEmailEnabled', s.emailEnabled)
+  set('alertOnOISpike', s.onOISpike)
+  set('alertOnShortCover', s.onShortCover)
+  set('alertOnPCR', s.onPCR)
+  set('alertOnWallProx', s.onWallProx)
+  set('alertOnExpiry', s.onExpiry)
+  setVal('alertOISpikeThreshold', s.oiSpikeThreshold)
+  setVal('alertWallProxThreshold', s.wallProxThreshold)
+  setVal('emailjsServiceId', s.emailjsServiceId)
+  setVal('emailjsTemplateId', s.emailjsTemplateId)
+  setVal('emailjsPublicKey', s.emailjsPublicKey)
+  setVal('alertEmailTo', s.alertEmailTo)
+  const emailSection = document.getElementById('emailSetupSection')
+  if (emailSection) emailSection.style.display = s.emailEnabled ? 'block' : 'none'
+}
+
+function openAlertModal() {
+  loadAlertSettingsIntoModal()
+  renderAlertHistoryList()
+  alertUnseenCount = 0
+  updateAlertBadge()
+  document.getElementById('alertModalOverlay').classList.add('open')
+}
+
+function closeAlertModal(e) {
+  if (e.target === document.getElementById('alertModalOverlay')) closeAlertModalDirect()
+}
+function closeAlertModalDirect() {
+  document.getElementById('alertModalOverlay').classList.remove('open')
+}
+
+function updateAlertBadge() {
+  const badge = document.getElementById('alertBadge')
+  const btn   = document.getElementById('alertSettingsBtn')
+  if (!badge) return
+  if (alertUnseenCount > 0) {
+    badge.textContent = alertUnseenCount > 9 ? '9+' : alertUnseenCount
+    badge.classList.add('show')
+    btn?.classList.add('active')
+  } else {
+    badge.classList.remove('show')
+    btn?.classList.remove('active')
+  }
+}
+
+// ── SOUND ENGINE ──────────────────────────────────────────────
+function playAlertSound(severity = 'medium') {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    const patterns = {
+      high:   [[880,0.15],[660,0.1],[880,0.2]],   // 3 rising beeps — urgent
+      medium: [[660,0.15],[440,0.15]],              // 2 beeps — important
+      low:    [[440,0.1]]                           // 1 soft beep — info
+    }
+    const notes = patterns[severity] || patterns.medium
+    let time = ctx.currentTime
+    notes.forEach(([freq, dur]) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = freq
+      osc.type = 'sine'
+      gain.gain.setValueAtTime(0.4, time)
+      gain.gain.exponentialRampToValueAtTime(0.001, time + dur)
+      osc.start(time)
+      osc.stop(time + dur + 0.02)
+      time += dur + 0.05
+    })
+  } catch(e) {}
+}
+
+// ── TOAST POPUP ───────────────────────────────────────────────
+let _toastId = 0
+function showToast(alert) {
+  const s = getAlertSettings()
+  if (!s.popupEnabled) return
+
+  const id     = 'toast_' + (++_toastId)
+  const colors = { spike:'#ef4444', warn:'#f59e0b', manip:'#8b5cf6', info:'#3b82f6', safe:'#22c55e' }
+  const color  = colors[alert.type] || '#ef4444'
+  const labels = { spike:'⚡ OI SPIKE', warn:'⚠️ WARNING', manip:'🔴 MANIPULATION', info:'ℹ️ INFO', safe:'✅ SIGNAL' }
+  const label  = labels[alert.type] || '⚡ ALERT'
+
+  const container = document.getElementById('alertToastContainer')
+  if (!container) return
+
+  const toast = document.createElement('div')
+  toast.id = id
+  toast.className = 'alert-toast'
+  toast.style.setProperty('--toast-color', color)
+  toast.innerHTML = `
+    <button class="toast-dismiss" onclick="dismissToast('${id}')">✕</button>
+    <div class="toast-type">${label} · ${currentIndex} · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+    <div class="toast-title">${alert.title || alert.msg.slice(0,60)}</div>
+    <div class="toast-body">${alert.detail || ''}</div>
+    <div class="toast-actions">
+      <button class="toast-btn" onclick="dismissToast('${id}')">Dismiss</button>
+      ${s.tgEnabled ? `<button class="toast-btn primary" onclick="sendAlertToTelegram(${JSON.stringify(alert).replace(/"/g,'&quot;')});dismissToast('${id}')">✈️ Telegram</button>` : ''}
+      ${s.emailEnabled ? `<button class="toast-btn" onclick="sendAlertEmail(${JSON.stringify(alert).replace(/"/g,'&quot;')});dismissToast('${id}')">📧 Email</button>` : ''}
+    </div>
+  `
+  container.appendChild(toast)
+
+  // Auto-dismiss after 12 seconds
+  setTimeout(() => dismissToast(id), 12000)
+}
+
+function dismissToast(id) {
+  const el = document.getElementById(id)
+  if (!el) return
+  el.style.animation = 'toastOut 0.3s ease-in forwards'
+  setTimeout(() => el.remove(), 300)
+}
+
+// ── FIRE ALERT ────────────────────────────────────────────────
+function fireAlert(alert) {
+  const s = getAlertSettings()
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+
+  // Add to history
+  alertHistory.unshift({ ...alert, time: now, index: currentIndex })
+  if (alertHistory.length > 20) alertHistory.pop()
+  alertUnseenCount++
+  updateAlertBadge()
+
+  // Sound
+  const severity = alert.type === 'spike' ? 'high' : alert.type === 'manip' ? 'high' : 'medium'
+  if (s.soundEnabled) playAlertSound(severity)
+
+  // Popup
+  if (s.popupEnabled) showToast(alert)
+
+  // Telegram (auto-send if enabled)
+  if (s.tgEnabled) sendAlertToTelegram(alert)
+
+  // Email (auto-send if enabled)
+  if (s.emailEnabled) sendAlertEmail(alert)
+
+  // Update history panel if modal is open
+  if (document.getElementById('alertModalOverlay').classList.contains('open')) {
+    renderAlertHistoryList()
+  }
+}
+
+// ── TELEGRAM ALERT SEND ───────────────────────────────────────
+async function sendAlertToTelegram(alert) {
+  const token  = localStorage.getItem(TG_TOKEN_KEY)
+  const chatId = localStorage.getItem(TG_CHATID_KEY)
+  if (!token || !chatId) return
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  const text = `⚡ *LNP ALERT — ${currentIndex}*
+` +
+    `⏰ ${now}
+` +
+    `─────────────────────
+` +
+    `${alert.msg}
+` +
+    (alert.detail ? `
+${alert.detail}
+` : '') +
+    (alert.action ? `
+*What to do:* ${alert.action}
+` : '') +
+    `─────────────────────
+` +
+    `_LNP KAMAKSHIVA Auto-Alert_`
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ chat_id:chatId, text, parse_mode:'Markdown' })
+    })
+  } catch(e) {}
+}
+
+// ── EMAIL ALERT SEND via EmailJS ──────────────────────────────
+async function sendAlertEmail(alert) {
+  const s = getAlertSettings()
+  if (!s.emailjsServiceId || !s.emailjsTemplateId || !s.emailjsPublicKey || !s.alertEmailTo) return
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  try {
+    // Load EmailJS dynamically if not loaded
+    if (!window.emailjs) {
+      await new Promise((res, rej) => {
+        const script = document.createElement('script')
+        script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js'
+        script.onload = res; script.onerror = rej
+        document.head.appendChild(script)
+      })
+      window.emailjs.init(s.emailjsPublicKey)
+    }
+    await window.emailjs.send(s.emailjsServiceId, s.emailjsTemplateId, {
+      to_email:     s.alertEmailTo,
+      alert_type:   alert.type?.toUpperCase() || 'ALERT',
+      index:        currentIndex,
+      time:         now,
+      message:      alert.msg,
+      detail:       alert.detail || '',
+      action:       alert.action || '',
+    })
+  } catch(e) { console.warn('Email alert failed:', e) }
+}
+
+// ── ALERT HISTORY RENDER ──────────────────────────────────────
+function renderAlertHistoryList() {
+  const el = document.getElementById('alertHistoryList')
+  if (!el) return
+  if (alertHistory.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:10px;text-align:center">No alerts yet — waiting for data</div>'
+    return
+  }
+  const colors = { spike:'#ef4444', warn:'#f59e0b', manip:'#8b5cf6', info:'#3b82f6', safe:'#22c55e' }
+  el.innerHTML = alertHistory.map((a,i) => `
+    <div class="alert-history-item">
+      <div class="alert-history-dot" style="background:${colors[a.type]||'#ef4444'}"></div>
+      <div class="alert-history-time">${a.time||'—'}</div>
+      <div class="alert-history-msg ${i===0?'alert-history-new':''}">${a.msg}</div>
+    </div>
+  `).join('')
+}
+
+// ── TEST ALERT ────────────────────────────────────────────────
+function testAlert() {
+  fireAlert({
+    type: 'spike',
+    msg: `⚡ TEST: ${currentIndex} 24600 CE OI ▲22% (+8.4L) — Resistance building`,
+    title: `TEST ALERT — ${currentIndex}`,
+    detail: 'This is a test alert to verify your sound and popup settings are working correctly.',
+    action: 'No action needed — this is a test.'
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UPGRADED detectAlerts — now FIRES alerts, not just returns them
+// ═══════════════════════════════════════════════════════════════
+function detectAndFireAlerts(d) {
+  const s      = getAlertSettings()
+  const dte    = getDTE(d.expiry)
+  const thresh = s.oiSpikeThreshold || 15
+  const wallPt = s.wallProxThreshold || 50
+  const tickerAlerts = []  // for scrolling ticker (all alerts)
+  const spikeCards   = []  // for spike cards in war room
+
+  // ── 1. OI SPIKES ──────────────────────────────────────────
+  if (Object.keys(prevOISnapshot).length > 0 && s.onOISpike) {
+    d.nearStrikes.forEach(row => {
+      const ceOI = row.ce?.openInterest || 0
+      const peOI = row.pe?.openInterest || 0
+      const prev = prevOISnapshot[row.strike] || { ce: ceOI, pe: peOI }
+      const ceAbs = ceOI - prev.ce
+      const peAbs = peOI - prev.pe
+      const cePct = prev.ce > 10000 ? (ceAbs / prev.ce * 100) : 0
+      const pePct = prev.pe > 10000 ? (peAbs / prev.pe * 100) : 0
+      const ceL    = (ceOI/100000).toFixed(1)
+      const peL    = (peOI/100000).toFixed(1)
+      const ceAbsL = Math.abs(ceAbs/100000).toFixed(2)
+      const peAbsL = Math.abs(peAbs/100000).toFixed(2)
+
+      if (Math.abs(cePct) >= thresh && ceOI > 50000) {
+        const isSurge = cePct > 0
+        const card = buildSpikeCard({ strike:row.strike, side:'CE', pct:cePct, absL:ceAbsL, totalOI:ceL, isSurge, spot:d.spot, expiry:d.expiry, dte })
+        spikeCards.push(card)
+        const alertObj = {
+          type: isSurge ? 'spike' : 'warn',
+          msg: `⚡ ${row.strike} CE OI ${isSurge?'▲':'▼'}${Math.abs(cePct).toFixed(0)}% (${isSurge?'+':''}${ceAbsL}L) — ${isSurge?'Resistance building':'Wall breaking'}`,
+          title: `${Math.abs(cePct).toFixed(0)}% CE OI ${isSurge?'SURGE':'DROP'} at ${row.strike}`,
+          detail: card.who,
+          action: card.action
+        }
+        tickerAlerts.push(alertObj)
+        fireAlert(alertObj)
+      }
+
+      if (Math.abs(pePct) >= thresh && peOI > 50000) {
+        const isSurge = pePct > 0
+        const card = buildSpikeCard({ strike:row.strike, side:'PE', pct:pePct, absL:peAbsL, totalOI:peL, isSurge, spot:d.spot, expiry:d.expiry, dte })
+        spikeCards.push(card)
+        const alertObj = {
+          type: isSurge ? 'spike' : 'warn',
+          msg: `⚡ ${row.strike} PE OI ${isSurge?'▲':'▼'}${Math.abs(pePct).toFixed(0)}% (${isSurge?'+':''}${peAbsL}L) — ${isSurge?'Support building':'Floor breaking'}`,
+          title: `${Math.abs(pePct).toFixed(0)}% PE OI ${isSurge?'SURGE':'DROP'} at ${row.strike}`,
+          detail: card.who,
+          action: card.action
+        }
+        tickerAlerts.push(alertObj)
+        fireAlert(alertObj)
+      }
+    })
+  }
+
+  // Short covering check (separate loop for OI+price)
+  if (s.onShortCover) {
+    d.nearStrikes.forEach(row => {
+      const r = {
+        strike:row.strike, ceOI:row.ce?.openInterest||0, peOI:row.pe?.openInterest||0,
+        cePrice:row.ce?.lastPrice||0, pePrice:row.pe?.lastPrice||0,
+        ceDiff:(row.ce?.openInterest||0)-(prevOISnapshot[row.strike]?.ce||row.ce?.openInterest||0),
+        peDiff:(row.pe?.openInterest||0)-(prevOISnapshot[row.strike]?.pe||row.pe?.openInterest||0),
+        cePriceDiff:(row.ce?.lastPrice||0)-(prevData?.strikes?.[row.strike]?.cePrice||row.ce?.lastPrice||0),
+        pePriceDiff:(row.pe?.lastPrice||0)-(prevData?.strikes?.[row.strike]?.pePrice||row.pe?.lastPrice||0),
+      }
+      if (r.ceDiff < -20000 && r.cePriceDiff > 0.5) {
+        const a = {
+          type:'safe',
+          msg:`⚡ CE Short Covering at ${row.strike} — ceiling weakening = bullish pressure`,
+          title:`CE Short Covering at ${row.strike}`,
+          detail:`Call writers buying back their positions. The ${row.strike} CE wall is losing institutional support.`,
+          action:`Watch for breakout above ${row.strike} in next few candles.`
+        }
+        tickerAlerts.push(a); fireAlert(a)
+      }
+      if (r.peDiff < -20000 && r.pePriceDiff < -0.5) {
+        const a = {
+          type:'warn',
+          msg:`⚡ PE Short Covering at ${row.strike} — floor weakening = bearish pressure`,
+          title:`PE Short Covering at ${row.strike}`,
+          detail:`Put writers buying back their positions. The ${row.strike} PE floor is losing support.`,
+          action:`Watch for breakdown below ${row.strike} in next few candles.`
+        }
+        tickerAlerts.push(a); fireAlert(a)
+      }
+    })
+  }
+
+  oiSpikeAlerts = spikeCards
+
+  // ── 2. PCR EXTREMES ───────────────────────────────────────
+  if (s.onPCR) {
+    if (d.pcr > 1.8) { const a={type:'manip',msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Extreme fear. Pre-expiry manipulation possible.`,title:`PCR Extreme: ${d.pcr.toFixed(2)}`,detail:'PCR above 1.8 signals extreme put buying. Could be panic or deliberate pinning.'}; tickerAlerts.push(a); fireAlert(a) }
+    else if (d.pcr > 1.5) tickerAlerts.push({type:'warn',msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Heavy put buying`})
+    if (d.pcr < 0.5) { const a={type:'manip',msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Extreme greed. Squeeze possible.`,title:`PCR Extreme: ${d.pcr.toFixed(2)}`,detail:'PCR below 0.5 signals extreme call buying. Short squeeze could be forming.'}; tickerAlerts.push(a); fireAlert(a) }
+    else if (d.pcr < 0.7) tickerAlerts.push({type:'warn',msg:`⚠️ PCR ${d.pcr.toFixed(2)} — Heavy call buying`})
+  }
+
+  // ── 3. WALL PROXIMITY ─────────────────────────────────────
+  if (s.onWallProx) {
+    const distCe = Math.round(d.ceWall.strike - d.spot)
+    const distPe = Math.round(d.spot - d.peWall.strike)
+    if (distCe >= 0 && distCe <= wallPt) { const a={type:'warn',msg:`🔴 ${distCe}pts to CE wall (${d.ceWall.strike}) — breakout/rejection zone`,title:`${distCe}pts from CE Wall`,detail:`Spot is approaching the ${d.ceWall.strike} CE wall with ${((d.ceWall.ce?.openInterest||0)/100000).toFixed(1)}L OI.`,action:'Watch for rejection (sell CE) or breakout (buy CE) — wait for candle close above wall.'}; tickerAlerts.push(a); fireAlert(a) }
+    if (distPe >= 0 && distPe <= wallPt) { const a={type:'warn',msg:`🟢 ${distPe}pts to PE wall (${d.peWall.strike}) — bounce/breakdown zone`,title:`${distPe}pts from PE Wall`,detail:`Spot near the ${d.peWall.strike} PE wall with ${((d.peWall.pe?.openInterest||0)/100000).toFixed(1)}L OI.`,action:'Watch for bounce (sell PE) or breakdown (buy PE) — wait for candle close below wall.'}; tickerAlerts.push(a); fireAlert(a) }
+  }
+
+  // ── 4. EXPIRY WARNINGS ────────────────────────────────────
+  if (s.onExpiry) {
+    if (dte === 0) tickerAlerts.push({type:'warn',msg:`🔴 EXPIRY TODAY — Max pain ${d.maxPainStrike}. Only sell premium. Exit buys by 3pm.`})
+    if (dte === 1) tickerAlerts.push({type:'warn',msg:`⏳ EXPIRY TOMORROW — Theta accelerating. Spreads preferred.`})
+  }
+
+  // ── 5. ROTATING TIPS ─────────────────────────────────────
+  const tips = [
+    {type:'info',msg:`📖 Pin Risk: Institutions push price toward max pain (${d.maxPainStrike}) on expiry.`},
+    {type:'info',msg:`📖 Gamma Squeeze: CE wall OI drops 20%+ = explosive upward move coming.`},
+    {type:'info',msg:`📖 False Breakout: Wait for CANDLE CLOSE above CE wall — not just a wick.`},
+    {type:'info',msg:`📖 Whale Entry: 10L+ OI surge at one strike in 2 min = institutional entry.`},
+    {type:'info',msg:`📖 IV Crush: After RBI/budget, IV collapses. Sell premium near events.`},
+    {type:'info',msg:`📖 Max Pain: ${d.maxPainStrike} — gravity pulls price here near expiry.`},
+  ]
+  const tipIdx = Math.floor(Date.now() / 120000) % tips.length
+  tickerAlerts.push(tips[tipIdx])
+  tickerAlerts.push(tips[(tipIdx+1) % tips.length])
+
+  return tickerAlerts
+}
+
 loadData()
 setInterval(loadData, 2*60*1000)
 </script>
@@ -2511,6 +3049,154 @@ setInterval(loadData, 2*60*1000)
         ✈️ Send to Telegram
       </button>
       <div class="tg-status" id="tgStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ALERT TOAST CONTAINER ══ -->
+<div class="alert-toast-container" id="alertToastContainer"></div>
+
+<!-- ══ ALERT SETTINGS MODAL ══ -->
+<div class="alert-modal-overlay" id="alertModalOverlay" onclick="closeAlertModal(event)">
+  <div class="alert-modal">
+    <div class="alert-modal-head">
+      <div class="alert-modal-title">🔔 Alert Settings</div>
+      <button class="alert-modal-close" onclick="closeAlertModalDirect()">✕</button>
+    </div>
+    <div class="alert-modal-body">
+
+      <div class="alert-section-label">🔔 Alert Channels</div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">🔊 Sound Alert</div>
+          <div class="alert-toggle-sub">Play a beep when OI spike or big change detected</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertSoundEnabled" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">📱 Pop-up Toast</div>
+          <div class="alert-toggle-sub">Show notification popup on screen for each alert</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertPopupEnabled" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">✈️ Telegram Alert</div>
+          <div class="alert-toggle-sub">Send spike alert to your Telegram bot instantly</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertTgEnabled" onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">📧 Email Alert</div>
+          <div class="alert-toggle-sub">Send spike alert to your email via EmailJS</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertEmailEnabled" onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <!-- Email setup -->
+      <div id="emailSetupSection" style="display:none;background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:8px;padding:12px;margin-top:4px">
+        <div style="font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:8px">📧 Email Setup — uses EmailJS (free, no server needed)</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;line-height:1.6">1. Go to <strong>emailjs.com</strong> → free account → create a service + template<br>2. Copy Service ID, Template ID, Public Key below</div>
+        <input class="alert-email-input" id="emailjsServiceId" placeholder="Service ID (e.g. service_abc123)" oninput="saveAlertSettings()"/>
+        <input class="alert-email-input" id="emailjsTemplateId" placeholder="Template ID (e.g. template_xyz)" style="margin-top:6px" oninput="saveAlertSettings()"/>
+        <input class="alert-email-input" id="emailjsPublicKey" placeholder="Public Key" style="margin-top:6px" oninput="saveAlertSettings()"/>
+        <input class="alert-email-input" id="alertEmailTo" placeholder="Send alerts to: you@gmail.com" style="margin-top:6px" oninput="saveAlertSettings()"/>
+      </div>
+
+      <div class="alert-section-label">⚡ What to Alert On</div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">OI Spike / Drop</div>
+          <div class="alert-toggle-sub">When OI changes suddenly at any strike</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertOnOISpike" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">Short Covering</div>
+          <div class="alert-toggle-sub">⚡ CE or PE short covering detected</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertOnShortCover" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">PCR Extreme</div>
+          <div class="alert-toggle-sub">PCR goes above 1.5 or below 0.6</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertOnPCR" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">Wall Proximity</div>
+          <div class="alert-toggle-sub">Spot within 50pts of CE or PE wall</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertOnWallProx" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-toggle-row">
+        <div class="alert-toggle-left">
+          <div class="alert-toggle-label">Expiry Warning</div>
+          <div class="alert-toggle-sub">Alert on expiry day and day before</div>
+        </div>
+        <label class="alert-toggle">
+          <input type="checkbox" id="alertOnExpiry" checked onchange="saveAlertSettings()">
+          <span class="alert-slider"></span>
+        </label>
+      </div>
+
+      <div class="alert-section-label">🎚️ Thresholds</div>
+
+      <div class="alert-threshold-row">
+        <div class="alert-threshold-label">OI Spike threshold (%)</div>
+        <input class="alert-threshold-input" id="alertOISpikeThreshold" type="number" value="15" min="5" max="50" oninput="saveAlertSettings()"/>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px">Default 15% — lower = more alerts, higher = only big moves</div>
+
+      <div class="alert-threshold-row">
+        <div class="alert-threshold-label">Wall proximity (pts)</div>
+        <input class="alert-threshold-input" id="alertWallProxThreshold" type="number" value="50" min="10" max="200" oninput="saveAlertSettings()"/>
+      </div>
+
+      <div class="alert-section-label">🕐 Alert History (last 20)</div>
+      <div class="alert-history" id="alertHistoryList">
+        <div style="font-size:12px;color:var(--text3);padding:10px;text-align:center">No alerts yet — waiting for data</div>
+      </div>
+
+      <button class="alert-test-btn" onclick="testAlert()">🔊 Test Sound & Popup Now</button>
     </div>
   </div>
 </div>

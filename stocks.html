@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LNP KAMAKSHIVA · Stock Options OI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f2f5;--bg2:#f7f8fa;--bg3:#e8eaee;--border:#dde1e8;
+  --text:#1e2330;--text2:#52607a;--text3:#8f9bb8;
+  --red:#c93535;--red-bg:#fdf1f1;--red-bd:#f5c6c6;
+  --green:#177a56;--green-bg:#f1faf6;--green-bd:#b8e8d4;
+  --blue:#1d55d4;--blue-bg:#eef3fd;--blue-bd:#b8ccf8;
+  --yellow:#c26b00;--yel-bg:#fdf6e8;--yel-bd:#f5d99a;
+  --purple:#6530c7;--pur-bg:#f3f0fd;--pur-bd:#d4c8f5;
+  --orange:#d44f0a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:1px solid #1d3461;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
+.header-left{display:flex;align-items:center;gap:12px}
+.logo{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:5px 12px;border-radius:7px;letter-spacing:3px;box-shadow:0 2px 8px rgba(239,68,68,0.4)}
+.header-title-main{font-size:15px;font-weight:800;color:white}
+.header-title-main span.kamak{color:#f59e0b}
+.header-title-main span.dot{color:rgba(255,255,255,0.3);margin:0 6px}
+.header-title-main span.oi{color:#60a5fa}
+.header-title-sub{font-size:10px;font-weight:500;color:rgba(255,255,255,0.45);letter-spacing:2px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:8px}
+.nav-link{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s}
+.nav-link:hover{background:rgba(255,255,255,0.15);color:white}
+.nav-link.active{background:white;color:#1d55d4;font-weight:800;border-color:white}
+.refresh-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.15s}
+.refresh-btn:hover{background:rgba(255,255,255,0.2);color:white}
+.refresh-btn.spinning{animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.4);white-space:nowrap}
+
+/* ── SEARCH BAR ── */
+.search-row{background:#0a1020;border-bottom:1px solid #1a2a40;padding:8px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:99}
+.search-wrap{position:relative;flex:1;max-width:400px}
+.search-input{width:100%;padding:8px 14px 8px 36px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.08);color:white;font-size:13px;font-weight:600;outline:none;font-family:'JetBrains Mono',monospace;transition:all 0.15s}
+.search-input:focus{border-color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.12)}
+.search-input::placeholder{color:rgba(255,255,255,0.35);font-weight:400}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.search-suggestions{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#1a2540;border:1px solid rgba(255,255,255,0.15);border-radius:10px;max-height:300px;overflow-y:auto;z-index:200;display:none}
+.search-suggestions.show{display:block}
+.search-item{padding:8px 14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.8);transition:background 0.1s}
+.search-item:hover{background:rgba(255,255,255,0.1)}
+.search-item-sym{font-family:'JetBrains Mono',monospace;font-weight:700;color:white}
+.search-item-name{color:rgba(255,255,255,0.45);font-size:11px}
+.search-item-lot{font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(29,85,212,0.3);color:#93c5fd;font-weight:700}
+
+/* Quick pick chips */
+.quick-picks{display:flex;gap:5px;flex-wrap:wrap}
+.quick-chip{font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);cursor:pointer;transition:all 0.15s;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.quick-chip:hover{background:rgba(255,255,255,0.12);color:white;border-color:rgba(255,255,255,0.3)}
+.quick-chip.active{background:white;color:#1d55d4;border-color:white;font-weight:800}
+
+/* ── EXPIRY ROW ── */
+.expiry-row{background:#060f1e;border-bottom:1px solid #1a2a40;padding:5px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.expiry-row-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.25);white-space:nowrap;flex-shrink:0}
+
+/* ── MAIN LAYOUT ── */
+.main{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 130px)}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+.command{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto}
+.warroom{background:var(--bg);overflow-y:auto;padding-bottom:40px}
+
+/* ── SPOT BLOCK ── */
+.spot-block{padding:18px 20px 14px;border-bottom:1px solid var(--border);background:#2a3148;color:white}
+.stock-name{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.spot-value{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1;color:white;font-family:'JetBrains Mono',monospace}
+.spot-change{font-size:13px;font-weight:600;margin-top:4px}
+.spot-meta{margin-top:8px;display:flex;gap:14px;flex-wrap:wrap}
+.spot-meta-item{font-size:11px;color:rgba(255,255,255,0.5)}
+.spot-meta-item span{color:rgba(255,255,255,0.85);font-weight:600}
+.lot-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:#fde68a;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace}
+
+/* ── METRICS ── */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr}
+.metric{padding:12px 16px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.metric:nth-child(even){border-right:none}
+.metric-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:4px}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;line-height:1}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── WALLS ── */
+.walls-section{padding:14px 16px;border-bottom:1px solid var(--border)}
+.walls-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px}
+.wall-card{border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.wall-card.ce{background:var(--red-bg);border:1.5px solid var(--red-bd)}
+.wall-card.pe{background:var(--green-bg);border:1.5px solid var(--green-bd)}
+.wall-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.wall-card.ce .wall-type{color:var(--red)}
+.wall-card.pe .wall-type{color:var(--green)}
+.wall-strike{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+.wall-card.ce .wall-strike{color:var(--red)}
+.wall-card.pe .wall-strike{color:var(--green)}
+.wall-oi{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--text);text-align:right}
+.wall-dist{font-size:11px;color:var(--text3);margin-top:2px;text-align:right}
+
+/* ── STRATEGY ── */
+.strategy-section{padding:14px 16px}
+.strategy-card{border-radius:12px;border:1.5px solid var(--blue-bd);overflow:hidden;margin-bottom:8px}
+.strategy-head{background:var(--blue);padding:9px 13px;display:flex;justify-content:space-between;align-items:center}
+.strategy-head-label{font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:1px}
+.strategy-body{padding:13px;background:var(--blue-bg)}
+.strategy-name{font-size:16px;font-weight:800;color:var(--blue);margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--blue-bd)}
+.leg:last-child{border-bottom:none}
+.leg-badge{font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:1px;min-width:38px;text-align:center}
+.leg-badge.sell{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-bd)}
+.leg-badge.buy{background:var(--green-bg);color:var(--green);border:1.5px solid var(--green-bd)}
+.leg-desc{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.leg-price{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--yellow)}
+.strategy-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.stat{background:white;border-radius:7px;padding:7px 8px;text-align:center;border:1px solid var(--border)}
+.stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:2px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700}
+.stat-val.risk{color:var(--red)}
+.stat-val.reward{color:var(--green)}
+.stat-val.rr{color:var(--blue)}
+
+/* ── WAR ROOM ── */
+.wr-section{background:var(--bg2);border-radius:12px;margin:10px 14px 0;border:1px solid var(--border);overflow:hidden}
+.wr-header{padding:13px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:background 0.15s}
+.wr-header:hover{background:var(--bg3)}
+.wr-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text)}
+.wr-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.wr-chevron{font-size:11px;color:var(--text3);transition:transform 0.2s}
+.wr-chevron.open{transform:rotate(90deg)}
+.wr-body{padding:0 16px 14px;display:none}
+.wr-body.open{display:block}
+.explain-box{background:var(--bg3);border-radius:8px;padding:12px 14px;margin-top:10px;line-height:1.7;font-size:12px;color:var(--text2);border:1px solid var(--border)}
+.explain-box strong{color:var(--text)}
+.explain-box .good{color:var(--green);font-weight:600}
+.explain-box .bad{color:var(--red);font-weight:600}
+
+/* ── OI TABLE ── */
+.oi-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.oi-table th{background:var(--bg3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:7px 8px;border-bottom:2px solid var(--border);text-align:right}
+.oi-table th:first-child{text-align:left}
+.oi-table td{font-family:'JetBrains Mono',monospace;padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;color:var(--text)}
+.oi-table td:first-child{text-align:left;font-weight:600}
+.oi-table tr.atm-row td{background:var(--yel-bg);color:var(--yellow);font-weight:700}
+.oi-change.up{color:var(--green)}.oi-change.dn{color:var(--red)}.oi-change.neutral{color:var(--text3)}
+.tag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:0.5px;text-transform:uppercase}
+.tag.build{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.tag.unwind{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.tag.flat{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+
+/* ── PCR CARD ── */
+.pcr-card{background:var(--bg3);border-radius:10px;padding:14px;margin-top:10px;border:1px solid var(--border)}
+.pcr-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.pcr-label{font-size:12px;font-weight:600;color:var(--text2)}
+.pcr-number{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:800}
+.pcr-track{height:9px;border-radius:5px;background:linear-gradient(to right,#16a34a 0%,#16a34a 20%,#86efac 20%,#86efac 35%,#d1d5db 35%,#d1d5db 65%,#fca5a5 65%,#fca5a5 80%,#dc2626 80%);position:relative;margin-bottom:5px}
+.pcr-needle{position:absolute;top:-4px;width:17px;height:17px;border-radius:50%;background:white;border:3px solid var(--text);transform:translateX(-50%);transition:left 0.5s ease;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+
+/* ── QUICK READ ── */
+.qr-card{border-radius:12px;padding:14px 16px;margin:10px 14px 0}
+.qr-line{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.qr-icon{font-size:13px;flex-shrink:0;margin-top:2px}
+
+/* ── LOADING ── */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:250px;gap:14px}
+.loading-ring{width:32px;height:32px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--blue);animation:spin 0.8s linear infinite}
+.loading-text{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:1px}
+.warn-box{margin:12px 12px 0;padding:10px 14px;background:var(--yel-bg);border:1.5px solid var(--yel-bd);border-radius:10px;font-size:12px;color:var(--yellow);font-weight:500;line-height:1.5}
+
+/* ── STOCK DIFFERENCES vs INDEX ── */
+.stock-note{background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--text2);line-height:1.6}
+.stock-note strong{color:var(--blue)}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <div class="logo">LNP</div>
+    <div>
+      <div class="header-title-main">
+        <span class="kamak">KAMAKSHIVA</span>
+        <span class="dot">·</span>
+        <span class="oi">STOCK OPTIONS OI</span>
+      </div>
+      <div class="header-title-sub">F&amp;O Stocks · Real-Time Option Chain</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a class="nav-link" href="index.html">📊 Indexes</a>
+    <a class="nav-link active" href="stocks.html">📈 Stocks</a>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
+    <span class="last-update" id="lastUpdate">—</span>
+  </div>
+</div>
+
+<!-- Search Row -->
+<div class="search-row">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="stockSearch" type="text"
+      placeholder="Search stock... (e.g. RELIANCE, TCS, HDFC)"
+      oninput="onSearch(this.value)"
+      onkeydown="onSearchKey(event)"
+      autocomplete="off"/>
+    <div class="search-suggestions" id="suggestions"></div>
+  </div>
+  <div class="quick-picks" id="quickPicks">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- Expiry Row -->
+<div class="expiry-row">
+  <span class="expiry-row-label">Expiries</span>
+  <div id="expiryBar">
+    <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Select a stock first</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="command" id="commandPanel">
+    <div class="loading" id="loadingLeft">
+      <div class="loading-ring"></div>
+      <div class="loading-text">SELECT A STOCK</div>
+    </div>
+    <div id="commandContent" style="display:none"></div>
+  </div>
+  <div class="warroom" id="warRoom">
+    <div class="loading" id="loadingRight">
+      <div class="loading-ring"></div>
+      <div class="loading-text">SELECT A STOCK</div>
+    </div>
+    <div id="warContent" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── F&O STOCK LIST with lot sizes ──────────────────────────
+const FNO_STOCKS = [
+  {sym:'RELIANCE',  name:'Reliance Industries',   lot:250,  step:20},
+  {sym:'TCS',       name:'Tata Consultancy',       lot:150,  step:50},
+  {sym:'HDFCBANK',  name:'HDFC Bank',              lot:550,  step:10},
+  {sym:'INFY',      name:'Infosys',                lot:300,  step:20},
+  {sym:'ICICIBANK', name:'ICICI Bank',             lot:700,  step:10},
+  {sym:'SBIN',      name:'State Bank of India',    lot:750,  step:5},
+  {sym:'BHARTIARTL',name:'Bharti Airtel',          lot:100,  step:20},
+  {sym:'AXISBANK',  name:'Axis Bank',              lot:625,  step:10},
+  {sym:'KOTAKBANK', name:'Kotak Mahindra Bank',    lot:400,  step:20},
+  {sym:'ITC',       name:'ITC Limited',            lot:1600, step:5},
+  {sym:'LT',        name:'Larsen & Toubro',        lot:150,  step:20},
+  {sym:'BAJFINANCE',name:'Bajaj Finance',          lot:125,  step:50},
+  {sym:'HINDUNILVR',name:'Hindustan Unilever',     lot:200,  step:20},
+  {sym:'MARUTI',    name:'Maruti Suzuki',          lot:75,   step:100},
+  {sym:'WIPRO',     name:'Wipro',                  lot:1000, step:10},
+  {sym:'HCLTECH',   name:'HCL Technologies',       lot:700,  step:10},
+  {sym:'SUNPHARMA', name:'Sun Pharmaceutical',     lot:700,  step:10},
+  {sym:'TATAMOTORS',name:'Tata Motors',            lot:1425, step:5},
+  {sym:'TITAN',     name:'Titan Company',          lot:175,  step:20},
+  {sym:'ADANIENT',  name:'Adani Enterprises',      lot:300,  step:50},
+  {sym:'ADANIPORTS',name:'Adani Ports',            lot:600,  step:20},
+  {sym:'ASIANPAINT',name:'Asian Paints',           lot:200,  step:20},
+  {sym:'BAJAJFINSV',name:'Bajaj Finserv',          lot:125,  step:50},
+  {sym:'BPCL',      name:'BPCL',                   lot:1800, step:5},
+  {sym:'CIPLA',     name:'Cipla',                  lot:650,  step:10},
+  {sym:'COALINDIA', name:'Coal India',             lot:2800, step:5},
+  {sym:'DIVISLAB',  name:'Divi\'s Laboratories',  lot:150,  step:50},
+  {sym:'DRREDDY',   name:'Dr Reddy\'s Labs',       lot:125,  step:100},
+  {sym:'EICHERMOT', name:'Eicher Motors',          lot:175,  step:100},
+  {sym:'HDFCLIFE',  name:'HDFC Life Insurance',    lot:1100, step:10},
+  {sym:'HEROMOTOCO',name:'Hero MotoCorp',          lot:300,  step:50},
+  {sym:'HINDALCO',  name:'Hindalco Industries',    lot:700,  step:10},
+  {sym:'INDUSINDBK',name:'IndusInd Bank',          lot:500,  step:20},
+  {sym:'JSWSTEEL',  name:'JSW Steel',              lot:675,  step:10},
+  {sym:'NESTLEIND', name:'Nestle India',           lot:50,   step:100},
+  {sym:'NTPC',      name:'NTPC',                   lot:3000, step:5},
+  {sym:'ONGC',      name:'ONGC',                   lot:1950, step:5},
+  {sym:'POWERGRID', name:'Power Grid Corp',        lot:2700, step:5},
+  {sym:'SBILIFE',   name:'SBI Life Insurance',     lot:300,  step:50},
+  {sym:'TATASTEEL', name:'Tata Steel',             lot:3225, step:5},
+  {sym:'TECHM',     name:'Tech Mahindra',          lot:500,  step:20},
+  {sym:'TRENT',     name:'Trent',                  lot:150,  step:50},
+  {sym:'VEDL',      name:'Vedanta',                lot:1350, step:5},
+  {sym:'ZOMATO',    name:'Zomato',                 lot:1425, step:5},
+  {sym:'NAUKRI',    name:'Info Edge (Naukri)',      lot:75,   step:100},
+  {sym:'PNB',       name:'Punjab National Bank',   lot:8000, step:2},
+  {sym:'BANKBARODA',name:'Bank of Baroda',         lot:2600, step:5},
+  {sym:'CANBK',     name:'Canara Bank',            lot:3200, step:5},
+  {sym:'IRFC',      name:'Indian Railway Finance', lot:4000, step:5},
+  {sym:'RECLTD',    name:'REC Limited',            lot:2600, step:5},
+  {sym:'M&M',       name:'Mahindra & Mahindra',    lot:350,  step:20},
+  {sym:'ULTRACEMCO',name:'UltraTech Cement',       lot:100,  step:100},
+  {sym:'GRASIM',    name:'Grasim Industries',      lot:175,  step:50},
+  {sym:'SHRIRAMFIN',name:'Shriram Finance',        lot:150,  step:50},
+  {sym:'TATACONSUM',name:'Tata Consumer Products', lot:300,  step:20},
+  {sym:'UPL',       name:'UPL',                    lot:1300, step:10},
+  {sym:'PIDILITIND',name:'Pidilite Industries',    lot:250,  step:20},
+  {sym:'DABUR',     name:'Dabur India',            lot:1250, step:5},
+  {sym:'GODREJCP',  name:'Godrej Consumer Products',lot:500, step:10},
+  {sym:'MUTHOOTFIN',name:'Muthoot Finance',        lot:300,  step:50},
+]
+
+// Quick picks — most traded
+const QUICK_PICKS = ['RELIANCE','HDFCBANK','ICICIBANK','SBIN','INFY','TCS','TATAMOTORS','ZOMATO','BAJFINANCE','AXISBANK']
+
+let currentStock   = null  // {sym, name, lot, step}
+let selectedExpiry = null
+let prevData       = null
+let chainData      = null
+let allExpiries    = []
+let dataSource     = 'demo'
+
+// ── SEARCH ────────────────────────────────────────────────
+function initQuickPicks() {
+  const el = document.getElementById('quickPicks')
+  el.innerHTML = QUICK_PICKS.map(sym => {
+    const s = FNO_STOCKS.find(x => x.sym === sym)
+    return `<span class="quick-chip" onclick="selectStock('${sym}')">${sym}</span>`
+  }).join('')
+}
+
+function onSearch(val) {
+  const box = document.getElementById('suggestions')
+  if (!val || val.length < 1) { box.classList.remove('show'); return }
+  const q = val.toUpperCase()
+  const matches = FNO_STOCKS.filter(s =>
+    s.sym.includes(q) || s.name.toUpperCase().includes(q)
+  ).slice(0, 8)
+  if (matches.length === 0) { box.classList.remove('show'); return }
+  box.innerHTML = matches.map(s => `
+    <div class="search-item" onclick="selectStock('${s.sym}')">
+      <span>
+        <span class="search-item-sym">${s.sym}</span>
+        <span class="search-item-name"> — ${s.name}</span>
+      </span>
+      <span class="search-item-lot">Lot: ${s.lot}</span>
+    </div>
+  `).join('')
+  box.classList.add('show')
+}
+
+function onSearchKey(e) {
+  if (e.key === 'Enter') {
+    const val = e.target.value.toUpperCase().trim()
+    const match = FNO_STOCKS.find(s => s.sym === val)
+    if (match) selectStock(match.sym)
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('suggestions').classList.remove('show')
+  }
+}
+
+function selectStock(sym) {
+  currentStock = FNO_STOCKS.find(s => s.sym === sym)
+  if (!currentStock) return
+  // Update UI
+  document.getElementById('stockSearch').value = sym
+  document.getElementById('suggestions').classList.remove('show')
+  // Highlight quick pick
+  document.querySelectorAll('.quick-chip').forEach(c => {
+    c.classList.toggle('active', c.textContent === sym)
+  })
+  selectedExpiry = null
+  prevData = null
+  chainData = null
+  allExpiries = []
+  loadData()
+}
+
+// Close suggestions on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('suggestions').classList.remove('show')
+  }
+})
+
+// ── EXPIRY BAR ────────────────────────────────────────────
+function getDTE(expiryStr) {
+  try {
+    if (!expiryStr) return '?'
+    const parts = expiryStr.split('-')
+    if (parts.length !== 3) return '?'
+    const months = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11}
+    const mm = months[parts[1].toUpperCase()]
+    if (mm === undefined) return '?'
+    const d = new Date(parseInt(parts[2]), mm, parseInt(parts[0]))
+    const today = new Date(); today.setHours(0,0,0,0)
+    return Math.max(0, Math.round((d - today) / (1000*60*60*24)))
+  } catch(e) { return '?' }
+}
+
+function getExpiryType(expStr, allExpDates) {
+  const idx = allExpDates.indexOf(expStr)
+  if (idx < 0) return 'unknown'
+  const nextExp = allExpDates[idx + 1]
+  if (!nextExp) return 'monthly'
+  const dte = getDTE(expStr), nextDTE = getDTE(nextExp)
+  const gap = nextDTE - dte
+  if (gap <= 8) return 'weekly'
+  if (gap <= 15) return 'monthly'
+  return 'special'
+}
+
+function renderExpiryBar(allExpDates) {
+  const bar = document.getElementById('expiryBar')
+  if (!bar || !allExpDates || allExpDates.length === 0) return
+  let html = ''
+  allExpDates.forEach(exp => {
+    const dte     = getDTE(exp)
+    const type    = getExpiryType(exp, allExpDates)
+    const isSel   = exp === selectedExpiry || (!selectedExpiry && exp === allExpDates[0])
+    const dot     = dte===0?'#ef4444':dte===1?'#f97316':dte<=3?'#f59e0b':'#22c55e'
+    const tLabel  = type==='monthly'?'M':type==='special'?'S':'W'
+    const tBg     = type==='monthly'?'rgba(139,92,246,0.35)':'rgba(59,130,246,0.25)'
+    const dteStr  = dte===0?'🔴Today':dte===1?'🟡Tmrw':`${dte}D`
+    const sty     = isSel
+      ? 'background:rgba(255,255,255,0.18);border-color:rgba(255,255,255,0.7);color:white;font-weight:800'
+      : 'background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.12);color:rgba(255,255,255,0.6)'
+    html += `<span onclick="selectExpiry('${exp}')" title="${exp} · ${type} · ${dte}D"
+      style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:14px;border:1px solid;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.15s;white-space:nowrap;${sty}">
+      <span style="width:5px;height:5px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
+      ${exp}
+      <span style="font-size:8px;padding:1px 3px;border-radius:3px;background:${tBg};color:rgba(255,255,255,0.85);font-weight:700">${tLabel}</span>
+      <span style="font-size:9px;opacity:0.8">${dteStr}</span>
+    </span>`
+  })
+  bar.innerHTML = html
+}
+
+function selectExpiry(exp) {
+  selectedExpiry = exp
+  prevData = null
+  loadData()
+}
+
+// ── FETCH ─────────────────────────────────────────────────
+async function fetchChain(sym) {
+  const encoded = encodeURIComponent(sym)
+  // Local proxy first (most reliable)
+  try {
+    const r = await fetch(`http://localhost:3001/chain?symbol=${encoded}&type=equity`, {signal:AbortSignal.timeout(4000)})
+    if (r.ok) { const j = await r.json(); if (j?.records) { dataSource='local'; return j } }
+  } catch(e) {}
+  // Vercel proxy
+  try {
+    const r = await fetch(`/api/chain?symbol=${encoded}&type=equity`, {signal:AbortSignal.timeout(12000)})
+    if (r.ok) { const j = await r.json(); if (j?.records) { dataSource='vercel'; return j } }
+  } catch(e) {}
+  dataSource = 'demo'
+  return null
+}
+
+// ── PARSE ─────────────────────────────────────────────────
+function parseChain(raw, stock) {
+  const records   = raw.records
+  const data      = records.data || []
+  const spot      = records.underlyingValue || 0
+  const allExpDates = records.expiryDates || []
+  const expiry    = (selectedExpiry && allExpDates.includes(selectedExpiry))
+    ? selectedExpiry : (allExpDates[0] || '')
+  allExpiries = allExpDates
+
+  const strikes = {}
+  for (const row of data) {
+    if (row.expiryDate !== expiry) continue
+    const k = row.strikePrice
+    if (!strikes[k]) strikes[k] = {strike:k, ce:{}, pe:{}}
+    if (row.CE) strikes[k].ce = row.CE
+    if (row.PE) strikes[k].pe = row.PE
+  }
+
+  const strikeList = Object.values(strikes).sort((a,b) => a.strike - b.strike)
+  if (strikeList.length === 0) return null
+
+  let atm = strikeList.reduce((best,s) => Math.abs(s.strike-spot) < Math.abs(best.strike-spot) ? s : best, strikeList[0])
+
+  // Max pain
+  let maxPainStrike = 0, minPainVal = Infinity
+  for (const s of strikeList) {
+    let loss = 0
+    for (const other of strikeList) {
+      if (other.strike < s.strike) loss += (other.ce.openInterest||0) * (s.strike - other.strike)
+      if (other.strike > s.strike) loss += (other.pe.openInterest||0) * (other.strike - s.strike)
+    }
+    if (loss < minPainVal) { minPainVal = loss; maxPainStrike = s.strike }
+  }
+
+  const ceWall = strikeList.reduce((b,s) => (s.ce.openInterest||0) > (b.ce.openInterest||0) ? s : b, strikeList[0])
+  const peWall = strikeList.reduce((b,s) => (s.pe.openInterest||0) > (b.pe.openInterest||0) ? s : b, strikeList[0])
+  const totalCeOI = strikeList.reduce((s,r) => s + (r.ce.openInterest||0), 0)
+  const totalPeOI = strikeList.reduce((s,r) => s + (r.pe.openInterest||0), 0)
+  const pcr = totalCeOI > 0 ? totalPeOI / totalCeOI : 1
+  const atmIV = ((atm.ce.impliedVolatility||0) + (atm.pe.impliedVolatility||0)) / 2
+  const atmIdx = strikeList.indexOf(atm)
+
+  return {
+    spot, expiry, allExpiries, atm: atm.strike, maxPainStrike,
+    ceWall, peWall, pcr, totalCeOI, totalPeOI, atmIV,
+    nearStrikes: strikeList.slice(Math.max(0, atmIdx-5), atmIdx+6),
+    strikeList, atmRow: atm, stock,
+    lotSize: stock?.lot || 1,
+    step: stock?.step || 10
+  }
+}
+
+// ── STRATEGY ENGINE (stock-aware) ─────────────────────────
+function computeStrategy(d) {
+  const {spot, ceWall, peWall, maxPainStrike, pcr, lotSize, step} = d
+  const ceWallStr = ceWall.strike, peWallStr = peWall.strike
+  const distToCe = ceWallStr - spot, distToPe = spot - peWallStr
+  const inRange  = spot > peWallStr && spot < ceWallStr
+  const dte      = getDTE(d.expiry)
+  const dteLabel = dte===0?'EXPIRY DAY':dte<=2?'NEAR EXPIRY':dte<=7?'THIS WEEK':'FAR EXPIRY'
+
+  let bullSignals = 0, bearSignals = 0, reasons = []
+  if (pcr > 1.3) { bearSignals+=2; reasons.push({dir:'bear', text:`PCR ${pcr.toFixed(2)} — strongly bearish`}) }
+  else if (pcr > 1.1) { bearSignals+=1; reasons.push({dir:'bear', text:`PCR ${pcr.toFixed(2)} — mildly bearish`}) }
+  else if (pcr < 0.7) { bullSignals+=2; reasons.push({dir:'bull', text:`PCR ${pcr.toFixed(2)} — strongly bullish`}) }
+  else if (pcr < 0.9) { bullSignals+=1; reasons.push({dir:'bull', text:`PCR ${pcr.toFixed(2)} — mildly bullish`}) }
+  else { reasons.push({dir:'neut', text:`PCR ${pcr.toFixed(2)} — neutral`}) }
+
+  if (distToCe < step*3) { bearSignals+=2; reasons.push({dir:'bear', text:`Only ${Math.round(distToCe)}pts to CE wall at ${ceWallStr}`}) }
+  if (distToPe < step*3) { bullSignals+=2; reasons.push({dir:'bull', text:`Only ${Math.round(distToPe)}pts to PE wall at ${peWallStr}`}) }
+  if (spot > maxPainStrike) { bearSignals+=1; reasons.push({dir:'bear', text:`Spot above max pain (${maxPainStrike})`}) }
+  else { bullSignals+=1; reasons.push({dir:'bull', text:`Spot below max pain (${maxPainStrike})`}) }
+
+  let dir='range', bias='NEUTRAL'
+  if (!inRange && spot >= ceWallStr) { dir='bull'; bias='STRONG BULL' }
+  else if (!inRange && spot <= peWallStr) { dir='bear'; bias='STRONG BEAR' }
+  else if (bullSignals > bearSignals+1) { dir='bull'; bias='BULLISH' }
+  else if (bearSignals > bullSignals+1) { dir='bear'; bias='BEARISH' }
+
+  const atmCeP = d.atmRow.ce?.lastPrice || 0
+  const atmPeP = d.atmRow.pe?.lastPrice || 0
+  let allStrategies = []
+
+  if (!inRange && spot >= ceWallStr) {
+    allStrategies.push({
+      name:'LONG CE (BREAKOUT)', type:'Momentum / Bullish', tag:'🚀 AGGRESSIVE', tagColor:'var(--green)',
+      rationale:`${d.stock?.sym} broke above CE wall at ${ceWallStr}. Momentum trade.`,
+      legs:[{action:'BUY', desc:`${d.atm} CE (ATM)`, price:atmCeP.toFixed(1)}],
+      risk: Math.round(atmCeP * lotSize),
+      reward: Math.round(atmCeP * lotSize * 2),
+      rr:'1:2.0', exit:`Exit at 2x OR fall below ${ceWallStr}`
+    })
+  } else if (!inRange && spot <= peWallStr) {
+    allStrategies.push({
+      name:'LONG PE (BREAKDOWN)', type:'Momentum / Bearish', tag:'🔻 AGGRESSIVE', tagColor:'var(--red)',
+      rationale:`${d.stock?.sym} broke below PE wall at ${peWallStr}. Momentum trade.`,
+      legs:[{action:'BUY', desc:`${d.atm} PE (ATM)`, price:atmPeP.toFixed(1)}],
+      risk: Math.round(atmPeP * lotSize),
+      reward: Math.round(atmPeP * lotSize * 2),
+      rr:'1:2.0', exit:`Exit at 2x OR recovery above ${peWallStr}`
+    })
+  } else if (distToCe < step*4) {
+    const sp = ceWall.ce?.lastPrice || 0
+    allStrategies.push({
+      name:'BEAR CALL SPREAD', type:'Near Resistance', tag:'⚡ PRIMARY', tagColor:'var(--red)',
+      rationale:`${d.stock?.sym} near CE wall at ${ceWallStr} (${Math.round(distToCe)}pts). Sell the wall.`,
+      legs:[{action:'SELL', desc:`${ceWallStr} CE`, price:sp.toFixed(1)}, {action:'BUY', desc:`${ceWallStr+step} CE`, price:'hedge'}],
+      risk: step * lotSize, reward: Math.round(sp * lotSize),
+      rr:'Defined', exit:`Exit if CE wall OI drops >20%`
+    })
+  } else if (distToPe < step*4) {
+    const sp = peWall.pe?.lastPrice || 0
+    allStrategies.push({
+      name:'BULL PUT SPREAD', type:'Near Support', tag:'⚡ PRIMARY', tagColor:'var(--green)',
+      rationale:`${d.stock?.sym} near PE wall at ${peWallStr} (${Math.round(distToPe)}pts). Sell the floor.`,
+      legs:[{action:'SELL', desc:`${peWallStr} PE`, price:sp.toFixed(1)}, {action:'BUY', desc:`${peWallStr-step} PE`, price:'hedge'}],
+      risk: step * lotSize, reward: Math.round(sp * lotSize),
+      rr:'Defined', exit:`Exit if PE wall OI drops >20%`
+    })
+  } else {
+    const scP = ceWall.ce?.lastPrice || 0
+    const spP = peWall.pe?.lastPrice || 0
+    allStrategies.push({
+      name:'IRON CONDOR', type:'Range Bound', tag:'⚡ PRIMARY', tagColor:'var(--purple)',
+      rationale:`${d.stock?.sym} in range ${peWallStr}–${ceWallStr}. Sell both walls.`,
+      legs:[
+        {action:'SELL', desc:`${ceWallStr} CE`, price:scP.toFixed(1)},
+        {action:'BUY',  desc:`${ceWallStr+step} CE`, price:'hedge'},
+        {action:'SELL', desc:`${peWallStr} PE`, price:spP.toFixed(1)},
+        {action:'BUY',  desc:`${peWallStr-step} PE`, price:'hedge'}
+      ],
+      risk: step*lotSize, reward: Math.round((scP+spP)*lotSize),
+      rr:'Defined', exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}`
+    })
+  }
+
+  const strategy  = allStrategies[0]
+  const strategy2 = allStrategies[1] || null
+  if (strategy) { strategy.dte = dte; strategy.dteLabel = dteLabel }
+  const confidence = Math.min(5, Math.max(1, Math.abs(bullSignals-bearSignals)+1))
+  return {dir, bias, strategy, strategy2, reasons, bullSignals, bearSignals, confidence, dte, dteLabel}
+}
+
+// ── RENDER COMMAND ────────────────────────────────────────
+function renderCommand(d, s) {
+  const {spot, atm, maxPainStrike, pcr, ceWall, peWall, totalCeOI, totalPeOI, stock, lotSize} = d
+  const {dir, bias, strategy, reasons} = s
+  const pcrColor = pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)'
+  const biasColor = dir==='bull'?'var(--green)':dir==='bear'?'var(--red)':'var(--yellow)'
+  const ceOI_L = ((ceWall.ce?.openInterest||0)/100000).toFixed(1)
+  const peOI_L = ((peWall.pe?.openInterest||0)/100000).toFixed(1)
+  const distCe = Math.round(ceWall.strike - spot)
+  const distPe = Math.round(spot - peWall.strike)
+  const dte = getDTE(d.expiry)
+
+  return `
+  <div class="spot-block">
+    <div class="stock-name">${stock?.sym || '—'} · ${stock?.name || ''}</div>
+    <div class="spot-value">₹${spot.toLocaleString('en-IN', {maximumFractionDigits:2})}</div>
+    <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span class="lot-badge">📦 Lot: ${lotSize}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.5)">Expiry: <strong style="color:rgba(255,255,255,0.85)">${d.expiry}</strong></span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.5)">ATM: <strong style="color:rgba(255,255,255,0.85)">${atm}</strong></span>
+      <span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:${dte===0?'rgba(239,68,68,0.3)':dte<=2?'rgba(245,158,11,0.25)':'rgba(255,255,255,0.1)'};color:${dte===0?'#fca5a5':dte<=2?'#fde68a':'rgba(255,255,255,0.7)'}">${s.dteLabel} · ${dte}D</span>
+    </div>
+    ${dte===0?'<div style="background:rgba(239,68,68,0.15);border-top:1px solid rgba(239,68,68,0.3);padding:5px 20px;font-size:11px;font-weight:700;color:#fca5a5;margin-top:8px">⚠️ EXPIRY DAY — Only sell premium. Exit by 3:00 PM.</div>':''}
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric"><div class="metric-label">Max Pain</div><div class="metric-value" style="color:var(--purple)">${maxPainStrike.toLocaleString('en-IN')}</div><div class="metric-sub">${maxPainStrike>spot?'↑ '+Math.round(maxPainStrike-spot)+' pts above':'↓ '+Math.round(spot-maxPainStrike)+' pts below'}</div></div>
+    <div class="metric"><div class="metric-label">PCR</div><div class="metric-value" style="color:${pcrColor}">${pcr.toFixed(2)}</div><div class="metric-sub" style="color:${pcrColor}">${pcr>1.1?'↑ Bearish':pcr<0.9?'↓ Bullish':'─ Neutral'}</div></div>
+    <div class="metric"><div class="metric-label">Total CE OI</div><div class="metric-value" style="color:var(--red)">${(totalCeOI/100000).toFixed(1)}L</div></div>
+    <div class="metric"><div class="metric-label">Total PE OI</div><div class="metric-value" style="color:var(--green)">${(totalPeOI/100000).toFixed(1)}L</div></div>
+  </div>
+
+  <div class="walls-section">
+    <div class="walls-title">OI Walls</div>
+    <div class="wall-card ce">
+      <div><div class="wall-type">🔴 Resistance (CE Wall)</div><div class="wall-strike">${ceWall.strike.toLocaleString('en-IN')}</div></div>
+      <div><div class="wall-oi">${ceOI_L}L OI</div><div class="wall-dist">${distCe} pts above ↑</div></div>
+    </div>
+    <div class="wall-card pe">
+      <div><div class="wall-type">🟢 Support (PE Wall)</div><div class="wall-strike">${peWall.strike.toLocaleString('en-IN')}</div></div>
+      <div><div class="wall-oi">${peOI_L}L OI</div><div class="wall-dist">${distPe} pts below ↓</div></div>
+    </div>
+  </div>
+
+  <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="background:var(--bg3);border-radius:8px;padding:9px 11px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">Bias</div>
+      <div style="font-size:14px;font-weight:700;color:${biasColor}">${bias}</div>
+    </div>
+    <div style="background:var(--bg3);border-radius:8px;padding:9px 11px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">Range</div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);font-family:'JetBrains Mono',monospace">${peWall.strike} — ${ceWall.strike}</div>
+    </div>
+  </div>
+
+  <div class="strategy-section">
+    ${renderStrategyCard(strategy)}
+  </div>`
+}
+
+function renderStrategyCard(strat) {
+  if (!strat) return ''
+  return `<div class="strategy-card">
+    <div class="strategy-head">
+      <span class="strategy-head-label">⚡ STRATEGY</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.7)">${strat.type}</span>
+    </div>
+    <div class="strategy-body">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div class="strategy-name" style="margin-bottom:0">${strat.name}</div>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:var(--blue-bg);color:${strat.tagColor||'var(--blue)'};border:1px solid var(--blue-bd)">${strat.tag||''}</span>
+      </div>
+      ${strat.legs.map(l=>`<div class="leg"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}
+      <div class="strategy-stats">
+        <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strat.risk?.toLocaleString('en-IN')||'—'}</div></div>
+        <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${strat.reward?.toLocaleString('en-IN')||'—'}</div></div>
+        <div class="stat"><div class="stat-label">R:R</div><div class="stat-val rr">${strat.rr||'—'}</div></div>
+      </div>
+      <div onclick="toggleStratDetail('stockStrat')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 2px;cursor:pointer;margin-top:8px;border-top:1px solid var(--blue-bd)">
+        <span style="font-size:12px;font-weight:700;color:var(--blue)">▼ Why this strategy? Exit rules?</span>
+        <span id="stockStrat_chev" style="font-size:11px;color:var(--text3);transition:transform 0.2s">▶</span>
+      </div>
+      <div id="stockStrat" style="display:none;padding:10px 12px;background:white;border-radius:8px;border:1px solid var(--blue-bd)">
+        <p style="font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px">${strat.rationale}</p>
+        <p style="font-size:12px;color:var(--yellow);font-weight:600">🚪 Exit: ${strat.exit}</p>
+      </div>
+    </div>
+  </div>`
+}
+
+function toggleStratDetail(id) {
+  const el = document.getElementById(id)
+  const chev = document.getElementById(id+'_chev')
+  if (!el) return
+  const isOpen = el.style.display !== 'none'
+  el.style.display = isOpen ? 'none' : 'block'
+  if (chev) chev.style.transform = isOpen ? '' : 'rotate(90deg)'
+}
+
+// ── RENDER WAR ROOM ───────────────────────────────────────
+function renderWarRoom(d, s) {
+  const {spot, atm, ceWall, peWall, nearStrikes, pcr, maxPainStrike, stock, lotSize} = d
+  const {dir, bias, strategy, reasons} = s
+  const maxOI = Math.max(...nearStrikes.map(r => Math.max(r.ce.openInterest||0, r.pe.openInterest||0)))
+  const pcrColor = pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)'
+  const pcrNeedle = Math.max(0, Math.min(100, ((pcr-0.5)/2.0)*100)).toFixed(1)
+  const dte = getDTE(d.expiry)
+
+  // Quick Read
+  const ceOI_L = ((ceWall.ce?.openInterest||0)/100000).toFixed(1)
+  const peOI_L = ((peWall.pe?.openInterest||0)/100000).toFixed(1)
+  const distCe = Math.round(ceWall.strike - spot)
+  const distPe = Math.round(spot - peWall.strike)
+  const bgColor = dir==='bull'?'var(--green-bg)':dir==='bear'?'var(--red-bg)':'var(--yel-bg)'
+  const bdColor = dir==='bull'?'var(--green-bd)':dir==='bear'?'var(--red-bd)':'var(--yel-bd)'
+  const txColor = dir==='bull'?'var(--green)':dir==='bear'?'var(--red)':'var(--yellow)'
+  const emoji   = dir==='bull'?'🟢':dir==='bear'?'🔴':'🟡'
+
+  let s1 = distCe < 50
+    ? `${stock?.sym} is just ${distCe}pts from CE wall at ${ceWallStr||ceWall.strike} (${ceOI_L}L OI) — strong resistance zone.`
+    : distPe < 50
+    ? `${stock?.sym} is just ${distPe}pts above PE wall at ${peWallStr||peWall.strike} (${peOI_L}L OI) — strong support zone.`
+    : `${stock?.sym} trading in range, CE wall ${ceWall.strike} (${ceOI_L}L) is ${distCe}pts away, PE wall ${peWall.strike} (${peOI_L}L) is ${distPe}pts below.`
+  let s2 = `PCR ${pcr.toFixed(2)} — ${pcr>1.3?'heavily bearish positioning':pcr>1.1?'mild bearish lean':pcr<0.7?'heavily bullish positioning':pcr<0.9?'mild bullish lean':'balanced, no strong bias'}.`
+  let s3 = s.confidence>=4?`${dir==='bull'?'Clear bullish':'Clear bearish'} picture — high conviction.`
+    : `Mixed signals — wait for clearer confirmation.`
+
+  const oiRows = nearStrikes.map(row => {
+    const ceOI = row.ce?.openInterest||0, peOI = row.pe?.openInterest||0
+    const cePrev = prevData?.strikes?.[row.strike]?.ce||ceOI
+    const pePrev = prevData?.strikes?.[row.strike]?.pe||peOI
+    return { strike:row.strike, ceOI, peOI, ceDiff:ceOI-cePrev, peDiff:peOI-pePrev,
+      isAtm:row.strike===atm, isCeWall:row.strike===ceWall.strike, isPeWall:row.strike===peWall.strike }
+  })
+
+  return `
+  <!-- Quick Read -->
+  <div class="qr-card" style="background:${bgColor};border:1.5px solid ${bdColor}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:18px">${emoji}</span>
+      <div style="flex:1">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:${txColor}">Quick Read — ${stock?.sym}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:1px">${d.expiry} · ${dte}D to expiry · Lot: ${lotSize}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${txColor};color:white">${bias}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="qr-line"><span class="qr-icon">📍</span><span style="font-size:13px;color:var(--text);font-weight:500;line-height:1.6">${s1}</span></div>
+      <div class="qr-line"><span class="qr-icon">📊</span><span style="font-size:13px;color:var(--text2);line-height:1.6">${s2}</span></div>
+      <div class="qr-line" style="padding-top:7px;border-top:1px solid ${bdColor}"><span class="qr-icon">💡</span><span style="font-size:13px;color:var(--text);font-weight:600;line-height:1.6">${s3}</span></div>
+    </div>
+  </div>
+
+  <!-- Stock note -->
+  <div class="stock-note" style="margin:10px 14px 0">
+    <strong>📌 Stock Options note:</strong> Lot size for ${stock?.sym} is <strong>${lotSize} shares</strong>. Monthly expiry — less theta pressure than weekly. OI walls here represent larger absolute move potential vs indexes.
+  </div>
+
+  <!-- OI Heatmap -->
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">📊</div>OI Heatmap — ${stock?.sym}</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-body open">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin:10px 0">
+        <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px;padding:7px;text-align:center">
+          <div style="font-size:9px;color:var(--red);font-weight:700;text-transform:uppercase;margin-bottom:2px">🔴 CE WALL</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--red)">${ceWall.strike}</div>
+          <div style="font-size:10px;color:var(--text3)">${ceOI_L}L OI</div>
+        </div>
+        <div style="background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:7px;padding:7px;text-align:center">
+          <div style="font-size:9px;color:var(--yellow);font-weight:700;text-transform:uppercase;margin-bottom:2px">📍 ATM</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--yellow)">${atm}</div>
+          <div style="font-size:10px;color:var(--text3)">Current ATM</div>
+        </div>
+        <div style="background:var(--pur-bg);border:1px solid var(--pur-bd);border-radius:7px;padding:7px;text-align:center">
+          <div style="font-size:9px;color:var(--purple);font-weight:700;text-transform:uppercase;margin-bottom:2px">🎯 MAX PAIN</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--purple)">${maxPainStrike}</div>
+        </div>
+        <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:7px;padding:7px;text-align:center">
+          <div style="font-size:9px;color:var(--green);font-weight:700;text-transform:uppercase;margin-bottom:2px">🟢 PE WALL</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--green)">${peWall.strike}</div>
+          <div style="font-size:10px;color:var(--text3)">${peOI_L}L OI</div>
+        </div>
+      </div>
+      <!-- Mirror heatmap bars -->
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 8px;border:1px solid var(--border)">
+        <div style="display:flex;gap:2px">
+          <div style="display:flex;flex-direction:column;justify-content:space-between;width:26px;align-items:flex-end;padding-right:4px">
+            <span style="font-size:9px;font-weight:700;color:var(--red);font-family:'JetBrains Mono',monospace">CE↑</span>
+            <span style="font-size:9px;color:var(--text3);font-family:'JetBrains Mono',monospace">0</span>
+            <span style="font-size:9px;font-weight:700;color:var(--green);font-family:'JetBrains Mono',monospace">PE↓</span>
+          </div>
+          <div style="flex:1;display:flex;gap:2px">
+            ${nearStrikes.map(row => {
+              const ceH = maxOI>0?Math.round((row.ce.openInterest||0)/maxOI*55):2
+              const peH = maxOI>0?Math.round((row.pe.openInterest||0)/maxOI*55):2
+              const isAtm = row.strike===atm
+              const isCeW = row.strike===ceWall.strike
+              const isPeW = row.strike===peWall.strike
+              const cC = isCeW?'#b91c1c':isAtm?'#ea580c':'var(--red)'
+              const pC = isPeW?'#15803d':isAtm?'#0891b2':'var(--green)'
+              const border = isCeW||isPeW?'2px solid var(--yellow)':isAtm?'2px solid rgba(255,208,0,0.4)':'none'
+              return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;border:${border};border-radius:3px;padding:0 1px;cursor:default" title="${row.strike}: CE ${((row.ce.openInterest||0)/100000).toFixed(1)}L | PE ${((row.pe.openInterest||0)/100000).toFixed(1)}L">
+                <div style="height:55px;display:flex;align-items:flex-end;width:100%">
+                  <div style="width:100%;height:${Math.max(2,ceH)}px;background:${cC};opacity:${Math.max(0.35,(row.ce.openInterest||0)/maxOI)};border-radius:3px 3px 0 0"></div>
+                </div>
+                <div style="height:2px;width:100%;background:${isAtm?'var(--yellow)':'var(--border)'}"></div>
+                <div style="height:55px;display:flex;align-items:flex-start;width:100%">
+                  <div style="width:100%;height:${Math.max(2,peH)}px;background:${pC};opacity:${Math.max(0.35,(row.pe.openInterest||0)/maxOI)};border-radius:0 0 3px 3px"></div>
+                </div>
+                <div style="font-size:7px;color:${isAtm?'var(--yellow)':isCeW||isPeW?'var(--text)':'var(--text3)'};font-weight:${isAtm||isCeW||isPeW?700:400};margin-top:3px;text-align:center;font-family:'JetBrains Mono',monospace">${row.strike}</div>
+                ${isCeW?'<div style="font-size:7px;color:var(--red);font-weight:700">CEIL</div>':''}
+                ${isPeW?'<div style="font-size:7px;color:var(--green);font-weight:700">FLOOR</div>':''}
+                ${isAtm?'<div style="font-size:7px;color:var(--yellow);font-weight:700">ATM</div>':''}
+              </div>`
+            }).join('')}
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:8px;text-align:center">Hover bar to see OI · ATM ±5 strikes shown</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OI Change Table -->
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📋</div>OI Change Tracker</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-body open">
+      <table class="oi-table">
+        <thead><tr><th style="text-align:left">Strike</th><th>CE OI</th><th>CE Δ</th><th>PE OI</th><th>PE Δ</th></tr></thead>
+        <tbody>
+        ${oiRows.map(r => {
+          const cc = r.ceDiff>0?'up':r.ceDiff<0?'dn':'neutral'
+          const pc = r.peDiff>0?'up':r.peDiff<0?'dn':'neutral'
+          const rowStyle = r.isCeWall?'style="background:var(--red-bg)"':r.isPeWall?'style="background:var(--green-bg)"':r.isAtm?'class="atm-row"':''
+          const lbl = r.isCeWall?' 🔴':r.isPeWall?' 🟢':r.isAtm?' ◆':''
+          return `<tr ${rowStyle}>
+            <td style="font-weight:700">${r.strike}${lbl}</td>
+            <td>${(r.ceOI/100000).toFixed(1)}L</td>
+            <td class="oi-change ${cc}">${r.ceDiff>=0?'+':''}${(r.ceDiff/100000).toFixed(2)}L</td>
+            <td>${(r.peOI/100000).toFixed(1)}L</td>
+            <td class="oi-change ${pc}">${r.peDiff>=0?'+':''}${(r.peDiff/100000).toFixed(2)}L</td>
+          </tr>`
+        }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PCR -->
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--pur-bg);border:1.5px solid var(--pur-bd)">⚖️</div>PCR Analysis</div><span class="wr-chevron">▶</span></div>
+    <div class="wr-body">
+      <div class="pcr-card">
+        <div class="pcr-top"><span class="pcr-label">Put Call Ratio</span><span class="pcr-number" style="color:${pcrColor}">${pcr.toFixed(2)}</span></div>
+        <div class="pcr-track"><div class="pcr-needle" style="left:${pcrNeedle}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:4px"><span>Bull</span><span>Neutral</span><span>Bear</span></div>
+      </div>
+      <div class="explain-box"><p><strong>Stock PCR works same as Index PCR</strong> — above 1.2 = bearish, below 0.8 = bullish. But stock options have lower liquidity so PCR can be noisy. Always cross-check with OI walls before acting.</p></div>
+    </div>
+  </div>
+
+  <!-- Signal Reasons -->
+  <div class="wr-section">
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--yel-bg);border:1.5px solid var(--yel-bd)">🧠</div>Signal Reasons</div><span class="wr-chevron open">▶</span></div>
+    <div class="wr-body open">
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+        ${reasons.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:500;background:${r.dir==='bull'?'var(--green-bg)':r.dir==='bear'?'var(--red-bg)':'var(--bg3)'};color:${r.dir==='bull'?'var(--green)':r.dir==='bear'?'var(--red)':'var(--text2)'};border:1px solid ${r.dir==='bull'?'var(--green-bd)':r.dir==='bear'?'var(--red-bd)':'var(--border)'}">
+          ${r.dir==='bull'?'🟢':r.dir==='bear'?'🔴':'⚪'} ${r.text}
+        </div>`).join('')}
+      </div>
+      <div class="stock-note" style="margin-top:10px">
+        <strong>💡 Stock vs Index:</strong> For stocks, expiry is usually monthly (last Thursday). IV is typically higher than indexes. Focus on ATM ±2 strikes only — deep OTM has very low liquidity and unreliable OI data.
+      </div>
+    </div>
+  </div>`
+}
+
+function toggleSection(h) {
+  const body = h.nextElementSibling
+  const chev = h.querySelector('.wr-chevron')
+  const isOpen = body.classList.contains('open')
+  body.classList.toggle('open', !isOpen)
+  chev.classList.toggle('open', !isOpen)
+}
+
+// ── DEMO DATA ─────────────────────────────────────────────
+function buildDemoData(stock) {
+  const spot = stock.step * Math.round(Math.random() * 50 + 100) // random realistic price
+  // Use predefined realistic prices
+  const prices = {
+    RELIANCE:2850, TCS:3900, HDFCBANK:1680, INFY:1780, ICICIBANK:1240,
+    SBIN:780, BHARTIARTL:1650, AXISBANK:1180, KOTAKBANK:1820, ITC:465,
+    LT:3600, BAJFINANCE:7200, HINDUNILVR:2400, MARUTI:12500, WIPRO:560,
+    HCLTECH:1620, SUNPHARMA:1780, TATAMOTORS:960, TITAN:3400, ZOMATO:280,
+    ADANIENT:2420, ADANIPORTS:1280, BAJAJFINSV:1680, BPCL:310, CIPLA:1580,
+    HDCLIFE:700, HEROMOTOCO:4200, HINDALCO:680, INDUSINDBK:1060
+  }
+  const spotPrice = prices[stock.sym] || (stock.step * 200)
+  const step = stock.step
+  const base = Math.round(spotPrice / step) * step
+  const data = []
+  const expiry = genMonthlyExpiry()
+  const months  = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+
+  for (let i = -5; i <= 5; i++) {
+    const strike = base + i * step
+    const atmDist = Math.abs(i)
+    const ceOI = Math.max(1, Math.round((i>=0?Math.max(3,40-i*6):Math.max(2,15-atmDist*3))*10000 + Math.random()*5000))
+    const peOI = Math.max(1, Math.round((i<=0?Math.max(3,40+i*6):Math.max(2,15-atmDist*3))*10000 + Math.random()*5000))
+    const atmIV = 22 + atmDist * 1.5  // stocks have higher IV than indexes
+    const premScale = spotPrice / 1000
+    data.push({
+      strikePrice: strike, expiryDate: expiry,
+      CE: { strikePrice:strike, openInterest:ceOI, changeinOpenInterest:Math.round((Math.random()-0.4)*ceOI*0.1),
+        lastPrice: Math.max(1, Math.round((spotPrice-strike+step*3)*0.7*premScale)), impliedVolatility:atmIV+(i>0?0:2), totalTradedVolume:Math.round(ceOI*0.2) },
+      PE: { strikePrice:strike, openInterest:peOI, changeinOpenInterest:Math.round((Math.random()-0.4)*peOI*0.1),
+        lastPrice: Math.max(1, Math.round((strike-spotPrice+step*3)*0.7*premScale)), impliedVolatility:atmIV+(i<0?0:2), totalTradedVolume:Math.round(peOI*0.2) }
+    })
+  }
+
+  // Generate expiry list — monthly expiries only for stocks
+  const expiries = []
+  const d = new Date()
+  for (let m = 0; m < 4; m++) {
+    const nd = new Date(d.getFullYear(), d.getMonth()+m+1, 0) // last day of month
+    // Find last Thursday
+    while (nd.getDay() !== 4) nd.setDate(nd.getDate()-1)
+    expiries.push(`${String(nd.getDate()).padStart(2,'0')}-${months[nd.getMonth()]}-${nd.getFullYear()}`)
+  }
+
+  return { records: { data, underlyingValue: spotPrice, expiryDates: expiries } }
+}
+
+function genMonthlyExpiry() {
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+  const d = new Date()
+  d.setMonth(d.getMonth()+1); d.setDate(1); d.setDate(0)
+  while (d.getDay() !== 4) d.setDate(d.getDate()-1)
+  return `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${d.getFullYear()}`
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────
+async function loadData() {
+  if (!currentStock) return
+
+  const btn = document.getElementById('refreshBtn')
+  btn.classList.add('spinning')
+  document.getElementById('loadingLeft').style.display = 'flex'
+  document.getElementById('commandContent').style.display = 'none'
+  document.getElementById('loadingRight').style.display = 'flex'
+  document.getElementById('warContent').style.display = 'none'
+
+  try {
+    const raw = await fetchChain(currentStock.sym)
+    if (!raw) throw new Error('unreachable')
+    const d = parseChain(raw, currentStock)
+    if (!d) throw new Error('no data')
+    chainData = d
+    const s = computeStrategy(d)
+    document.getElementById('commandContent').innerHTML = renderCommand(d, s)
+    document.getElementById('warContent').innerHTML = renderWarRoom(d, s)
+    document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + (dataSource==='local'?' 🟢':dataSource==='vercel'?' 🟡':' 🟠')
+    renderExpiryBar(d.allExpiries || [])
+    if (chainData) {
+      prevData = { strikes:{} }
+      for (const row of d.nearStrikes) {
+        prevData.strikes[row.strike] = { ce:row.ce?.openInterest||0, pe:row.pe?.openInterest||0 }
+      }
+    }
+  } catch(e) {
+    loadDemo()
+    return
+  }
+
+  btn.classList.remove('spinning')
+  document.getElementById('loadingLeft').style.display = 'none'
+  document.getElementById('commandContent').style.display = 'block'
+  document.getElementById('loadingRight').style.display = 'none'
+  document.getElementById('warContent').style.display = 'block'
+}
+
+function loadDemo() {
+  const btn = document.getElementById('refreshBtn')
+  const demoRaw = buildDemoData(currentStock)
+  const d = parseChain(demoRaw, currentStock)
+  if (!d) return
+  chainData = d
+  const s = computeStrategy(d)
+  document.getElementById('commandContent').innerHTML =
+    `<div class="warn-box"><strong>⚠ Demo Data</strong> — NSE unreachable. Showing demo data for ${currentStock.sym}. Start nse-proxy.js for live data.</div>` +
+    renderCommand(d, s)
+  document.getElementById('warContent').innerHTML = renderWarRoom(d, s)
+  document.getElementById('lastUpdate').textContent = '⚪ Demo — start proxy for live'
+  renderExpiryBar(d.allExpiries || [])
+  document.getElementById('loadingLeft').style.display = 'none'
+  document.getElementById('commandContent').style.display = 'block'
+  document.getElementById('loadingRight').style.display = 'none'
+  document.getElementById('warContent').style.display = 'block'
+  btn.classList.remove('spinning')
+}
+
+// ── INIT ──────────────────────────────────────────────────
+initQuickPicks()
+
+// Auto-select RELIANCE to show the UI immediately
+selectStock('RELIANCE')
+
+setInterval(() => { if (currentStock) loadData() }, 3*60*1000)
+</script>
+</body>
+</html>

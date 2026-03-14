@@ -67,7 +67,7 @@
     color: var(--text);
   }
   .header-right { display:flex; align-items:center; gap:12px; }
-  .index-tabs { display:flex; gap:6px; }
+  .index-tabs { display:flex; gap:5px; flex-wrap:wrap; }
   .tab {
     font-family:'Space Mono',monospace;
     font-size:10px; font-weight:700; letter-spacing:1px;
@@ -553,9 +553,12 @@
   </div>
   <div class="header-right">
     <div class="index-tabs">
-      <button class="tab active" onclick="switchIndex('NIFTY')">NIFTY</button>
-      <button class="tab" onclick="switchIndex('BANKNIFTY')">BANKNIFTY</button>
-      <button class="tab" onclick="switchIndex('NIFTY MIDCAP SELECT')">MIDCAP</button>
+      <button class="tab active" onclick="switchIndex(this,'NIFTY')">NIFTY</button>
+      <button class="tab" onclick="switchIndex(this,'BANKNIFTY')">BANKNIFTY</button>
+      <button class="tab" onclick="switchIndex(this,'FINNIFTY')">FINNIFTY</button>
+      <button class="tab" onclick="switchIndex(this,'MIDCPNIFTY')">MIDCAP</button>
+      <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
+      <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ REFRESH</button>
     <span class="last-update" id="lastUpdate">—</span>
@@ -592,24 +595,32 @@ let chainData = null  // current parsed chain
 
 // ═══════════════════════════════════════════════════════════
 // NSE FETCH
-// Uses CORS proxy — works in browser without backend
+// Calls /api/chain?symbol=NIFTY — the Vercel proxy function (chain.js)
 // ═══════════════════════════════════════════════════════════
+// NSE symbol map — exact names NSE API accepts
+const INDEX_SYMBOLS = {
+  'NIFTY':         'NIFTY',
+  'BANKNIFTY':     'BANKNIFTY',
+  'FINNIFTY':      'FINNIFTY',
+  'MIDCPNIFTY':    'MIDCPNIFTY',
+  'NIFTY NEXT 50': 'NIFTY NEXT 50',
+  'SENSEX':        'SENSEX'
+}
+
 async function fetchChain(symbol) {
-  const encoded = encodeURIComponent(symbol)
-  // Try multiple CORS proxies in order
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.nseindia.com/api/option-chain-indices?symbol=${encoded}`)}`,
-    `https://corsproxy.io/?${encodeURIComponent(`https://www.nseindia.com/api/option-chain-indices?symbol=${encoded}`)}`,
-  ]
-  for (const url of proxies) {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(10000) })
-      if (!res.ok) continue
-      const json = await res.json()
-      if (json && json.records) return json
-    } catch(e) { continue }
+  const nseSymbol = INDEX_SYMBOLS[symbol] || symbol
+  try {
+    const res = await fetch(`/api/chain?symbol=${encodeURIComponent(nseSymbol)}`, {
+      signal: AbortSignal.timeout(15000)
+    })
+    if (!res.ok) throw new Error('API responded with ' + res.status)
+    const json = await res.json()
+    if (json && json.records) return json
+    throw new Error('Unexpected response format')
+  } catch(e) {
+    console.warn('NSE fetch failed:', e.message)
+    return null
   }
-  return null
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1323,10 +1334,10 @@ function toggleSection(header) {
   chev.classList.toggle('open', !isOpen)
 }
 
-function switchIndex(idx) {
+function switchIndex(el, idx) {
   currentIndex = idx
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
-  event.target.classList.add('active')
+  el.classList.add('active')
   prevData = null
   loadData()
 }

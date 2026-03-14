@@ -320,7 +320,7 @@ function parseChain(raw){
   const atmIdx=strikeList.indexOf(atm)
   return{spot,expiry,atm:atm.strike,maxPainStrike,ceWall,peWall,pcr,totalCeOI,totalPeOI,atmIV,
     skewStrikes:strikeList.slice(Math.max(0,atmIdx-3),atmIdx+4),
-    nearStrikes:strikeList.slice(Math.max(0,atmIdx-5),atmIdx+6),
+    nearStrikes:strikeList.slice(Math.max(0,atmIdx-7),atmIdx+8),   // ATM ±7 = 15 strikes
     strikeList,atmRow:atm,timestamp:new Date()}
 }
 function computeStrategy(d){
@@ -657,30 +657,87 @@ function renderWarRoom(d,s){
   <div class="wr-section">
     <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">📊</div>OI Heatmap — Where is the Money?</div><span class="wr-chevron open">▶</span></div>
     <div class="wr-body open">
-      <div class="explain-box">Taller bar = more contracts = bigger wall. <span class="bad">Red = Call OI (resistance/ceiling)</span>. <span class="good">Green = Put OI (support/floor)</span>. The tallest red bar is where market has a ceiling. Tallest green bar is the floor.</div>
-      <div class="heatmap">
-        <div class="hm-mirror-row">
-          <div style="display:flex;flex-direction:column;justify-content:center;align-items:flex-end;width:26px;gap:0;margin-right:4px">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--red);margin-bottom:4px">CE</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--green);margin-top:4px">PE</span>
+      <!-- HEATMAP INFO BAR -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;margin-top:8px">
+        <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:7px;padding:7px 10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red);margin-bottom:2px">🔴 CE WALL</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--red)">${ceWall.strike}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">${((ceWall.ce?.openInterest||0)/100000).toFixed(1)}L OI</div>
+        </div>
+        <div style="background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:7px;padding:7px 10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--yellow);margin-bottom:2px">📍 ATM</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--yellow)">${atm}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">Current ATM</div>
+        </div>
+        <div style="background:var(--pur-bg);border:1px solid var(--pur-bd);border-radius:7px;padding:7px 10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:2px">🎯 MAX PAIN</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--purple)">${maxPainStrike}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">Expiry target</div>
+        </div>
+        <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:7px;padding:7px 10px;text-align:center">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:2px">🟢 PE WALL</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--green)">${peWall.strike}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">${((peWall.pe?.openInterest||0)/100000).toFixed(1)}L OI</div>
+        </div>
+      </div>
+
+      <!-- MIRROR HEATMAP -->
+      <div style="background:var(--bg3);border-radius:10px;padding:14px 10px 10px;border:1px solid var(--border)">
+        <div style="display:flex;gap:0;align-items:stretch">
+          <!-- Y-axis labels -->
+          <div style="display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;padding-right:6px;width:28px;flex-shrink:0">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--red)">CE ↑</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3)">0</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--green)">PE ↓</span>
           </div>
-          <div style="flex:1;display:flex;gap:3px">
+          <!-- Bars -->
+          <div style="flex:1;display:flex;gap:2px;align-items:stretch">
             ${nearStrikes.map(row=>{
-              const ceH=maxOI>0?Math.round((row.ce.openInterest||0)/maxOI*55):2
-              const peH=maxOI>0?Math.round((row.pe.openInterest||0)/maxOI*55):2
-              const isAtm=row.strike===atm
-              const ceOI_L=((row.ce.openInterest||0)/100000).toFixed(1)
-              const peOI_L=((row.pe.openInterest||0)/100000).toFixed(1)
-              return`<div class="hm-mirror-col" title="CE: ${ceOI_L}L | PE: ${peOI_L}L">
-                <div class="hm-ce-bar${isAtm?' atm':''}" style="height:${Math.max(2,ceH)}px"></div>
-                <div class="hm-center-line"></div>
-                <div class="hm-pe-bar${isAtm?' atm':''}" style="height:${Math.max(2,peH)}px"></div>
-                <div class="hm-strike-label${isAtm?' atm':''}">${row.strike}</div>
+              const ceOI = row.ce?.openInterest||0
+              const peOI = row.pe?.openInterest||0
+              const ceH  = maxOI>0?Math.round(ceOI/maxOI*60):2
+              const peH  = maxOI>0?Math.round(peOI/maxOI*60):2
+              const ceOI_L = (ceOI/100000).toFixed(1)
+              const peOI_L = (peOI/100000).toFixed(1)
+              const isAtm    = row.strike === atm
+              const isCeWall = row.strike === ceWall.strike
+              const isPeWall = row.strike === peWall.strike
+              const isMpStrike = row.strike === maxPainStrike
+              // Color logic: wall = bright, ATM = orange/teal, normal = standard red/green
+              const ceColor = isCeWall ? '#b91c1c' : isAtm ? '#ea580c' : 'var(--red)'
+              const peColor = isPeWall ? '#15803d' : isAtm ? '#0891b2' : 'var(--green)'
+              const ceOpacity = Math.max(0.35, ceOI/maxOI)
+              const peOpacity = Math.max(0.35, peOI/maxOI)
+              // Border highlight for key strikes
+              const colBorder = isCeWall||isPeWall ? '2px solid var(--yellow)' : isAtm ? '2px solid rgba(255,208,0,0.5)' : 'none'
+              return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;cursor:default;border:${colBorder};border-radius:3px;padding:0 1px" title="${row.strike} | CE: ${ceOI_L}L | PE: ${peOI_L}L${isCeWall?' | 🔴 CE WALL':''}${isPeWall?' | 🟢 PE WALL':''}${isAtm?' | 📍 ATM':''}${isMpStrike?' | 🎯 MAX PAIN':''}">
+                <div style="height:60px;display:flex;align-items:flex-end;width:100%">
+                  <div style="width:100%;height:${Math.max(2,ceH)}px;background:${ceColor};opacity:${ceOpacity};border-radius:3px 3px 0 0"></div>
+                </div>
+                <div style="height:2px;width:100%;background:${isAtm?'var(--yellow)':'var(--border)'}"></div>
+                <div style="height:60px;display:flex;align-items:flex-start;width:100%">
+                  <div style="width:100%;height:${Math.max(2,peH)}px;background:${peColor};opacity:${peOpacity};border-radius:0 0 3px 3px"></div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:${isAtm?'var(--yellow)':isCeWall||isPeWall?'var(--text)':'var(--text3)'};font-weight:${isAtm||isCeWall||isPeWall?'700':'400'};margin-top:4px;text-align:center;white-space:nowrap">${row.strike}</div>
+                ${isCeWall?`<div style="font-size:7px;color:var(--red);font-weight:700">CEIL</div>`:''}
+                ${isPeWall?`<div style="font-size:7px;color:var(--green);font-weight:700">FLOOR</div>`:''}
+                ${isAtm?`<div style="font-size:7px;color:var(--yellow);font-weight:700">ATM</div>`:''}
+                ${isMpStrike&&!isAtm&&!isCeWall&&!isPeWall?`<div style="font-size:7px;color:var(--purple);font-weight:700">MP</div>`:''}
               </div>`
             }).join('')}
           </div>
         </div>
-        <div class="hm-legend"><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--red)"></div>CE OI (Resistance)</div><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--green)"></div>PE OI (Support)</div><div class="hm-legend-item"><div class="hm-legend-dot" style="background:var(--blue)"></div>ATM Strike</div></div>
+        <!-- Legend -->
+        <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;background:var(--red);border-radius:2px"></div><strong>CE OI</strong> — Call writers resistance. More = stronger ceiling.</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;background:var(--green);border-radius:2px"></div><strong>PE OI</strong> — Put writers support. More = stronger floor.</div>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;background:#b91c1c;border-radius:2px;border:1px solid var(--yellow)"></div><strong>CE WALL</strong> — Biggest call OI = current resistance level</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:12px;background:#15803d;border-radius:2px;border:1px solid var(--yellow)"></div><strong>PE WALL</strong> — Biggest put OI = current support level</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)"><div style="width:12px;height:3px;background:var(--yellow);border-radius:2px"></div><strong>ATM</strong> — At the money (nearest to spot)</div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text3);font-style:italic">Showing ATM ±7 strikes · Hover over any bar to see exact OI value · Taller + Darker = more OI = stronger wall</div>
       </div>
     </div>
   </div>

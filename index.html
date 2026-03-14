@@ -217,16 +217,42 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 <script>
 let currentIndex='NIFTY',prevData=null,chainData=null
 const INDEX_SYMBOLS={'NIFTY':'NIFTY','BANKNIFTY':'BANKNIFTY','FINNIFTY':'FINNIFTY','MIDCPNIFTY':'MIDCPNIFTY','NIFTY NEXT 50':'NIFTY NEXT 50','SENSEX':'SENSEX'}
+// Data source indicator
+let dataSource = 'demo'
+
 async function fetchChain(symbol){
-  const nseSymbol=INDEX_SYMBOLS[symbol]||symbol,encoded=encodeURIComponent(nseSymbol)
+  const nseSymbol=INDEX_SYMBOLS[symbol]||symbol
+  const encoded=encodeURIComponent(nseSymbol)
   const nseUrl=`https://www.nseindia.com/api/option-chain-indices?symbol=${encoded}`
-  const strategies=[
-    ()=>fetch(`/api/chain?symbol=${encoded}`,{signal:AbortSignal.timeout(12000)}),
-    ()=>fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(nseUrl)}`,{signal:AbortSignal.timeout(12000)}),
-    ()=>fetch(`https://corsproxy.io/?${encodeURIComponent(nseUrl)}`,{signal:AbortSignal.timeout(12000)}),
-    ()=>fetch(`https://thingproxy.freeboard.io/fetch/${nseUrl}`,{signal:AbortSignal.timeout(12000)}),
+
+  // Strategy 1: Local proxy on trading PC (most reliable — never blocked by NSE)
+  // Run nse-proxy.js on your PC to enable this
+  try {
+    const res = await fetch(`http://localhost:3001/chain?symbol=${encoded}`,{signal:AbortSignal.timeout(4000)})
+    if(res.ok){const json=await res.json();if(json&&json.records){dataSource='local';return json}}
+  } catch(e){}
+
+  // Strategy 2: Vercel server proxy (chain.js)
+  try {
+    const res = await fetch(`/api/chain?symbol=${encoded}`,{signal:AbortSignal.timeout(12000)})
+    if(res.ok){const json=await res.json();if(json&&json.records){dataSource='vercel';return json}}
+  } catch(e){}
+
+  // Strategy 3: Public CORS proxies (fallback)
+  const proxies=[
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(nseUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(nseUrl)}`,
   ]
-  for(const attempt of strategies){try{const res=await attempt();if(!res.ok)continue;const json=await res.json();if(json&&json.records)return json}catch(e){continue}}
+  for(const url of proxies){
+    try{
+      const res=await fetch(url,{signal:AbortSignal.timeout(10000)})
+      if(!res.ok)continue
+      const json=await res.json()
+      if(json&&json.records){dataSource='proxy';return json}
+    }catch(e){continue}
+  }
+
+  dataSource='demo'
   return null
 }
 function parseChain(raw){
@@ -475,7 +501,8 @@ async function loadData(){
     document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
     document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
     document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
-    document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+    const srcLabel = dataSource==='local'?' 🟢 Live (Local)':dataSource==='vercel'?' 🟡 Live (Server)':dataSource==='proxy'?' 🟠 Live (Proxy)':''
+    document.getElementById('lastUpdate').textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+srcLabel
     if(chainData){prevData={strikes:{}};for(const row of d.nearStrikes)prevData.strikes[row.strike]={ce:row.ce?.openInterest||0,pe:row.pe?.openInterest||0}}
   }catch(e){loadDemo()}
   btn.classList.remove('spinning')
@@ -486,7 +513,7 @@ function loadDemo(){
   document.getElementById('warContent').innerHTML=renderWarRoom(d,s)
   document.getElementById('loadingLeft').style.display='none';document.getElementById('commandContent').style.display='block'
   document.getElementById('loadingRight').style.display='none';document.getElementById('warContent').style.display='block'
-  document.getElementById('lastUpdate').textContent='Demo Data'
+  document.getElementById('lastUpdate').textContent='⚪ Demo Data — start nse-proxy.js for live'
 }
 function buildDemoData(spot){
   const step=50,base=Math.round(spot/step)*step,data=[],expiry='26-Mar-2026'

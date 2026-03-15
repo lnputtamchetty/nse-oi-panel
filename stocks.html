@@ -543,7 +543,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 function renderButterflyChain(d, s, lotSize) {
   const lot = lotSize || 25
   const nearStrikes = d.nearStrikes || []
-  const prevSnap    = prevOISnapshot || {}
+  const prevSnap    = (d?.sym && prevSnaps[d.sym]) || {}
   const maxCeOI     = Math.max(...nearStrikes.map(r => r.ce?.openInterest||0), 1)
   const maxPeOI     = Math.max(...nearStrikes.map(r => r.pe?.openInterest||0), 1)
   const maxOI       = Math.max(maxCeOI, maxPeOI)
@@ -857,6 +857,21 @@ function buildSnap(d){const o={};d.nearStrikes.forEach(r=>o[r.strike]={ce:r.ce?.
 // ═══════════════════════════════════════════════════════════════
 // UPDATE PULSE
 // ═══════════════════════════════════════════════════════════════
+function getDTE(expiryStr) {
+  if (!expiryStr) return 5
+  try {
+    const months = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11}
+    const parts = expiryStr.split('-')
+    if (parts.length === 3) {
+      const d = parseInt(parts[0]), m = months[parts[1].toUpperCase()], y = parseInt(parts[2])
+      const expDate = new Date(y, m, d, 15, 30, 0)
+      const diff = Math.ceil((expDate - new Date()) / (1000*60*60*24))
+      return Math.max(0, diff)
+    }
+  } catch(e) {}
+  return 5
+}
+
 function computeStrategy(d) {
   const {spot,ceWall,peWall,maxPain,pcr,atmRow,atmIV} = d
   const lot  = d.info.lot
@@ -914,6 +929,15 @@ function computeStrategy(d) {
   const peWallOIL  = (peWall.pe?.openInterest||0)/100000
   const nearCE = dCe < step * 3
   const nearPE = dPe < step * 3
+
+  // Squeeze flags — pre-computed for strategy scoring
+  const _ceOI0  = ceWall.ce?.openInterest || 0
+  const _peOI0  = peWall.pe?.openInterest || 0
+  const _cePrev = prevSnaps[d.sym]?.[ceWall.strike]?.ce || _ceOI0
+  const _pePrev = prevSnaps[d.sym]?.[peWall.strike]?.pe || _peOI0
+  const ceSqueezing = _cePrev > 10000 && (_ceOI0 - _cePrev) / _cePrev * 100 < -15
+  const peSqueezing = _pePrev > 10000 && (_peOI0 - _pePrev) / _pePrev * 100 < -15
+
 
   function mkScore(base, conds) {
     // conds = array of [conditionMet, points]
@@ -1140,7 +1164,7 @@ function computeStrategy(d) {
   const prevPeWall=prevSnaps[d.sym]?.[peWall.strike]?.pe||peWallOI
   const ceWallDrop=prevCeWall>10000?(ceWallOI-prevCeWall)/prevCeWall*100:0
   const peWallDrop=prevPeWall>10000?(peWallOI-prevPeWall)/prevPeWall*100:0
-  const ceSqueezing=ceWallDrop<-15,peSqueezing=peWallDrop<-15
+  // ceSqueezing/peSqueezing already computed above for strategy scoring
 
   // Score
   let score=0, reasons=[]

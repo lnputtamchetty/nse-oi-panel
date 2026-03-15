@@ -427,6 +427,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 
 
 
+
 // BUTTERFLY OPTION CHAIN — Professional NSE layout
 // CALL side | STRIKE | PUT side
 // ══════════════════════════════════════════════════════════
@@ -1371,6 +1372,27 @@ function selectTrade(sym){
 
 // Inline version — returns HTML string for accordion expansion
 // ORDER: Quick Read → OI Visual Chart → Walls → Strategy → Butterfly
+function renderMetricsStrip(d, s) {
+  const ceWall = d.ceWall, peWall = d.peWall
+  const spot = d.spot, pcr = d.pcr, maxPain = d.maxPain
+  const items = [
+    {l:'CE Wall', v:'₹'+ceWall.strike.toLocaleString('en-IN'), c:'var(--red)',    sub:((ceWall.ce?.openInterest||0)/100000).toFixed(1)+'L OI'},
+    {l:'PE Wall', v:'₹'+peWall.strike.toLocaleString('en-IN'), c:'var(--green)',  sub:((peWall.pe?.openInterest||0)/100000).toFixed(1)+'L OI'},
+    {l:'Max Pain',v:'₹'+maxPain.toLocaleString('en-IN'),       c:'var(--yellow)', sub:maxPain>spot?'↑ above':'↓ below'},
+    {l:'PCR',     v:pcr.toFixed(2),                            c:pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)', sub:pcr>1.1?'Bearish':pcr<0.9?'Bullish':'Neutral'},
+    {l:'ATM IV',  v:(d.atmIV||0).toFixed(1)+'%',              c:s.ivState==='HIGH'?'var(--red)':s.ivState==='LOW'?'var(--green)':'var(--blue)', sub:s.ivState},
+    {l:'DTE',     v:s.dte+'D',                                 c:s.dte<=2?'var(--red)':'var(--text)', sub:s.dte<=2?'⚠️ Expiry soon':'Normal'},
+  ]
+  return '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">' +
+    items.map(m =>
+      '<div style="background:var(--bg2);border-radius:8px;padding:7px 9px;border:1px solid var(--border);text-align:center">' +
+      '<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">' + m.l + '</div>' +
+      '<div style="font-family:JetBrains Mono,monospace;font-size:13px;font-weight:800;color:' + m.c + '">' + m.v + '</div>' +
+      '<div style="font-size:9px;color:var(--text3);margin-top:2px">' + m.sub + '</div>' +
+      '</div>'
+    ).join('') + '</div>'
+}
+
 function renderDetailInline(d,s,isDemo){
   const{spot,atm,maxPain,pcr,ceWall,peWall,totCe,totPe}=d
   const lot=d.info.lot
@@ -1395,20 +1417,7 @@ function renderDetailInline(d,s,isDemo){
     ${renderOIChart(d)}
 
     <!-- 3. KEY METRICS STRIP -->
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">
-      ${[
-        {l:'CE Wall',v:'₹'+ceWall.strike.toLocaleString('en-IN'),c:'var(--red)',s:((ceWall.ce?.openInterest||0)/100000).toFixed(1)+'L'},
-        {l:'PE Wall',v:'₹'+peWall.strike.toLocaleString('en-IN'),c:'var(--green)',s:((peWall.pe?.openInterest||0)/100000).toFixed(1)+'L'},
-        {l:'Max Pain',v:'₹'+maxPain.toLocaleString('en-IN'),c:'var(--yellow)',s:maxPain>spot?'↑ above':'↓ below'},
-        {l:'PCR',v:pcr.toFixed(2),c:pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)',s:pcr>1.1?'Bearish':pcr<0.9?'Bullish':'Neutral'},
-        {l:'ATM IV',v:(d.atmIV||0).toFixed(1)+'%',c:s.ivState==='HIGH'?'var(--red)':s.ivState==='LOW'?'var(--green)':'var(--blue)',s:s.ivState},
-        {l:'DTE',v:s.dte+'D',c:s.dte<=2?'var(--red)':'var(--text)',s:s.dte<=2?'⚠️ Near expiry':'Normal'},
-      ].map(m=>`<div style="background:var(--bg2);border-radius:8px;padding:7px 9px;border:1px solid var(--border);text-align:center">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">${m.l}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:${m.c}">${m.v}</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:2px">${m.s}</div>
-      </div>`).join('')}
-    </div>
+    ${renderMetricsStrip(d, s)}
 
     <!-- 4. STRATEGY CARDS -->
     <div>
@@ -2082,6 +2091,7 @@ function sendAIMessage() {
     _origSendAIMsg()
   }
 }
+
 
 
 

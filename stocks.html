@@ -628,8 +628,13 @@ let countdownInt   = null
 // WATCHLIST
 // ═══════════════════════════════════════════════════════════════════
 function loadWatchlist() {
-  try { watchlist = JSON.parse(localStorage.getItem(WL_KEY)) || DEFAULT_WL }
-  catch(e) { watchlist = [...DEFAULT_WL] }
+  try {
+    const saved = localStorage.getItem(WL_KEY)
+    watchlist = saved ? JSON.parse(saved) : [...DEFAULT_WL]
+    if (!watchlist || watchlist.length === 0) watchlist = [...DEFAULT_WL]
+  } catch(e) {
+    watchlist = [...DEFAULT_WL]
+  }
 }
 function saveWatchlist() {
   localStorage.setItem(WL_KEY, JSON.stringify(watchlist))
@@ -1041,7 +1046,12 @@ function renderRadarTable() {
   })
 
   const tbody = document.getElementById('radarBody')
-  if (!rows.length) { tbody.innerHTML='<tr><td colspan="7" class="loading-row">No stocks match current filter</td></tr>'; return }
+  if (!rows.length) {
+    tbody.innerHTML = watchlist.length === 0
+      ? `<tr><td colspan="7" class="loading-row"><div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px"><span style="font-size:24px">📋</span><strong>Watchlist is empty</strong><span style="color:var(--text3);font-size:12px">Click Watchlist to add stocks</span></div></td></tr>`
+      : '<tr><td colspan="7" class="loading-row">No stocks match filter</td></tr>'
+    return
+  }
 
   const maxAct = Math.max(...rows.filter(r=>!r.scanning).map(r=>r.s?.activity||0),1)
 
@@ -1595,12 +1605,13 @@ function buildDemoChain(sym) {
 // ═══════════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════════
+// ── INIT ──
 loadWatchlist()
-// Start scan after short delay
-setTimeout(startScan, 500)
+renderRadarTable()   // show watchlist immediately (scanning state)
+startCountdown()
+startScan()          // begin scanning
 // Auto-rescan every 2 minutes
 setInterval(()=>{ if(!isScanning) startScan() }, 2*60*1000)
-startCountdown()
 </script>
 </body>
 </html>

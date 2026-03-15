@@ -891,6 +891,27 @@ function updatePulse(sym, d, s) {
   const snap=prevSnaps[sym]
   const al=getAS()
   const thresh=al.oiT||15
+
+  // On first scan — populate pulse from current OI structure
+  // (no prev snapshot to compare, so show highest OI strikes as "building")
+  if (!snap) {
+    // CE wall = highest CE OI = resistance building
+    if (d.ceWall && (d.ceWall.ce?.openInterest||0) > 50000) {
+      pulseData.ceBuild.push({sym, strike:d.ceWall.strike, pct:0, oi:((d.ceWall.ce?.openInterest||0)/100000).toFixed(1), isFirst:true})
+    }
+    // PE wall = highest PE OI = support building
+    if (d.peWall && (d.peWall.pe?.openInterest||0) > 50000) {
+      pulseData.peBuild.push({sym, strike:d.peWall.strike, pct:0, oi:((d.peWall.pe?.openInterest||0)/100000).toFixed(1), isFirst:true})
+    }
+    // Near wall
+    const dCe0=Math.round(d.ceWall.strike-d.spot), dPe0=Math.round(d.spot-d.peWall.strike)
+    const wallT0=al.wallT||50
+    if (dCe0>=0&&dCe0<=wallT0*3) pulseData.nearWall.push({sym,dist:dCe0,side:'CE',strike:d.ceWall.strike})
+    if (dPe0>=0&&dPe0<=wallT0*3) pulseData.nearWall.push({sym,dist:dPe0,side:'PE',strike:d.peWall.strike})
+    if (d.pcr>1.5||d.pcr<0.6) pulseData.pcrEx.push({sym,pcr:d.pcr,spot:d.spot,dir:d.pcr>1.5?'bear':'bull'})
+    return
+  }
+
   if (snap) {
     d.nearStrikes.forEach(row=>{
       const prev=snap[row.strike];if(!prev)return
@@ -921,7 +942,7 @@ function renderPulse() {
   pulseData.shortCover.sort((a,b)=>a.pct-b.pct)
   pulseData.nearWall.sort((a,b)=>a.dist-b.dist)
 
-  const maxPct = Math.max(...[...pulseData.ceBuild,...pulseData.peBuild].map(x=>x.pct), 1)
+  const maxPct = Math.max(...[...pulseData.ceBuild,...pulseData.peBuild].map(x=>x.pct||1), 1)
 
   // CE Build
   const ceBuildEl = document.getElementById('bodyCEBuild')

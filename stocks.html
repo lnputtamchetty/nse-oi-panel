@@ -1286,7 +1286,7 @@ async function startScan() {
   _proxyAlive = proxyAlive
 
   const syms = [...watchlist]
-  const BATCH = 5
+  const BATCH = 8  // no mid-scan renders → can go faster
   let completed = 0
 
   // ── INSTANT DEMO MODE: if market closed and proxy offline ──
@@ -1342,21 +1342,17 @@ async function startScan() {
       allTrades.push({sym, d, s:sv, strat:sv.pri, isDemo:true})
     }
     completed++
+    // Only update progress bar — no renders during scan (they're slow)
     const lbl = document.getElementById('scanLbl')
     if (lbl) lbl.textContent = `${completed}/${syms.length} done`
     const fill = document.getElementById('progFill')
     if (fill) fill.style.width = `${Math.round((completed/syms.length)*100)}%`
-    renderRightPanel()
-    renderPulse()
-    renderMovingBar()
-    // Only update centre if showing market overview (not mid-analysis of a stock)
-    if (!selectedSym) renderCentre()
   }
 
   for (let i = 0; i < syms.length; i += BATCH) {
     const batch = syms.slice(i, i + BATCH)
     await Promise.all(batch.map(sym => scanOne(sym)))
-    if (i + BATCH < syms.length) await sleep(150)
+    // No sleep — render only happens once at the end
   }
   isScanning=false
   if(btn) btn.classList.remove('spinning')
@@ -1781,88 +1777,62 @@ function renderMarketOverview(el) {
   const whales   = sorted.filter(r => r.s?.isWhaleAlert)
   const squeezed = sorted.filter(r => r.s?.ceSqueezing || r.s?.peSqueezing)
 
-  const div = document.createElement('div')
-  div.style.padding = '13px'
-
-  // Title
-  const titleEl = document.createElement('div')
-  titleEl.style.cssText = 'font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px'
-  titleEl.innerHTML = `📈 Today's F&O Snapshot <span style="font-size:10px;font-weight:400;color:var(--text3)">${sorted.length} stocks · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</span>`
-  div.appendChild(titleEl)
-
-  // Summary grid
-  const summGrid = document.createElement('div')
-  summGrid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px'
-  summGrid.innerHTML = `
-    <div style="background:var(--yel-bg);border:1.5px solid var(--yel-bd);border-radius:10px;padding:10px 12px">
-      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--yellow);margin-bottom:3px">🏆 A-Grade</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--yellow)">${gradeA.length}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${gradeA.slice(0,3).map(r=>r.d.sym).join(', ')||'None yet'}</div>
-    </div>
-    <div style="background:${whales.length?'#fef3c7':'var(--bg2)'};border:1.5px solid ${whales.length?'#fde68a':'var(--border)'};border-radius:10px;padding:10px 12px">
-      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:${whales.length?'#92400e':'var(--text3)'};margin-bottom:3px">🐋 Whale Activity</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:${whales.length?'#92400e':'var(--text3)'}">${whales.length}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${whales.slice(0,3).map(r=>r.d.sym).join(', ')||'None detected'}</div>
-    </div>
-    <div style="background:${squeezed.length?'#f0fdf4':'var(--bg2)'};border:1.5px solid ${squeezed.length?'#86efac':'var(--border)'};border-radius:10px;padding:10px 12px">
-      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:${squeezed.length?'#15803d':'var(--text3)'};margin-bottom:3px">⚡ Squeeze</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:${squeezed.length?'#15803d':'var(--text3)'}">${squeezed.length}</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:2px">${squeezed.slice(0,3).map(r=>r.d.sym).join(', ')||'None detected'}</div>
-    </div>`
-  div.appendChild(summGrid)
-
-  // Top setups label
-  const lbl = document.createElement('div')
-  lbl.style.cssText = 'font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px'
-  lbl.textContent = 'Top Setups — click to analyse →'
-  div.appendChild(lbl)
-
-  // Top setup cards
-  const list = document.createElement('div')
-  list.style.cssText = 'display:flex;flex-direction:column;gap:7px;margin-bottom:13px'
-  if (sorted.length) {
-    sorted.slice(0,6).forEach(({d,s},i) => {
-      const rBg = s.grade==='A'?'#f59e0b':s.grade==='B'?'#10b981':'#8b5cf6'
-      const gC  = s.grade==='A'?'#92400e':s.grade==='B'?'#065f46':'#5b21b6'
-      const gBg = s.grade==='A'?'#fef3c7':s.grade==='B'?'#d1fae5':'#ede9fe'
-      const dirI= s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':'💰'
-      const card = document.createElement('div')
-      card.style.cssText = 'background:var(--bg2);border-radius:10px;border:1.5px solid var(--border);padding:10px 13px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:10px'
-      card.onmouseover = () => { card.style.borderColor='var(--blue)'; card.style.transform='translateY(-1px)' }
-      card.onmouseout  = () => { card.style.borderColor='var(--border)'; card.style.transform='none' }
-      card.onclick = () => selectTrade(d.sym)
-      card.innerHTML = `
-        <div style="width:26px;height:26px;border-radius:50%;background:${rBg};color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
-            <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--text)">${d.sym}</span>
-            <span style="font-size:10px;color:var(--text3)">${d.info.sec}</span>
-            ${s.isWhaleAlert?'<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:#fef3c7;color:#92400e">🐋</span>':''}
-            ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:#f0fdf4;color:#15803d">⚡</span>':''}
-          </div>
-          <div style="font-size:11px;color:var(--text2)">${dirI} ${s.pri?.name||'—'} · Risk ₹${((s.pri?.risk||0)/1000).toFixed(0)}K → ₹${((s.pri?.rew||0)/1000).toFixed(0)}K</div>
+  const topCards = sorted.slice(0,6).map(({d,s},i) => {
+    const rBg = s.grade==='A'?'#f59e0b':s.grade==='B'?'#10b981':'#8b5cf6'
+    const gC  = s.grade==='A'?'#92400e':s.grade==='B'?'#065f46':'#5b21b6'
+    const gBg = s.grade==='A'?'#fef3c7':s.grade==='B'?'#d1fae5':'#ede9fe'
+    const dirI= s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':'💰'
+    return `<div onclick="selectTrade('${d.sym}')"
+      style="background:var(--bg2);border-radius:10px;border:1.5px solid var(--border);padding:10px 13px;cursor:pointer;transition:border-color 0.15s;display:flex;align-items:center;gap:10px"
+      onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:26px;height:26px;border-radius:50%;background:${rBg};color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--text)">${d.sym}</span>
+          <span style="font-size:10px;color:var(--text3)">${d.info.sec}</span>
+          ${s.isWhaleAlert?'<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:#fef3c7;color:#92400e">🐋</span>':''}
+          ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:#f0fdf4;color:#15803d">⚡</span>':''}
         </div>
-        <div style="text-align:right">
-          <div style="font-size:20px;font-weight:800;color:${gC}">${s.score}</div>
-          <div style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:${gBg};color:${gC}">${s.grade==='A'?'🏆A':s.grade==='B'?'✅B':'⚠️C'}</div>
-        </div>`
-      list.appendChild(card)
-    })
-  } else {
-    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3)"><div style="font-size:28px;margin-bottom:8px">📊</div><div style="font-size:12px;font-weight:700">Scan running...</div></div>'
-  }
-  div.appendChild(list)
+        <div style="font-size:11px;color:var(--text2)">${dirI} ${s.pri?.name||'—'} · Risk ₹${((s.pri?.risk||0)/1000).toFixed(0)}K → ₹${((s.pri?.rew||0)/1000).toFixed(0)}K</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:800;color:${gC}">${s.score}</div>
+        <div style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:${gBg};color:${gC}">${s.grade==='A'?'🏆A':s.grade==='B'?'✅B':'⚠️C'}</div>
+      </div>
+    </div>`
+  }).join('')
 
-  // Natenberg insight
-  const insight = document.createElement('div')
-  insight.style.cssText = 'background:var(--pur-bg);border:1.5px solid var(--pur-bd);border-radius:10px;padding:11px 13px'
-  insight.innerHTML = `
-    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:5px">📘 Natenberg Insight of the Day</div>
-    <div style="font-size:12px;color:var(--text2);line-height:1.7;font-style:italic">${getRandomInsight()}</div>`
-  div.appendChild(insight)
-
-  el.innerHTML = ''
-  el.appendChild(div)
+  el.innerHTML = `<div style="padding:13px">
+    <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      📈 Today's F&amp;O Snapshot
+      <span style="font-size:10px;font-weight:400;color:var(--text3)">${sorted.length} stocks · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px">
+      <div style="background:var(--yel-bg);border:1.5px solid var(--yel-bd);border-radius:10px;padding:10px 12px">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:var(--yellow);margin-bottom:3px">🏆 A-Grade</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:var(--yellow)">${gradeA.length}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${gradeA.slice(0,3).map(r=>r.d.sym).join(', ')||'None yet'}</div>
+      </div>
+      <div style="background:${whales.length?'#fef3c7':'var(--bg2)'};border:1.5px solid ${whales.length?'#fde68a':'var(--border)'};border-radius:10px;padding:10px 12px">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:${whales.length?'#92400e':'var(--text3)'};margin-bottom:3px">🐋 Whale</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:${whales.length?'#92400e':'var(--text3)'}">${whales.length}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${whales.slice(0,2).map(r=>r.d.sym).join(', ')||'None'}</div>
+      </div>
+      <div style="background:${squeezed.length?'#f0fdf4':'var(--bg2)'};border:1.5px solid ${squeezed.length?'#86efac':'var(--border)'};border-radius:10px;padding:10px 12px">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:${squeezed.length?'#15803d':'var(--text3)'};margin-bottom:3px">⚡ Squeeze</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:800;color:${squeezed.length?'#15803d':'var(--text3)'}">${squeezed.length}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">${squeezed.slice(0,2).map(r=>r.d.sym).join(', ')||'None'}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px">Top Setups — click to analyse →</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:13px">
+      ${sorted.length ? topCards : '<div style="text-align:center;padding:30px;color:var(--text3)"><div style="font-size:28px">📊</div><div style="font-size:12px;font-weight:700;margin-top:8px">Scanning...</div></div>'}
+    </div>
+    <div style="background:var(--pur-bg);border:1.5px solid var(--pur-bd);border-radius:10px;padding:11px 13px">
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:var(--purple);margin-bottom:5px">📘 Natenberg Insight</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7;font-style:italic">${getRandomInsight()}</div>
+    </div>
+  </div>`
 }
 
 function getRandomInsight() {

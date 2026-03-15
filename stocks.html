@@ -207,6 +207,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       </div>
       <div style="width:1px;height:18px;background:rgba(255,255,255,0.12)"></div>
       <button class="hbtn scan-btn" id="scanBtn" onclick="startScan()">↻ Scan</button>
+      <button class="hbtn" onclick="openTgModal()" style="font-size:13px;padding:4px 9px">✈️</button>
       <div style="position:relative"><button class="hbtn" onclick="openAlertModal()">🔔 Alerts</button><div class="abadge" id="aBadge">0</div></div>
       <button class="hbtn ai-btn" onclick="openAIPanel()">🤖 Ask AI</button>
       <span class="cd" id="cdEl">2:00</span>
@@ -407,6 +408,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 </div>
 
 <script>
+
 
 
 
@@ -854,21 +856,167 @@ function computeStrategy(d) {
   const aCe=atmRow.ce?.lastPrice||0,aPe=atmRow.pe?.lastPrice||0
   const cW=ceWall.ce?.lastPrice||0,pW=peWall.pe?.lastPrice||0
 
+  // ── Specific strike prices from live chain ──
+  const otm1CeStrike = d.strikeList.find(r => r.strike > d.atm + step)?.strike || (d.atm + step)
+  const otm1PeStrike = d.strikeList.find(r => r.strike < d.atm - step)?.strike || (d.atm - step)
+  const otm1CeLTP    = d.strikeList.find(r => r.strike === otm1CeStrike)?.ce?.lastPrice || 0
+  const otm1PeLTP    = d.strikeList.find(r => r.strike === otm1PeStrike)?.pe?.lastPrice || 0
+  const ceHedge      = d.strikeList.find(r => r.strike === ceWall.strike + step)?.ce?.lastPrice || 0
+  const peHedge      = d.strikeList.find(r => r.strike === peWall.strike - step)?.pe?.lastPrice || 0
+  const entryBull    = Math.round(spot + step * 0.3)  // just above current for bullish entry
+  const entryBear    = Math.round(spot - step * 0.3)  // just below for bearish
+  const slBull       = Math.round(peWall.strike - step * 0.5) // SL below PE wall
+  const slBear       = Math.round(ceWall.strike + step * 0.5) // SL above CE wall
+  const tgtBull      = ceWall.strike  // target = CE wall
+  const tgtBear      = peWall.strike  // target = PE wall
+
   let pri={}
-  if(dir==='bull'){pri={name:'BUY ATM CE',type:'Directional Bull',cat:'bull',legs:[{a:'BUY',d:`${d.atm} CE`,p:aCe.toFixed(1)}],risk:Math.round(aCe*lot),rew:Math.round(aCe*lot*2),rr:'1:2',when:'CE wall broken + volume',avoid:'IV>30%',exit:`2x premium or below ${peWall.strike}`}}
-  else if(dir==='bear'){pri={name:'BUY ATM PE',type:'Directional Bear',cat:'bear',legs:[{a:'BUY',d:`${d.atm} PE`,p:aPe.toFixed(1)}],risk:Math.round(aPe*lot),rew:Math.round(aPe*lot*2),rr:'1:2',when:'PE wall broken + volume',avoid:'High IV',exit:`2x premium or above ${ceWall.strike}`}}
-  else if(dCe<step*3){const hb=d.strikeList.find(s=>s.strike===ceWall.strike+step)?.ce?.lastPrice||0;pri={name:'BEAR CALL SPREAD',type:'Sell Resistance',cat:'sell',legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1)},{a:'BUY',d:`${ceWall.strike+step} CE`,p:hb.toFixed(1)}],risk:Math.round((step-Math.max(0,cW-hb))*lot),rew:Math.round(Math.max(0,cW-hb)*lot),rr:'Defined',when:'Near CE wall',avoid:'Earnings',exit:`CE breaks ${ceWall.strike+step}`}}
-  else if(dPe<step*3){const hb=d.strikeList.find(s=>s.strike===peWall.strike-step)?.pe?.lastPrice||0;pri={name:'BULL PUT SPREAD',type:'Sell Support',cat:'sell',legs:[{a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1)},{a:'BUY',d:`${peWall.strike-step} PE`,p:hb.toFixed(1)}],risk:Math.round((step-Math.max(0,pW-hb))*lot),rew:Math.round(Math.max(0,pW-hb)*lot),rr:'Defined',when:'Near PE wall',avoid:'Earnings',exit:`PE breaks ${peWall.strike-step}`}}
-  else{pri={name:'IRON CONDOR',type:'Range Bound',cat:'sell',legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1)},{a:'BUY',d:`${ceWall.strike+step} CE`,p:'hedge'},{a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1)},{a:'BUY',d:`${peWall.strike-step} PE`,p:'hedge'}],risk:step*lot,rew:Math.round((cW+pW)*lot),rr:'Defined',when:'Both walls intact, early week',avoid:'Results',exit:`Break above/below walls`}}
+  if(dir==='bull'&&ivState!=='HIGH'){
+    // IV low/normal + bullish → buy OTM1 CE for leverage (cheaper than ATM, wall breakout play)
+    pri={name:'BUY OTM CE',type:'Breakout Play',cat:'bull',
+      legs:[{a:'BUY',d:`${otm1CeStrike} CE`,p:otm1CeLTP.toFixed(1),note:'1 strike OTM'}],
+      risk:Math.round(otm1CeLTP*lot),rew:Math.round(otm1CeLTP*lot*2.5),rr:'1:2.5',
+      entry:`Enter when spot breaks ₹${Math.round(spot+step*0.5)} on volume`,
+      sl:`Exit if ${otm1CeStrike} CE premium drops below ₹${Math.round(otm1CeLTP*0.5)}`,
+      target:`₹${ceWall.strike} level = ₹${Math.round(otm1CeLTP*lot*2.5).toLocaleString('en-IN')} per lot`,
+      when:`Spot close above ₹${d.atm} + strong volume`,avoid:'IV above 30% — buy ATM instead',
+      exit:`Book 50% at 1.5x, trail rest to CE wall ₹${ceWall.strike}`}
+  } else if(dir==='bull'&&ivState==='HIGH'){
+    // High IV + bullish → bull call spread (cap premium cost)
+    pri={name:'BULL CALL SPREAD',type:'Defined Bull',cat:'bull',
+      legs:[{a:'BUY',d:`${d.atm} CE`,p:aCe.toFixed(1),note:'ATM, pay premium'},
+             {a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'CE wall, collect premium'}],
+      risk:Math.round(Math.max(0,aCe-cW)*lot),
+      rew:Math.round((ceWall.strike-d.atm)*lot-Math.max(0,aCe-cW)*lot),rr:'1:2',
+      entry:`Enter near ₹${d.atm} with spot trending up`,
+      sl:`If spot closes below ₹${d.atm-step} — exit full position`,
+      target:`₹${ceWall.strike} — max profit = ₹${Math.round((ceWall.strike-d.atm-Math.max(0,aCe-cW))*lot).toLocaleString('en-IN')}`,
+      when:'IV is high — spread reduces cost vs naked buy',avoid:'Tight spreads below ₹5 net premium',
+      exit:`Close when spot reaches ₹${Math.round(ceWall.strike-step*0.5)}`}
+  } else if(dir==='bear'&&ivState!=='HIGH'){
+    pri={name:'BUY OTM PE',type:'Breakdown Play',cat:'bear',
+      legs:[{a:'BUY',d:`${otm1PeStrike} PE`,p:otm1PeLTP.toFixed(1),note:'1 strike OTM'}],
+      risk:Math.round(otm1PeLTP*lot),rew:Math.round(otm1PeLTP*lot*2.5),rr:'1:2.5',
+      entry:`Enter when spot breaks below ₹${Math.round(spot-step*0.5)} on volume`,
+      sl:`Exit if ${otm1PeStrike} PE premium drops below ₹${Math.round(otm1PeLTP*0.5)}`,
+      target:`₹${peWall.strike} level = ₹${Math.round(otm1PeLTP*lot*2.5).toLocaleString('en-IN')} per lot`,
+      when:`Spot close below ₹${d.atm} + strong volume`,avoid:'IV above 30% — buy ATM instead',
+      exit:`Book 50% at 1.5x, trail rest to PE wall ₹${peWall.strike}`}
+  } else if(dir==='bear'&&ivState==='HIGH'){
+    pri={name:'BEAR PUT SPREAD',type:'Defined Bear',cat:'bear',
+      legs:[{a:'BUY',d:`${d.atm} PE`,p:aPe.toFixed(1),note:'ATM, pay premium'},
+             {a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1),note:'PE wall, collect premium'}],
+      risk:Math.round(Math.max(0,aPe-pW)*lot),
+      rew:Math.round((d.atm-peWall.strike)*lot-Math.max(0,aPe-pW)*lot),rr:'1:2',
+      entry:`Enter near ₹${d.atm} with spot trending down`,
+      sl:`If spot closes above ₹${d.atm+step} — exit full position`,
+      target:`₹${peWall.strike} — max profit = ₹${Math.round((d.atm-peWall.strike-Math.max(0,aPe-pW))*lot).toLocaleString('en-IN')}`,
+      when:'IV is high — spread reduces cost vs naked buy',avoid:'Tight spreads below ₹5',
+      exit:`Close when spot reaches ₹${Math.round(peWall.strike+step*0.5)}`}
+  } else if(dCe<step*3){
+    // Near CE wall → sell CE premium (classic wall sell)
+    pri={name:'BEAR CALL SPREAD',type:'Sell CE Wall',cat:'sell',
+      legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'CE wall — max OI here'},
+             {a:'BUY',d:`${ceWall.strike+step} CE`,p:ceHedge.toFixed(1),note:'Hedge — defines max loss'}],
+      risk:Math.round((step-Math.max(0,cW-ceHedge))*lot),
+      rew:Math.round(Math.max(0,cW-ceHedge)*lot),rr:'1:1',
+      entry:`Sell when spot approaches ₹${ceWall.strike-step*0.5} — wall intact`,
+      sl:`If spot closes above ₹${ceWall.strike+step} — exit or roll`,
+      target:`Full premium decay = ₹${Math.round(Math.max(0,cW-ceHedge)*lot).toLocaleString('en-IN')} per lot`,
+      when:`CE wall OI ${((ceWall.ce?.openInterest||0)/100000).toFixed(0)}L strong, spot stalling below wall`,
+      avoid:'Do NOT sell if CE OI is dropping (squeeze risk)',
+      exit:`Exit if spot closes above ₹${ceWall.strike} — that means wall broken`}
+  } else if(dPe<step*3){
+    pri={name:'BULL PUT SPREAD',type:'Sell PE Wall',cat:'sell',
+      legs:[{a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1),note:'PE wall — max OI here'},
+             {a:'BUY',d:`${peWall.strike-step} PE`,p:peHedge.toFixed(1),note:'Hedge — defines max loss'}],
+      risk:Math.round((step-Math.max(0,pW-peHedge))*lot),
+      rew:Math.round(Math.max(0,pW-peHedge)*lot),rr:'1:1',
+      entry:`Sell when spot approaches ₹${peWall.strike+step*0.5} — wall intact`,
+      sl:`If spot closes below ₹${peWall.strike-step} — exit or roll`,
+      target:`Full decay = ₹${Math.round(Math.max(0,pW-peHedge)*lot).toLocaleString('en-IN')} per lot`,
+      when:`PE wall OI ${((peWall.pe?.openInterest||0)/100000).toFixed(0)}L strong, spot bouncing off wall`,
+      avoid:'Do NOT sell if PE OI is dropping (put squeeze risk)',
+      exit:`Exit if spot closes below ₹${peWall.strike}`}
+  } else {
+    // Range: Iron Condor — sell both walls
+    pri={name:'IRON CONDOR',type:'Sell Both Walls',cat:'sell',
+      legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'CE wall sell'},
+             {a:'BUY',d:`${ceWall.strike+step} CE`,p:ceHedge.toFixed(1),note:'CE hedge'},
+             {a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1),note:'PE wall sell'},
+             {a:'BUY',d:`${peWall.strike-step} PE`,p:peHedge.toFixed(1),note:'PE hedge'}],
+      risk:Math.round((step-Math.max(0,cW-ceHedge+pW-peHedge))*lot),
+      rew:Math.round(Math.max(0,cW-ceHedge+pW-peHedge)*lot),rr:'1:1',
+      entry:`Enter when spot is between ₹${peWall.strike} and ₹${ceWall.strike}`,
+      sl:`Exit CE side if spot > ₹${ceWall.strike}. Exit PE side if spot < ₹${peWall.strike}`,
+      target:`Full premium = ₹${Math.round(Math.max(0,cW-ceHedge+pW-peHedge)*lot).toLocaleString('en-IN')}. Hold to expiry if in range`,
+      when:`Both walls have heavy OI, IV elevated, DTE 5-10 days`,
+      avoid:'Near results or high VIX — condor will get blown up',
+      exit:`Roll or close 1DTE regardless of profit`}
+  }
 
   let alt={}
-  if(dir==='bull'){alt={name:'BULL CALL SPREAD',type:'Defined Bull',cat:'bull',legs:[{a:'BUY',d:`${d.atm} CE`,p:aCe.toFixed(1)},{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1)}],risk:Math.round(Math.max(0,aCe-cW)*lot),rew:Math.round((ceWall.strike-d.atm-Math.max(0,aCe-cW))*lot),rr:'Defined',when:'Bullish, defined risk',avoid:'Tight spread',exit:'CE wall breaks up'}}
-  else if(dir==='bear'){alt={name:'BEAR PUT SPREAD',type:'Defined Bear',cat:'bear',legs:[{a:'BUY',d:`${d.atm} PE`,p:aPe.toFixed(1)},{a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1)}],risk:Math.round(Math.max(0,aPe-pW)*lot),rew:Math.round((d.atm-peWall.strike-Math.max(0,aPe-pW))*lot),rr:'Defined',when:'Bearish, defined risk',avoid:'Tight spread',exit:'PE wall breaks down'}}
-  else{alt={name:'STRADDLE SELL',type:'High IV Neutral',cat:'sell',legs:[{a:'SELL',d:`${d.atm} CE`,p:aCe.toFixed(1)},{a:'SELL',d:`${d.atm} PE`,p:aPe.toFixed(1)}],risk:step*2*lot,rew:Math.round((aCe+aPe)*lot),rr:'Defined',when:'High IV + range bound',avoid:'Before results',exit:`Move >${step}pts from ATM`}}
+  if(dir==='bull'){
+    // Alternate: ATM CE buy (safer than OTM)
+    alt={name:'BUY ATM CE',type:'Safe Bull Entry',cat:'bull',
+      legs:[{a:'BUY',d:`${d.atm} CE`,p:aCe.toFixed(1),note:'ATM — highest delta (0.5)'}],
+      risk:Math.round(aCe*lot),rew:Math.round(aCe*lot*2),rr:'1:2',
+      entry:`Entry above ₹${d.atm} spot`,sl:`Exit if spot drops below ₹${d.atm-step}`,
+      target:`₹${ceWall.strike} = target`,when:'More conservative than OTM buy',
+      avoid:'2 days before expiry — theta kills it',exit:`Book at ₹${Math.round(aCe*2)} premium or spot at CE wall`}
+  } else if(dir==='bear'){
+    alt={name:'BUY ATM PE',type:'Safe Bear Entry',cat:'bear',
+      legs:[{a:'BUY',d:`${d.atm} PE`,p:aPe.toFixed(1),note:'ATM — highest delta (0.5)'}],
+      risk:Math.round(aPe*lot),rew:Math.round(aPe*lot*2),rr:'1:2',
+      entry:`Entry below ₹${d.atm} spot`,sl:`Exit if spot rises above ₹${d.atm+step}`,
+      target:`₹${peWall.strike} = target`,when:'More conservative than OTM buy',
+      avoid:'Near expiry — buy ITM instead',exit:`Book at ₹${Math.round(aPe*2)} or spot at PE wall`}
+  } else if(dCe<step*4){
+    // Near CE wall alternate: naked CE sell (higher reward, higher risk)
+    alt={name:'SELL CE (NAKED)',type:'High Reward Wall Sell',cat:'sell',
+      legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'No hedge — maximum premium'}],
+      risk:Math.round(step*2*lot),rew:Math.round(cW*lot),rr:'1:0.5',
+      entry:`Sell when spot is ₹${dCe}pts below wall and momentum fading`,
+      sl:`If spot touches ₹${ceWall.strike} intraday — exit immediately`,
+      target:`CE expires worthless = full ₹${Math.round(cW*lot).toLocaleString('en-IN')} per lot`,
+      when:'High confidence wall will hold. High IV preferred.',
+      avoid:'If OI at CE wall is falling (squeeze) — do NOT sell naked',
+      exit:`Exit 1DTE regardless. Never hold naked short to expiry day`}
+  } else {
+    alt={name:'SHORT STRADDLE',type:'High IV Premium Sell',cat:'sell',
+      legs:[{a:'SELL',d:`${d.atm} CE`,p:aCe.toFixed(1),note:'ATM CE sell'},
+             {a:'SELL',d:`${d.atm} PE`,p:aPe.toFixed(1),note:'ATM PE sell'}],
+      risk:Math.round((aCe+aPe)*1.5*lot),rew:Math.round((aCe+aPe)*lot),rr:'1:0.7',
+      entry:`Sell near market open when IV is spiked`,
+      sl:`Exit if spot moves ${step}pts in either direction`,
+      target:`Full ₹${Math.round((aCe+aPe)*lot).toLocaleString('en-IN')} per lot at expiry`,
+      when:'IV is HIGH, range-bound expected, 3-5 DTE',
+      avoid:'Results day or high VIX — straddle gets blown',
+      exit:`Buy back when combined premium drops to ₹${Math.round((aCe+aPe)*0.3)}`}
+  }
 
   let fut={}
-  if(dir==='bull'||(dir==='range'&&bull>=bear)){fut={name:'BUY FUTURES',type:'Futures Long',cat:'fut',legs:[{a:'BUY',d:`${d.sym} Fut (${lot} sh)`,p:`~₹${Math.round(spot)}`}],risk:Math.round(step*2*lot),rew:Math.round(step*3*lot),rr:'1:1.5',entry:`Buy above ₹${Math.round(spot+step*0.5)}`,sl:`SL: ₹${peWall.strike}`,target:`₹${ceWall.strike} = ₹${Math.round((ceWall.strike-spot)*lot).toLocaleString('en-IN')} per lot`}}
-  else{fut={name:'SELL FUTURES',type:'Futures Short',cat:'fut',legs:[{a:'SELL',d:`${d.sym} Fut (${lot} sh)`,p:`~₹${Math.round(spot)}`}],risk:Math.round(step*2*lot),rew:Math.round(step*3*lot),rr:'1:1.5',entry:`Sell below ₹${Math.round(spot-step*0.5)}`,sl:`SL: ₹${ceWall.strike}`,target:`₹${peWall.strike} = ₹${Math.round((spot-peWall.strike)*lot).toLocaleString('en-IN')} per lot`}}
+  if(dir==='bull'||(dir==='range'&&bull>=bear)){
+    fut={name:'LONG FUTURES',type:'Leverage Bull',cat:'fut',
+      legs:[{a:'BUY',d:`${d.sym} ${d.expiry} Fut`,p:`~₹${Math.round(spot)}`,note:`${lot} shares per lot`}],
+      risk:Math.round(step*2*lot),rew:Math.round((ceWall.strike-spot)*lot),rr:'1:'+((ceWall.strike-spot)/(step*2)).toFixed(1),
+      entry:`BUY above ₹${entryBull} (spot + momentum confirm)`,
+      sl:`SL at ₹${slBull} (below PE wall — institutions will defend it)`,
+      target:`T1: ₹${Math.round(spot+(ceWall.strike-spot)*0.5)} · T2: ₹${tgtBull} (CE wall = ${Math.round((ceWall.strike-spot)*lot/1000)}K per lot)`,
+      when:'Strong bullish signal, PCR < 0.9, CE OI stable',
+      avoid:'Near CE wall already — risk:reward poor. Wait for breakout',
+      exit:`Exit at CE wall ₹${ceWall.strike} or SL at ₹${slBull}. Never hold overnight if loss > 1%`}
+  } else {
+    fut={name:'SHORT FUTURES',type:'Leverage Bear',cat:'fut',
+      legs:[{a:'SELL',d:`${d.sym} ${d.expiry} Fut`,p:`~₹${Math.round(spot)}`,note:`${lot} shares per lot`}],
+      risk:Math.round(step*2*lot),rew:Math.round((spot-peWall.strike)*lot),rr:'1:'+((spot-peWall.strike)/(step*2)).toFixed(1),
+      entry:`SELL below ₹${entryBear} (spot + momentum confirm)`,
+      sl:`SL at ₹${slBear} (above CE wall — strong resistance)`,
+      target:`T1: ₹${Math.round(spot-(spot-peWall.strike)*0.5)} · T2: ₹${tgtBear} (PE wall = ${Math.round((spot-peWall.strike)*lot/1000)}K per lot)`,
+      when:'Strong bearish signal, PCR > 1.2, PE OI stable',
+      avoid:'Near PE wall already — bounce risk high',
+      exit:`Exit at PE wall ₹${peWall.strike} or SL at ₹${slBear}. Never average losing futures`}
+  }
 
   // Whale alert
   const maxOISpike = d.nearStrikes.reduce((max,row)=>{
@@ -1678,7 +1826,19 @@ function renderSCard(strat,type){
     <div class="sc-head ${hc}"><span class="sc-label">${type==='pri'?'⚡ PRIMARY':type==='alt'?'🛡️ ALTERNATIVE':'🔷 FUTURES'}</span><span style="font-size:10px;opacity:0.7">${strat.type}</span></div>
     <div class="sc-body ${hc}">
       <div class="sc-name">${strat.name}</div>
-      ${(strat.legs||[]).map(l=>`<div class="leg" style="border-color:var(--blue-bd)"><span class="lbadge ${l.a.toLowerCase()}">${l.a}</span><span class="ldesc">${l.d}</span><span class="lprice">₹${l.p}</span></div>`).join('')}
+      ${(strat.legs||[]).map(l=>`
+        <div class="leg" style="border-color:var(--blue-bd);flex-wrap:wrap;gap:4px">
+          <span class="lbadge ${l.a.toLowerCase()}">${l.a}</span>
+          <span class="ldesc" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--text)">${l.d}</span>
+          <span class="lprice">@ ₹${l.p}</span>
+          ${l.note?`<span style="font-size:9px;color:var(--text3);padding:1px 5px;background:var(--bg3);border-radius:4px;border:1px solid var(--border)">${l.note}</span>`:''}
+        </div>`).join('')}
+      ${strat.entry||strat.sl||strat.target?`<div style="background:rgba(29,78,216,0.05);border-radius:7px;padding:7px 9px;margin-top:6px;display:flex;flex-direction:column;gap:3px;font-size:11px;border:1px solid var(--blue-bd)">
+        ${strat.entry?`<div><span style="font-weight:800;color:var(--blue)">📍 Entry:</span> <span style="color:var(--text2)">${strat.entry}</span></div>`:''}
+        ${strat.sl?`<div><span style="font-weight:800;color:var(--red)">🛑 SL:</span> <span style="color:var(--text2)">${strat.sl}</span></div>`:''}
+        ${strat.target?`<div><span style="font-weight:800;color:var(--green)">🎯 Target:</span> <span style="color:var(--text2)">${strat.target}</span></div>`:''}
+      </div>`:''}
+
       <div class="sc-stats">
         <div class="ss"><div class="ss-lbl">Risk</div><div class="ss-val" style="color:var(--red)">₹${(strat.risk||0).toLocaleString('en-IN')}</div></div>
         <div class="ss"><div class="ss-lbl">Reward</div><div class="ss-val" style="color:var(--green)">₹${(strat.rew||0).toLocaleString('en-IN')}</div></div>
@@ -1701,7 +1861,13 @@ function renderFCard(fut){
     <div class="sc-head fut"><span class="sc-label">🔷 FUTURES</span><span style="font-size:10px;color:rgba(255,255,255,0.7)">${fut.type}</span></div>
     <div class="sc-body fut">
       <div class="sc-name">${fut.name}</div>
-      ${(fut.legs||[]).map(l=>`<div class="leg" style="border-color:var(--teal-bd)"><span class="lbadge ${l.a.toLowerCase()}">${l.a}</span><span class="ldesc">${l.d}</span><span class="lprice">${l.p}</span></div>`).join('')}
+      ${(fut.legs||[]).map(l=>`
+      <div class="leg" style="border-color:var(--teal-bd)">
+        <span class="lbadge ${l.a.toLowerCase()}">${l.a}</span>
+        <span class="ldesc" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800">${l.d}</span>
+        <span class="lprice">${l.p}</span>
+        ${l.note?`<span style="font-size:9px;color:var(--text3);padding:1px 5px;background:var(--bg3);border-radius:4px">${l.note}</span>`:''}
+      </div>`).join('')}
       <div class="sc-stats">
         <div class="ss"><div class="ss-lbl">Risk</div><div class="ss-val" style="color:var(--red)">₹${(fut.risk||0).toLocaleString('en-IN')}</div></div>
         <div class="ss"><div class="ss-lbl">Reward</div><div class="ss-val" style="color:var(--green)">₹${(fut.rew||0).toLocaleString('en-IN')}</div></div>
@@ -2263,6 +2429,426 @@ function sendAIMessage() {
 
 
 
+
+
+const TG_TOKEN_KEY  = 'lnp_tg_token'
+const TG_CHATID_KEY = 'lnp_tg_chatid'
+
+function openTgModal() {
+  // If no data yet — load demo immediately so send always works
+  if (!chainData) loadDemo()
+
+  // Load saved credentials
+  const savedToken  = localStorage.getItem(TG_TOKEN_KEY)  || ''
+  const savedChatId = localStorage.getItem(TG_CHATID_KEY) || ''
+  document.getElementById('tgToken').value  = savedToken
+  document.getElementById('tgChatId').value = savedChatId
+  document.getElementById('tgSetup').classList.toggle('show', !savedToken || !savedChatId)
+
+  // Data is now always available
+  const status = document.getElementById('tgStatus')
+  const btn    = document.getElementById('tgSendBtn')
+  const isDemo = !window._liveDataLoaded
+  status.textContent = isDemo
+    ? `⚪ Demo data — ${currentIndex} @ ${chainData?.spot?.toLocaleString('en-IN')} (live data loads at market open)`
+    : `✅ Live data — ${currentIndex} @ ${chainData?.spot?.toLocaleString('en-IN')}`
+  status.className = isDemo ? 'tg-status' : 'tg-status ok'
+  btn.disabled    = false
+  btn.textContent = '✈️ Send to Telegram'
+
+  document.getElementById('tgOverlay').classList.add('open')
+}
+
+function closeTgModal(e) {
+  if (e.target === document.getElementById('tgOverlay')) closeTgModalDirect()
+}
+function closeTgModalDirect() {
+  document.getElementById('tgOverlay').classList.remove('open')
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked')
+  el.querySelector('.tg-check-box').textContent = el.classList.contains('checked') ? '✓' : ''
+}
+
+function isChecked(id) {
+  return document.getElementById(id)?.classList.contains('checked')
+}
+
+function buildTelegramMessage() {
+  if (!chainData) return '⚠️ No data loaded yet.'
+  const d = chainData
+  const s = computeStrategy(d)
+  const sp = getStrategyPersistence(s.strategy.name)
+  const qr = buildQuickRead(d, s)
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+
+  let msg = `🇮🇳 *LNP KAMAKSHIVA — ${currentIndex}*
+`
+  msg += `⏰ ${now}  |  Expiry: ${d.expiry}
+`
+  msg += `📊 Spot: *${d.spot.toLocaleString('en-IN')}*  |  ATM: ${d.atm}
+`
+  msg += `─────────────────────
+`
+
+  if (isChecked('chk-quickread')) {
+    msg += `
+📍 *QUICK READ*
+`
+    msg += `${qr.s1}
+`
+    msg += `${qr.s2}
+`
+    msg += `💡 ${qr.s3}
+`
+  }
+
+  if (isChecked('chk-strategy')) {
+    const strat = s.strategy
+    msg += `
+⚡ *STRATEGY: ${strat.name}*
+`
+    msg += `Type: ${strat.type}
+`
+    strat.legs.forEach(l => {
+      msg += `  ${l.action} ${l.desc} @ ₹${l.price}
+`
+    })
+    msg += `Risk: ₹${strat.risk.toLocaleString('en-IN')}  |  Reward: ₹${strat.reward.toLocaleString('en-IN')}  |  R:R ${strat.rr||'—'}
+`
+    msg += `Exit: ${strat.exit}
+`
+  }
+
+  if (isChecked('chk-persistence')) {
+    msg += `
+⏱️ *PERSISTENCE:* ${sp.label}
+`
+    msg += `${sp.tip}
+`
+  }
+
+  if (isChecked('chk-walls')) {
+    const ceOI = ((d.ceWall.ce?.openInterest||0)/100000).toFixed(1)
+    const peOI = ((d.peWall.pe?.openInterest||0)/100000).toFixed(1)
+    msg += `
+🔴 *CE WALL:* ${d.ceWall.strike}  (${ceOI}L OI, ${Math.round(d.ceWall.strike-d.spot)}pts away)
+`
+    msg += `🟢 *PE WALL:* ${d.peWall.strike}  (${peOI}L OI, ${Math.round(d.spot-d.peWall.strike)}pts away)
+`
+  }
+
+  if (isChecked('chk-pcr')) {
+    const pcrLabel = d.pcr>1.3?'STRONG BEAR':d.pcr>1.1?'Mild Bear':d.pcr<0.7?'STRONG BULL':d.pcr<0.9?'Mild Bull':'Neutral'
+    msg += `
+⚖️ *PCR:* ${d.pcr.toFixed(2)} (${pcrLabel})
+`
+    msg += `🎯 *Max Pain:* ${d.maxPainStrike}  (${Math.abs(Math.round(d.spot-d.maxPainStrike))}pts ${d.spot>d.maxPainStrike?'above':'below'} spot)
+`
+  }
+
+  if (isChecked('chk-shortcover') && qr.shortCoverAlert) {
+    msg += `
+⚡ *SHORT COVER ALERT*
+${qr.shortCoverAlert}
+`
+  }
+
+  msg += `─────────────────────
+`
+  msg += `_Sent from LNP KAMAKSHIVA OI Panel_`
+  return msg
+}
+
+async function sendToTelegram() {
+  const token  = document.getElementById('tgToken').value.trim()
+  const chatId = document.getElementById('tgChatId').value.trim()
+  const status = document.getElementById('tgStatus')
+  const btn    = document.getElementById('tgSendBtn')
+
+  if (!chainData) loadDemo()  // ensure data exists
+
+  if (!token || !chatId) {
+    status.textContent = '⚠️ Please enter Bot Token and Chat ID'
+    status.className = 'tg-status err'
+    document.getElementById('tgSetup').classList.add('show')
+    return
+  }
+
+  // Check at least one option is checked
+  const anyChecked = ['chk-strategy','chk-quickread','chk-walls','chk-pcr','chk-persistence','chk-shortcover']
+    .some(id => isChecked(id))
+  if (!anyChecked) {
+    status.textContent = '⚠️ Tick at least one thing to send'
+    status.className = 'tg-status err'
+    return
+  }
+
+  // Save credentials
+  localStorage.setItem(TG_TOKEN_KEY, token)
+  localStorage.setItem(TG_CHATID_KEY, chatId)
+
+  btn.disabled = true
+  btn.textContent = 'Sending...'
+  status.textContent = ''
+  status.className = 'tg-status'
+
+  const text = buildTelegramMessage()
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'Markdown'
+      })
+    })
+    const json = await res.json()
+    if (json.ok) {
+      status.textContent = '✅ Sent successfully!'
+      status.className = 'tg-status ok'
+      setTimeout(() => closeTgModalDirect(), 1800)
+    } else {
+      status.textContent = '❌ ' + (json.description || 'Send failed')
+      status.className = 'tg-status err'
+    }
+  } catch(e) {
+    status.textContent = '❌ Network error — check token and chat ID'
+    status.className = 'tg-status err'
+  }
+
+  btn.disabled = false
+  btn.textContent = '✈️ Send to Telegram'
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// SMART WATCHLIST — fetch active stocks from NSE live data
+// Sources: OI Spurters (building), Gainers, Losers, Near Expiry walls
+// ═══════════════════════════════════════════════════════════════
+async function fetchSmartWatchlist() {
+  const btn = document.getElementById('smartWLBtn')
+  if (btn) { btn.textContent = '⏳ Fetching...'; btn.disabled = true }
+  const found = new Set()
+  const sources = []
+
+  // Helper: fetch from proxy (local first, Vercel fallback)
+  async function fetchPulse(type) {
+    for (const base of ['http://localhost:3001', '/api']) {
+      try {
+        const r = await fetch(`${base}/pulse?type=${type}`, { signal: AbortSignal.timeout(4000) })
+        if (r.ok) return await r.json()
+      } catch(e) {}
+    }
+    return null
+  }
+
+  try {
+    // 1. OI Spurters — stocks with biggest OI spike today (institutional activity)
+    const spurters = await fetchPulse('oi-spurters')
+    if (spurters?.data?.length) {
+      const syms = spurters.data.slice(0,8).map(d => d.symbol?.toUpperCase()).filter(Boolean)
+      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`⚡ OI Spike: ${s}`) } })
+    }
+
+    // 2. Gainers — potential breakout stocks
+    const gainers = await fetchPulse('gainers')
+    if (gainers?.data?.length) {
+      const syms = gainers.data.slice(0,6).map(d => d.symbol?.toUpperCase()).filter(Boolean)
+      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`🟢 Gainer: ${s}`) } })
+    }
+
+    // 3. Losers — potential breakdown / put buy stocks
+    const losers = await fetchPulse('losers')
+    if (losers?.data?.length) {
+      const syms = losers.data.slice(0,6).map(d => d.symbol?.toUpperCase()).filter(Boolean)
+      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`🔴 Loser: ${s}`) } })
+    }
+
+    // 4. Active by volume — liquid stocks
+    const active = await fetchPulse('active')
+    if (active?.data?.length) {
+      const syms = active.data.slice(0,5).map(d => d.symbol?.toUpperCase()).filter(Boolean)
+      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`📊 Active: ${s}`) } })
+    }
+  } catch(e) {}
+
+  if (btn) { btn.textContent = '🎯 Smart Pick'; btn.disabled = false }
+
+  const newList = [...found].slice(0, 20)
+  if (newList.length >= 3) {
+    // Show confirmation in modal
+    const res = document.getElementById('pasteRes')
+    if (res) {
+      res.innerHTML = `<div style="background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+        <div style="font-size:10px;font-weight:800;color:var(--green);margin-bottom:4px">✅ Smart Pick: ${newList.length} active stocks found</div>
+        <div style="font-size:10px;color:var(--text2);line-height:1.6">${sources.slice(0,10).join(' · ')}</div>
+      </div>`
+    }
+    watchlist = newList
+    renderWLChips()
+  } else {
+    // Proxy offline — fall back to high-liquidity defaults
+    const fallback = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','SBIN','AXISBANK',
+      'BAJFINANCE','TATAMOTORS','LT','SUNPHARMA','BHARTIARTL','ZOMATO','ADANIENT','HAL',
+      'NTPC','RVNL','BEL','JSWENERGY','KOTAKBANK']
+    watchlist = fallback.slice(0,20)
+    renderWLChips()
+    const res = document.getElementById('pasteRes')
+    if (res) res.innerHTML = '<span style="color:var(--yellow);font-size:11px">⚠️ Proxy offline — loaded top 20 liquid F&O stocks as fallback</span>'
+  }
+}
+
 </script>
+
+<!-- ══ TELEGRAM MODAL ══ -->
+<div class="tg-modal-overlay" id="tgOverlay" onclick="closeTgModal(event)">
+  <div class="tg-modal">
+    <div class="tg-modal-head">
+      <div class="tg-modal-title">✈️ Send to Telegram</div>
+      <button class="tg-modal-close" onclick="closeTgModalDirect()">✕</button>
+    </div>
+    <div class="tg-modal-body">
+
+      <!-- Setup reminder -->
+      <div class="tg-setup" id="tgSetup">
+        <strong>One-time setup needed:</strong><br>
+        1. Create a Telegram bot via @BotFather → copy the Bot Token<br>
+        2. Send any message to your bot → get your Chat ID from<br>
+        &nbsp;&nbsp;&nbsp;<code>api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code><br>
+        3. Paste both below — saved in your browser automatically
+      </div>
+
+      <!-- Bot Token -->
+      <div class="tg-input-row">
+        <div class="tg-input-label">Bot Token</div>
+        <input class="tg-input" id="tgToken" type="password" placeholder="123456:ABC-DEF..." autocomplete="off"/>
+      </div>
+
+      <!-- Chat ID -->
+      <div class="tg-input-row">
+        <div class="tg-input-label">Chat ID</div>
+        <input class="tg-input" id="tgChatId" type="text" placeholder="-100123456789 or your user ID"/>
+      </div>
+
+      <div class="tg-divider"></div>
+
+      <!-- What to send -->
+      <div class="tg-check-label">What to include in message</div>
+      <div class="tg-checks">
+
+        <div class="tg-check-item checked" id="chk-strategy" onclick="toggleCheck(this)">
+          <div class="tg-check-box">✓</div>
+          <div>
+            <div class="tg-check-text">⚡ Strategy</div>
+            <div class="tg-check-sub">Primary strategy name, legs, risk, reward, R:R</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item checked" id="chk-quickread" onclick="toggleCheck(this)">
+          <div class="tg-check-box">✓</div>
+          <div>
+            <div class="tg-check-text">📍 Quick Read Summary</div>
+            <div class="tg-check-sub">Plain English 3-line market story</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-walls" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">🔴🟢 OI Walls</div>
+            <div class="tg-check-sub">CE Wall, PE Wall, distance from spot</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-pcr" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">⚖️ PCR + Max Pain</div>
+            <div class="tg-check-sub">Put-call ratio and max pain strike</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-persistence" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">⏱️ Strategy Persistence</div>
+            <div class="tg-check-sub">How many refreshes same strategy has held</div>
+          </div>
+        </div>
+
+        <div class="tg-check-item" id="chk-shortcover" onclick="toggleCheck(this)">
+          <div class="tg-check-box"></div>
+          <div>
+            <div class="tg-check-text">⚡ Short Cover Alerts</div>
+            <div class="tg-check-sub">Any short covering signals detected</div>
+          </div>
+        </div>
+
+      </div>
+
+      <button class="tg-send-btn" id="tgSendBtn" onclick="sendToTelegram()">
+        ✈️ Send to Telegram
+      </button>
+      <div class="tg-status" id="tgStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BUTTERFLY TOOLTIP ══ -->
+<div class="bfly-tooltip" id="bflyTooltip">
+  <div class="tt-title" id="ttTitle">—</div>
+  <div id="ttBody">—</div>
+</div>
+
+<!-- ══ AI ANALYTICS PANEL ══ -->
+<div id="aiPanelOverlay" style="display:none;position:fixed;inset:0;z-index:9990;pointer-events:none">
+  <div id="aiPanel" style="position:absolute;right:0;top:0;bottom:0;width:420px;background:#0f172a;border-left:1.5px solid rgba(139,92,246,0.4);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s ease;pointer-events:all;box-shadow:-8px 0 32px rgba(0,0,0,0.4)">
+    <!-- AI Panel Header -->
+    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1a0d2e,#0d1829)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:16px">🤖</div>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:white">KAMAKSHIVA AI</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.45)">Market analyst · Powered by Claude</div>
+        </div>
+      </div>
+      <button onclick="closeAIPanel()" style="font-size:18px;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0">✕</button>
+    </div>
+    <!-- Quick Action Buttons -->
+    <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:6px;flex-wrap:wrap">
+      <button id="snapshotBtn" onclick="captureAndAsk()" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:7px;border:1.5px solid rgba(52,211,153,0.5);background:rgba(52,211,153,0.15);color:#6ee7b7;cursor:pointer;white-space:nowrap;transition:all 0.15s">📸 Snapshot</button>
+      <button onclick="aiQuick('brief')" class="ai-quick-btn">📋 Market Brief</button>
+      <button onclick="aiQuick('strategy')" class="ai-quick-btn">⚡ Why this strategy?</button>
+      <button onclick="aiQuick('risk')" class="ai-quick-btn">🛡️ Risk check</button>
+      <button onclick="aiQuick('squeeze')" class="ai-quick-btn">⚡ Squeeze analysis</button>
+    </div>
+    <!-- Chat Messages -->
+    <div id="snapshotPreview" style="padding:0 14px;background:#0c1220"></div>
+    <div id="aiMessages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+      <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">
+        <div style="font-size:24px;margin-bottom:8px">🤖</div>
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:6px">Ask me anything about the current market</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6">I have full context of the current OI data,<br>PCR, walls, IV and strategy suggestions.<br>Click a quick button or type your question.</div>
+      </div>
+    </div>
+    <!-- Input -->
+    <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:8px;background:#0c1220">
+      <input id="aiInput" type="text" placeholder="Ask a question, or paste a screenshot (Ctrl+V)..." 
+        style="flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(139,92,246,0.4);background:rgba(255,255,255,0.07);color:white;font-size:13px;outline:none;font-family:'Inter',sans-serif"
+        onkeydown="if(event.key==='Enter')sendAIMessage()"
+        onfocus="this.style.borderColor='rgba(139,92,246,0.8)'"
+        onblur="this.style.borderColor='rgba(139,92,246,0.4)'"/>
+      <button onclick="sendAIMessage()" id="aiSendBtn"
+        style="padding:9px 14px;border-radius:9px;border:none;background:linear-gradient(135deg,#7c3aed,#1d4ed8);color:white;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap">Send</button>
+    </div>
+  </div>
+</div>
+
+
 </body>
 </html>

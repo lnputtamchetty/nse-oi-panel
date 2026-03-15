@@ -1025,6 +1025,7 @@ function renderCommand(d,s){
       const badChecks  = cl.filter(c=>c.type==='bad').map(c=>c.text)
       return renderStrategyCard({...strategy, confidence:s.confidence, goodChecks, badChecks}, true)
            + (s.strategy2 ? renderStrategyCard(s.strategy2, false) : '')
+           + renderFuturesStratCard(s.futStrat)
     })()}
   </div>
 

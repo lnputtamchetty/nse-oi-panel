@@ -19,8 +19,10 @@
   --orange:#d44f0a;
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;-webkit-font-smoothing:antialiased}
-.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:1px solid #1d3461;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
-.expiry-row{background:#0a1020;border-bottom:1px solid #1a2a40;padding:5px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:52px;z-index:99}
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:1px solid #1d3461;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
+.header-row1{padding:0 16px;height:46px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08)}
+.header-row2{padding:0 16px;height:36px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.expiry-row{background:#0a1020;border-bottom:1px solid #1a2a40;padding:5px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:82px;z-index:99}
 .expiry-row-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.25);white-space:nowrap;flex-shrink:0}
 .header-left{display:flex;align-items:center;gap:12px}
 .logo{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:5px 12px;border-radius:7px;letter-spacing:3px;box-shadow:0 2px 8px rgba(239,68,68,0.4)}
@@ -35,15 +37,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .tab{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
 .tab:hover{border-color:rgba(255,255,255,0.5);color:white;background:rgba(255,255,255,0.15)}
 .tab.active{background:white;border-color:white;color:#1d55d4;font-weight:800}
-.nav-links{display:flex;align-items:center;gap:4px}
-.nav-link{font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s;white-space:nowrap}
-.nav-link:hover{background:rgba(255,255,255,0.18);color:white}
+.nav-links{display:flex;align-items:center;gap:5px}
+.nav-link{font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.75);cursor:pointer;text-decoration:none;transition:all 0.15s;white-space:nowrap;letter-spacing:0.3px}
+.nav-link:hover{background:rgba(255,255,255,0.18);color:white;border-color:rgba(255,255,255,0.4)}
+.nav-link.active{background:rgba(255,255,255,0.2);color:white;border-color:rgba(255,255,255,0.5)}
 .refresh-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.15s}
 .refresh-btn:hover{border-color:white;color:white;background:rgba(255,255,255,0.2)}
 .refresh-btn.spinning{animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.4);white-space:nowrap}
-.main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 118px)}
+.main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 152px)}
 @media(max-width:900px){.main{grid-template-columns:1fr}}
 .command{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto}
 .spot-block{padding:20px 20px 16px;border-bottom:1px solid var(--border);background:#2a3148;color:white}
@@ -391,19 +394,38 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 </head>
 <body>
 <div class="header">
-  <div class="header-left">
-    <div class="logo">LNP</div>
-    <div class="header-title">
-      <div class="header-title-main">
-        <span class="kamak">KAMAKSHIVA</span>
-        <span class="dot">·</span>
-        <span class="oi">NSE OI PANEL</span>
+  <!-- ROW 1: Logo + Nav + Action buttons -->
+  <div class="header-row1">
+    <div class="header-left">
+      <div class="logo">LNP</div>
+      <div class="header-title">
+        <div class="header-title-main">
+          <span class="kamak">KAMAKSHIVA</span>
+          <span class="dot">·</span>
+          <span class="oi">NSE OI PANEL</span>
+        </div>
+        <div class="header-title-sub">Indian Indexes · Real-Time Option Chain Intelligence</div>
       </div>
-      <div class="header-title-sub">Indian Indexes &nbsp;·&nbsp; Real-Time Option Chain Intelligence</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="nav-links">
+        <a class="nav-link active" href="index.html">📊 Indexes</a>
+        <a class="nav-link" href="stocks.html">📈 Stocks</a>
+        <a class="nav-link" href="pulse.html">⚡ Pulse</a>
+      </div>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,0.15)"></div>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻</button>
+      <button class="tg-btn" onclick="openTgModal()">✈️</button>
+      <div style="position:relative">
+        <button class="alert-settings-btn" id="alertSettingsBtn" onclick="openAlertModal()">🔔 Alerts</button>
+        <div class="alert-badge" id="alertBadge">0</div>
+      </div>
+      <span class="countdown" id="countdownTimer">2:00</span>
     </div>
   </div>
-  <div class="header-right">
-    <div class="index-tabs">
+  <!-- ROW 2: Index tabs + status -->
+  <div class="header-row2">
+    <div class="index-tabs" style="height:36px">
       <button class="tab active" onclick="switchIndex(this,'NIFTY')">NIFTY</button>
       <button class="tab" onclick="switchIndex(this,'BANKNIFTY')">BANKNIFTY</button>
       <button class="tab" onclick="switchIndex(this,'FINNIFTY')">FINNIFTY</button>
@@ -411,21 +433,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
-    <div class="nav-links">
-      <a class="nav-link" href="index.html">📊 Indexes</a>
-      <a class="nav-link" href="stocks.html">📈 Stocks</a>
-      <a class="nav-link" href="pulse.html">⚡ Pulse</a>
-    </div>
-    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
-    <button class="tg-btn" onclick="openTgModal()">✈️ Telegram</button>
-    <div style="position:relative">
-      <button class="alert-settings-btn" id="alertSettingsBtn" onclick="openAlertModal()">🔔 Alerts</button>
-      <div class="alert-badge" id="alertBadge">0</div>
-    </div>
-    <div class="countdown-wrap">
-      <span class="last-update" id="lastUpdate">—</span>
-      <span class="countdown" id="countdownTimer">2:00</span>
-    </div>
+    <span class="last-update" id="lastUpdate" style="font-size:11px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace">—</span>
   </div>
 </div>
 

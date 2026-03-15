@@ -35,6 +35,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .tab{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.15s;letter-spacing:0.3px}
 .tab:hover{border-color:rgba(255,255,255,0.5);color:white;background:rgba(255,255,255,0.15)}
 .tab.active{background:white;border-color:white;color:#1d55d4;font-weight:800}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{font-size:11px;font-weight:600;padding:4px 9px;border-radius:7px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s;white-space:nowrap}
+.nav-link:hover{background:rgba(255,255,255,0.18);color:white}
 .refresh-btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.15s}
 .refresh-btn:hover{border-color:white;color:white;background:rgba(255,255,255,0.2)}
 .refresh-btn.spinning{animation:spin 0.8s linear infinite}
@@ -408,8 +411,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
       <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
-    <a style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s" href="index.html">📊 Indexes</a>
-    <a style="font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s" href="stocks.html">📈 Stocks</a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">📊 Indexes</a>
+      <a class="nav-link" href="stocks.html">📈 Stocks</a>
+      <a class="nav-link" href="pulse.html">⚡ Pulse</a>
+    </div>
     <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻ Refresh</button>
     <button class="tg-btn" onclick="openTgModal()">✈️ Telegram</button>
     <div style="position:relative">

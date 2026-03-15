@@ -1606,6 +1606,7 @@ function renderStockAnalysis(el, sym) {
       <button class="stk-tab" onclick="switchTab(this,'str','${sym}')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">⚡ Strategy</button>
       <button class="stk-tab" onclick="switchTab(this,'ai','${sym}')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">🤖 AI Insights</button>
       <button class="stk-tab" onclick="switchTab(this,'chain','${sym}')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">📋 Chain</button>
+      <button class="stk-tab" onclick="switchTab(this,'learn','${sym}')" style="padding:8px 14px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">&#128218; Learn</button>
     </div>
 
     <!-- TAB: OI ANALYSIS -->
@@ -1647,6 +1648,12 @@ function renderStockAnalysis(el, sym) {
     <!-- TAB: CHAIN -->
     <div id="tab_chain_${sym}" style="display:none">
       <div id="chainBox_${sym}" data-loaded="false" data-sym="${sym}"></div>
+    </div>
+
+    
+    <!-- TAB: LEARN -->
+    <div id="tab_learn_${sym}" style="display:none">
+      ${renderLearnTab(d, s)}
     </div>`
 }
 
@@ -1655,7 +1662,7 @@ function switchTab(btn, tab, sym) {
     t.style.color='var(--text3)'; t.style.borderBottom='none'; t.classList.remove('active')
   })
   btn.style.color='var(--blue)'; btn.style.borderBottom='2px solid var(--blue)'; btn.classList.add('active')
-  ;['oi','str','ai','chain'].forEach(t => {
+  ;['oi','str','ai','chain','learn'].forEach(t => {
     const el = document.getElementById(`tab_${t}_${sym}`)
     if (el) el.style.display = 'none'
   })
@@ -2447,6 +2454,162 @@ function toggleAIDetail(sym, el) {
 }
 
 
+
+// ═══════════════════════════════════════════════════════════════
+// LEARN TAB — Glossary + Strategy Guide
+// ═══════════════════════════════════════════════════════════════
+function renderLearnTab(d, s) {
+  const sym    = d.sym
+  const spot   = d.spot.toLocaleString('en-IN',{maximumFractionDigits:0})
+  const ceWall = d.ceWall.strike.toLocaleString('en-IN')
+  const peWall = d.peWall.strike.toLocaleString('en-IN')
+  const atm    = d.atm.toLocaleString('en-IN')
+  const ceOIL  = ((d.ceWall.ce?.openInterest||0)/100000).toFixed(1)
+  const peOIL  = ((d.peWall.pe?.openInterest||0)/100000).toFixed(1)
+  const iv     = (d.atmIV||0).toFixed(1)
+  const pcr    = d.pcr.toFixed(2)
+  const dte    = s.dte
+
+  const terms = [
+    {
+      icon:'📍', term:'ATM — At The Money',
+      color:'var(--blue)', bg:'var(--blue-bg)', bd:'var(--blue-bd)',
+      simple:'The strike price closest to where the stock is trading right now.',
+      example:`${sym} is at ₹${spot}. So ₹${atm} is the ATM strike. Buying ₹${atm} CE or ₹${atm} PE = buying At The Money.`,
+      why:'ATM options have delta ~0.5 — they move ₹0.50 for every ₹1 move in the stock. Most responsive to price.'
+    },
+    {
+      icon:'🔴', term:'CE Wall — Call Resistance',
+      color:'var(--red)', bg:'var(--red-bg)', bd:'var(--red-bd)',
+      simple:'The strike with the most CE (Call) options sold. Acts as a price ceiling.',
+      example:`${sym} has ${ceOIL}L contracts at ₹${ceWall}. Institutions who sold these calls defend this ceiling. If price crosses ₹${ceWall}, they lose — so they push it back down.`,
+      why:'More OI = stronger ceiling. When CE OI drops fast as price approaches = SQUEEZE. Explosive move follows.'
+    },
+    {
+      icon:'🟢', term:'PE Wall — Put Support',
+      color:'var(--green)', bg:'var(--green-bg)', bd:'var(--green-bd)',
+      simple:'The strike with the most PE (Put) options sold. Acts as a price floor.',
+      example:`${sym} has ${peOIL}L contracts at ₹${peWall}. Put writers defend this floor. Break below ₹${peWall} = forced covering = fast fall.`,
+      why:'Strong PE wall = strong support. Breaking it causes a PE squeeze. Most powerful breakdown signal.'
+    },
+    {
+      icon:'📊', term:'OI — Open Interest',
+      color:'var(--purple)', bg:'var(--pur-bg)', bd:'var(--pur-bd)',
+      simple:'Total contracts currently open at a strike. Higher OI = more money defending that level.',
+      example:`₹${ceWall} in ${sym} has ${ceOIL}L OI = ${ceOIL} lakh contracts. The wide red bars in the OI chart show this.`,
+      why:'OI is the X-ray of institutional money. Biggest bar = biggest battle. That level will be fought over.'
+    },
+    {
+      icon:'📈', term:'PCR — Put Call Ratio',
+      color: parseFloat(pcr)>1.1?'var(--red)':parseFloat(pcr)<0.9?'var(--green)':'var(--text)',
+      bg:'var(--bg2)', bd:'var(--border)',
+      simple:'Total PE OI ÷ CE OI. Shows market bias: high = bearish, low = bullish.',
+      example:`${sym} PCR is ${pcr}. ${parseFloat(pcr)>1.2?'Above 1.2 = bearish — more puts than calls.':parseFloat(pcr)<0.8?'Below 0.8 = bullish — more calls than puts.':'Near 1.0 = balanced — no strong bias.'}`,
+      why:'PCR > 1.2: bearish. PCR < 0.8: bullish. PCR 0.8–1.2: neutral. Very high PCR (>1.5) can be contrarian bullish — everyone already short.'
+    },
+    {
+      icon:'🌡️', term:'IV — Implied Volatility',
+      color:parseFloat(iv)>28?'var(--red)':parseFloat(iv)<15?'var(--green)':'var(--blue)',
+      bg:'var(--bg2)', bd:'var(--border)',
+      simple:'How expensive options are right now. High IV = expensive. Low IV = cheap.',
+      example:`${sym} IV is ${iv}%. ${parseFloat(iv)>28?'HIGH — options are expensive. Better to SELL premium (spreads). Avoid naked buying.':parseFloat(iv)<15?'LOW — options are cheap. Good time to BUY before a big move.':'NORMAL — both buying and selling strategies work.'}`,
+      why:"Natenberg's core rule: Never buy high IV. Never sell low IV. IV is like insurance price — buy cheap, sell expensive. Always check before choosing strategy."
+    },
+    {
+      icon:'⏰', term:'DTE — Days To Expiry',
+      color:dte<=2?'var(--red)':dte<=5?'var(--yellow)':'var(--green)',
+      bg:'var(--bg2)', bd:'var(--border)',
+      simple:'Days until options expire worthless.',
+      example:`${sym} has ${dte} DTE. ${dte<=2?'DANGER ZONE for buyers — theta is brutal. Only sell ATM.':dte<=5?'Short time left. Theta accelerating. Premium buyers fighting time.':'Good time. Both buying and selling work.'}`,
+      why:'Theta is NOT linear. Tiny decay in week 1, moderate in week 2, DOUBLES in last 3 days. Sellers love near expiry. Buyers suffer.'
+    },
+    {
+      icon:'🎯', term:'Max Pain',
+      color:'var(--yellow)', bg:'var(--yel-bg)', bd:'var(--yel-bd)',
+      simple:'The strike where option writers lose the least at expiry. Price is pulled here like a magnet near expiry.',
+      example:`${sym} Max Pain is ₹${d.maxPain.toLocaleString('en-IN')}. ${dte<=3?`Only ${dte}D left — gravity is STRONG. Price will likely drift toward ₹${d.maxPain.toLocaleString('en-IN')}.`:`${dte}D left — gravity is weak for now. Becomes important in last 2-3 days.`}`,
+      why:'Large institutions hedge near expiry to minimize losses — pushing price to Max Pain. Works best in last 2-3 days before expiry.'
+    },
+    {
+      icon:'⚡', term:'Squeeze — CE or PE',
+      color:'var(--yellow)', bg:'var(--yel-bg)', bd:'var(--yel-bd)',
+      simple:'Wall OI drops fast as price approaches = writers panicking = explosive move.',
+      example:`If ${sym} approaches ₹${ceWall} and CE OI drops fast — writers are buying back calls to cut losses. This buying pressure ACCELERATES the price up. CE squeeze = explosive upside.`,
+      why:'Most powerful signal. When a wall breaks, all writers cover at once = forced cascade. A squeeze turns a normal move into a 2-3x bigger move.'
+    },
+    {
+      icon:'🐋', term:'Whale Alert',
+      color:'var(--yellow)', bg:'var(--yel-bg)', bd:'var(--yel-bd)',
+      simple:'Sudden 30%+ OI spike at a strike = big institution just entered a large bet.',
+      example:`If ${sym} OI jumps 30%+ at any strike between scans — a big player entered. Follow the direction of that bet.`,
+      why:"Institutions don't trade on emotion. Big sudden OI = high conviction by smart money. Not guaranteed but worth noting."
+    },
+  ]
+
+  const pri = s.pri
+  const stratMap = {
+    'BUY ATM CE':       `You pay ₹${((pri?.risk||0)/1000).toFixed(0)}K to profit if ${sym} goes UP. Break-even = ₹${(d.atm + ((pri?.risk||0)/(d.info?.lot||1))).toFixed(0)}. Max profit if it reaches ₹${d.ceWall.strike.toLocaleString('en-IN')}.`,
+    'BUY ATM PE':       `You pay ₹${((pri?.risk||0)/1000).toFixed(0)}K to profit if ${sym} goes DOWN. Max profit if it falls to ₹${d.peWall.strike.toLocaleString('en-IN')}.`,
+    'BUY OTM CE':       `Cheaper than ATM (₹${((pri?.risk||0)/1000).toFixed(0)}K) but ${sym} needs a bigger move up. Higher reward if it happens.`,
+    'BUY OTM PE':       `Cheaper than ATM but needs bigger move down. Higher reward if ${sym} falls hard.`,
+    'BULL CALL SPREAD':  `You BUY a CE and SELL a higher CE. Lower cost than naked buy, but profit is capped. You make money if ${sym} rises — just not as much as a naked buy.`,
+    'BEAR PUT SPREAD':   `You BUY a PE and SELL a lower PE. Lower cost, capped profit. Money if ${sym} falls.`,
+    'BEAR CALL SPREAD':  `You SELL the ₹${ceWall} CE (collect premium) + BUY a hedge. You make money if ${sym} STAYS BELOW ₹${ceWall}. Collect and wait.`,
+    'BULL PUT SPREAD':   `You SELL the ₹${peWall} PE (collect premium) + BUY a hedge. You make money if ${sym} STAYS ABOVE ₹${peWall}. Collect and wait.`,
+    'IRON CONDOR':       `Sell BOTH walls — collect premium from CE wall AND PE wall. Profit if ${sym} stays between ₹${peWall} and ₹${ceWall}. Range-bound play.`,
+    'SHORT STRADDLE':    `Sell BOTH ATM CE and ATM PE. Collect premium from both. Profit if ${sym} barely moves. Risky if it makes a big move.`,
+    'SHORT STRANGLE':    `Like straddle but sell OTM options. Wider break-even, less premium. Profit if ${sym} stays in a wide range.`,
+  }
+  const stratExplain = pri?.name ? (stratMap[pri.name] || pri.type) : ''
+
+  return `<div style="padding:12px;display:flex;flex-direction:column;gap:10px">
+    <div style="background:linear-gradient(135deg,var(--pur-bg),var(--blue-bg));border:1.5px solid var(--pur-bd);border-radius:10px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:800;color:var(--purple);margin-bottom:4px">📚 Options Learning Guide — ${sym}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.7">Every term explained using <strong>${sym}'s actual live data</strong>. No textbooks — plain English.</div>
+    </div>
+
+    ${stratExplain ? `<div style="background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:10px;padding:12px 14px">
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue);margin-bottom:6px">💡 What does the recommended strategy mean in plain words?</div>
+      <div style="font-size:12px;font-weight:800;color:var(--blue);margin-bottom:5px">⚡ ${pri?.name}</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.8">${stratExplain}</div>
+      <div style="margin-top:7px;font-size:11px;color:var(--text3)">Risk ₹${((pri?.risk||0)/1000).toFixed(0)}K · Reward ₹${((pri?.rew||0)/1000).toFixed(0)}K · ${pri?.rr||''}</div>
+    </div>` : ''}
+
+    <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:2px">📖 Glossary — with ${sym}'s numbers</div>
+
+    ${terms.map(t => `<div style="background:${t.bg};border:1.5px solid ${t.bd};border-radius:10px;padding:11px 13px">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+        <span style="font-size:15px">${t.icon}</span>
+        <span style="font-size:12px;font-weight:800;color:${t.color}">${t.term}</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px">${t.simple}</div>
+      <div style="background:rgba(255,255,255,0.7);border-radius:7px;padding:7px 10px;margin-bottom:6px">
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;color:var(--text3);margin-bottom:3px">${sym} example</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.7">${t.example}</div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);line-height:1.6;border-top:1px solid rgba(0,0,0,0.07);padding-top:5px">
+        <span style="font-weight:700;color:${t.color}">Why it matters: </span>${t.why}
+      </div>
+    </div>`).join('')}
+
+    <div style="background:linear-gradient(135deg,#0c1222,#172040);border-radius:10px;padding:13px 15px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.5);margin-bottom:9px">📘 Natenberg's Golden Rules — memorise these</div>
+      ${[
+        ['🌡️','IV Rule','High IV → SELL premium (spreads, condor). Low IV → BUY premium (calls, puts). Never buy expensive options, never sell cheap ones.'],
+        ['⏰','Theta Rule','Theta is NOT linear. Tiny decay week 1, moderate week 2, DOUBLES in last 3 days. Near expiry, sellers win big. Buyers suffer.'],
+        ['⚡','Gamma Rule','Near ATM on expiry, a 50pt move causes 5x move in ATM option price. Explosive near expiry. Size down. Never hold naked shorts on expiry day.'],
+        ['🎯','Wall Rule','Most OI = institutions defending that level. Sell against strong walls. Wait for volume confirmation before trading a wall break.'],
+        ['📊','OI + Price Rule','Price up + OI up = Long Buildup (trust it). Price up + OI down = Short Covering (weak). Price down + OI up = Short Buildup (bearish). Price down + OI down = Long Unwinding.'],
+      ].map(([icon,rule,text]) => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07)">
+        <span style="font-size:15px;flex-shrink:0">${icon}</span>
+        <div>
+          <div style="font-size:11px;font-weight:800;color:white;margin-bottom:3px">${rule}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.65);line-height:1.65">${text}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`
+}
 
 loadWL()
 renderCentre()

@@ -458,9 +458,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ltp-up{color:var(--green);font-weight:700}
 .ltp-dn{color:var(--red);font-weight:700}
 /* Hover tooltip */
-.bfly-tooltip{position:fixed;background:#0f172a;color:white;border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.65;max-width:280px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.4);pointer-events:none;border:1px solid rgba(255,255,255,0.15);display:none}
+.bfly-tooltip{position:fixed;background:#0f172a;color:white;border-radius:12px;padding:14px 16px;font-size:12px;line-height:1.65;width:300px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.5);pointer-events:all;border:1.5px solid rgba(99,102,241,0.5);display:none;animation:ttFadeIn 0.15s ease-out}
+@keyframes ttFadeIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
 .bfly-tooltip.show{display:block}
-.bfly-tooltip .tt-title{font-size:11px;font-weight:800;color:#60a5fa;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.bfly-tooltip .tt-title{font-size:11px;font-weight:800;color:#818cf8;margin-bottom:8px;text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;justify-content:space-between}
+.bfly-tooltip .tt-close{font-size:14px;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none;padding:0;line-height:1}
+.bfly-tooltip .tt-close:hover{color:white}
 </style>
 </head>
 <body>
@@ -1207,10 +1210,35 @@ function renderButterflyChain(d, s, lotSize) {
   const pinCard = `₹${pinStrike} = highest combined OI — expiry will pin here. ${(pinStrike||0) > (d.spot||0) ? 'Pull UP' : 'Pull DOWN'} ${Math.abs((pinStrike||0)-(d.spot||0))}pts away`
 
   const topCards = `<div class="bfly-top">
-    <div class="bfly-card">
-      <div class="bfly-card-label">📍 Market Position</div>
-      <div class="bfly-card-val">${spotVsWall}</div>
-      <div class="bfly-card-sub">Spot ₹${(d.spot||0).toLocaleString('en-IN')} · ATM ₹${atm}</div>
+    <div class="bfly-card" style="border-color:var(--blue-bd);background:var(--blue-bg)">
+      <div class="bfly-card-label" style="color:var(--blue)">📍 Market Position — What to think right now</div>
+      <div class="bfly-card-val" style="color:var(--text);font-size:13px;line-height:1.6">
+        ${(()=>{
+          const spot = d.spot||0
+          const ceDist = Math.round((d.ceWall?.strike||0) - spot)
+          const peDist = Math.round(spot - (d.peWall?.strike||0))
+          const ceOIL = ((d.ceWall?.ce?.openInterest||0)/100000).toFixed(0)
+          const peOIL = ((d.peWall?.pe?.openInterest||0)/100000).toFixed(0)
+          const pcr = d.pcr||1
+          const dte = s?.dte||5
+
+          let msg = ''
+
+          // Where is spot right now
+          if (ceDist <= 20) {
+            msg = `Market is pressing against the ${d.ceWall?.strike} ceiling (${ceOIL}L CE OI). This is a make-or-break level. Either it breaks out — in which case CE writers panic and buy back, causing a fast 100-200pt rally. Or it gets rejected here and comes back down. Do NOT buy calls just because we're near a wall. Wait for a confirmed candle CLOSE above ${d.ceWall?.strike} before entering.`
+          } else if (peDist <= 20) {
+            msg = `Market is sitting right on the ${d.peWall?.strike} support floor (${peOIL}L PE OI). Same as a ceiling — either it bounces here or it breaks. If it breaks below ${d.peWall?.strike} on volume, PE writers will panic and cover — fast 100-200pt fall possible. Wait for confirmation, don't buy puts just because we're near support.`
+          } else if (ceDist < peDist) {
+            msg = `Market is in the range but closer to the ${d.ceWall?.strike} resistance (${ceDist}pts away, ${ceOIL}L CE OI). The ceiling is the more important level today. Watch if spot tries to test ${d.ceWall?.strike}. PCR ${pcr.toFixed(2)} is ${pcr>1.1?'bearish — put writers more active':'near neutral'}.`
+          } else {
+            msg = `Market is in the range and closer to the ${d.peWall?.strike} support (${peDist}pts away, ${peOIL}L PE OI). The floor is holding. PCR ${pcr.toFixed(2)} is ${pcr<0.9?'bullish — call writers more active':'near neutral'}. Max pain at ${d.maxPainStrike||'—'} — ${dte<=2?'strong gravity near expiry, market likely to drift there':'gravity weak at '+dte+'D out'}.`
+          }
+
+          return msg
+        })()}
+      </div>
+      <div class="bfly-card-sub" style="margin-top:6px;font-size:10px;color:var(--text3)">Spot ₹${(d.spot||0).toLocaleString('en-IN')} · ATM ₹${atm} · Updates every 2 min · Click any row for full analysis</div>
     </div>
     <div class="bfly-card" style="border-color:${squeezeStrikes.size>0?'var(--yel-bd)':'var(--border)'}">
       <div class="bfly-card-label">⚡ Squeeze Watch</div>
@@ -1287,7 +1315,7 @@ function renderButterflyChain(d, s, lotSize) {
       ceValue: Math.round(ceLTP*lot), peValue: Math.round(peLTP*lot)
     }).replace(/"/g,'&quot;')
 
-    return `<tr class="${rowCls}" onmouseenter="showBflyTT(event,'${ttData}')" onmouseleave="hideBflyTT()">
+    return `<tr class="${rowCls}" onclick="toggleBflyTT(event,'${ttData}')">
       <td class="ce-val"><span class="bdup ${ceBdup.cls}" title="${ceBdup.tip}">${ceBdup.icon}</span></td>
       <td class="ce-val"><span class="delta-num" style="color:var(--red)">${ceDelta}</span></td>
       <td class="ce-val"><span class="${ceDiff>0?'ltp-up':ceDiff<0?'ltp-dn':''}">${ceDiff>=0?'+':''}${(ceDiff/100000).toFixed(2)}L</span></td>
@@ -1369,7 +1397,22 @@ function renderButterflyChain(d, s, lotSize) {
   </div>`
 }
 
-// Tooltip handlers
+// Tooltip handlers — CLICK to show, click elsewhere to dismiss
+let _ttOpen = false
+
+function toggleBflyTT(event, dataStr) {
+  event.stopPropagation()
+  const el = document.getElementById('bflyTooltip')
+  if (_ttOpen && el.classList.contains('show')) {
+    hideBflyTT()
+    return
+  }
+  showBflyTT(event, dataStr)
+}
+
+// Close on click anywhere else
+document.addEventListener('click', () => hideBflyTT())
+
 function showBflyTT(event, dataStr) {
   try {
     const d = JSON.parse(dataStr.replace(/&quot;/g,'"'))
@@ -1377,7 +1420,7 @@ function showBflyTT(event, dataStr) {
     const title = document.getElementById('ttTitle')
     const body  = document.getElementById('ttBody')
     if (!el) return
-    title.textContent = `₹${d.strike} — ${d.isATM?'ATM (At the Money)':d.isCeWall?'CE Wall (Resistance)':d.isPeWall?'PE Wall (Support)':d.isPin?'Pin Strike':'—'}`
+    title.innerHTML = `<span>₹${d.strike} — ${d.isATM?'ATM (At the Money)':d.isCeWall?'CE Wall (Resistance)':d.isPeWall?'PE Wall (Support)':d.isPin?'Pin Strike':'Regular Strike'}</span><button class='tt-close' onclick='hideBflyTT()'>✕</button>`
     body.innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
         <div>
@@ -1408,12 +1451,14 @@ function showBflyTT(event, dataStr) {
     el.style.left = x + 'px'
     el.style.top  = y + 'px'
     el.classList.add('show')
+    _ttOpen = true
   } catch(e) {}
 }
 
 function hideBflyTT() {
   const el = document.getElementById('bflyTooltip')
   if (el) el.classList.remove('show')
+  _ttOpen = false
 }
 
 function toggleStratDetail(id) {
@@ -3873,6 +3918,252 @@ function removeAITyping(id) {
 
 loadData()
 setInterval(loadData, 2*60*1000)
+
+
+
+// ═══════════════════════════════════════════════════════════════
+// AI SNAPSHOT SYSTEM — html2canvas + paste support
+// ═══════════════════════════════════════════════════════════════
+let snapshotBase64 = null   // current captured image
+let snapshotThumb  = null   // thumbnail for preview
+
+// Load html2canvas dynamically on first use
+async function loadHtml2Canvas() {
+  if (window.html2canvas) return true
+  return new Promise((resolve) => {
+    const s = document.createElement('script')
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    s.onload = () => resolve(true)
+    s.onerror = () => resolve(false)
+    document.head.appendChild(s)
+  })
+}
+
+// Capture the main content area (excluding AI panel itself)
+async function captureSnapshot() {
+  const btn = document.getElementById('snapshotBtn')
+  if (btn) { btn.textContent = '⏳ Capturing...'; btn.disabled = true }
+
+  try {
+    const loaded = await loadHtml2Canvas()
+    if (!loaded) {
+      showSnapshotError('html2canvas failed to load. Use paste instead.')
+      return null
+    }
+
+    // Pick what to capture — the main content, not the AI panel
+    const target = document.querySelector('.main3') ||
+                   document.querySelector('.main')  ||
+                   document.querySelector('#warRoom') ||
+                   document.body
+
+    const canvas = await window.html2canvas(target, {
+      scale: 1.2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#f0f2f5',
+      logging: false,
+      removeContainer: true,
+      width:  target.scrollWidth  || window.innerWidth,
+      height: Math.min(target.scrollHeight || window.innerHeight, 3000),
+    })
+
+    snapshotBase64 = canvas.toDataURL('image/jpeg', 0.82).split(',')[1]
+    snapshotThumb  = canvas.toDataURL('image/jpeg', 0.4)
+
+    showSnapshotPreview(snapshotThumb)
+    return snapshotBase64
+
+  } catch(e) {
+    showSnapshotError('Capture failed: ' + e.message)
+    return null
+  } finally {
+    if (btn) { btn.textContent = '📸 Snapshot'; btn.disabled = false }
+  }
+}
+
+function showSnapshotPreview(thumbUrl) {
+  const prev = document.getElementById('snapshotPreview')
+  if (!prev) return
+  prev.innerHTML = `
+    <div style="position:relative;margin-top:8px">
+      <img src="${thumbUrl}" style="width:100%;border-radius:8px;border:1.5px solid rgba(99,102,241,0.4);display:block"/>
+      <div style="position:absolute;top:5px;left:5px;background:rgba(15,23,42,0.85);color:#818cf8;font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:1px">CAPTURED</div>
+      <button onclick="clearSnapshot()" style="position:absolute;top:5px;right:5px;background:rgba(239,68,68,0.8);color:white;border:none;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer">✕ Clear</button>
+    </div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.4);text-align:center;margin-top:4px">Screenshot ready — type your question and send</div>
+  `
+}
+
+function clearSnapshot() {
+  snapshotBase64 = null
+  snapshotThumb  = null
+  const prev = document.getElementById('snapshotPreview')
+  if (prev) prev.innerHTML = ''
+}
+
+function showSnapshotError(msg) {
+  const prev = document.getElementById('snapshotPreview')
+  if (prev) prev.innerHTML = `<div style="font-size:11px;color:#fca5a5;padding:6px 0">${msg}</div>`
+}
+
+// Paste image support — user pastes screenshot from clipboard
+function setupPasteHandler() {
+  const input = document.getElementById('aiInput')
+  if (!input) return
+
+  // Paste on input
+  input.addEventListener('paste', (e) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault()
+        const file = item.getAsFile()
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          const full = ev.target.result
+          snapshotBase64 = full.split(',')[1]
+          snapshotThumb  = full
+          showSnapshotPreview(full)
+          addAIMsg('system-hint', '📎 Image pasted — type your question and send')
+        }
+        reader.readAsDataURL(file)
+        return
+      }
+    }
+  })
+
+  // Also support paste area click
+  const pasteArea = document.getElementById('pasteDropZone')
+  if (pasteArea) {
+    pasteArea.addEventListener('click', () => {
+      navigator.clipboard.read().then(items => {
+        for (const item of items) {
+          if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+            item.getType(item.types.find(t => t.startsWith('image/'))).then(blob => {
+              const reader = new FileReader()
+              reader.onload = (ev) => {
+                snapshotBase64 = ev.target.result.split(',')[1]
+                snapshotThumb  = ev.target.result
+                showSnapshotPreview(ev.target.result)
+              }
+              reader.readAsDataURL(blob)
+            })
+          }
+        }
+      }).catch(() => {})
+    })
+  }
+}
+
+// Override sendToAI to include snapshot if available
+async function sendToAIWithVision(fullPrompt, displayMsg) {
+  addAIMsg('user', displayMsg)
+  if (snapshotThumb) {
+    // Show what was sent
+    const msgs = document.getElementById('aiMessages')
+    if (msgs) {
+      const imgDiv = document.createElement('div')
+      imgDiv.style.cssText = 'display:flex;justify-content:flex-end;margin-top:-6px'
+      imgDiv.innerHTML = `<img src="${snapshotThumb}" style="width:140px;border-radius:6px;border:1px solid rgba(99,102,241,0.4);opacity:0.8"/>`
+      msgs.appendChild(imgDiv)
+      msgs.scrollTop = msgs.scrollHeight
+    }
+  }
+
+  const typingId = addAITyping()
+  const btn = document.getElementById('aiSendBtn')
+  if (btn) btn.disabled = true
+
+  try {
+    // Build message content — with or without image
+    let msgContent
+    if (snapshotBase64) {
+      msgContent = [
+        {
+          type: 'image',
+          source: { type: 'base64', media_type: 'image/jpeg', data: snapshotBase64 }
+        },
+        { type: 'text', text: fullPrompt }
+      ]
+    } else {
+      msgContent = fullPrompt
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        messages: [
+          ...aiChatHistory.slice(-4),
+          { role: 'user', content: msgContent }
+        ]
+      })
+    })
+
+    const data = await response.json()
+    const reply = data.content?.[0]?.text || 'Could not get a response.'
+    removeAITyping(typingId)
+    addAIMsg('assistant', reply)
+    aiChatHistory.push({ role: 'user', content: typeof msgContent === 'string' ? msgContent : '[image + text]' })
+    aiChatHistory.push({ role: 'assistant', content: reply })
+    if (aiChatHistory.length > 8) aiChatHistory = aiChatHistory.slice(-8)
+
+    // Clear snapshot after use
+    clearSnapshot()
+
+  } catch(e) {
+    removeAITyping(typingId)
+    addAIMsg('assistant', '⚠️ Could not connect. Check internet and try again.')
+  }
+
+  if (btn) btn.disabled = false
+}
+
+// Initialize paste handler when DOM ready
+document.addEventListener('DOMContentLoaded', setupPasteHandler)
+// Also call after a short delay for dynamic panels
+setTimeout(setupPasteHandler, 1000)
+
+
+// ─── captureAndAsk ───
+async function captureAndAsk() {
+  const img = await captureSnapshot()
+  if (img) {
+    addAIMsg('system-hint', '📸 Page captured! Type your question or I will auto-analyze...')
+    setTimeout(() => {
+      const input = document.getElementById('aiInput')
+      if (!input?.value?.trim()) {
+        const ctx = typeof buildMarketContext !== 'undefined' ? buildMarketContext()
+                  : typeof buildStocksContext !== 'undefined' ? buildStocksContext()
+                  : typeof buildPulseContext  !== 'undefined' ? buildPulseContext()
+                  : 'Market data attached.'
+        const full = `You are KAMAKSHIVA, expert Indian F&O analyst.\n\nContext:\n${ctx}\n\nPlease analyze the screenshot I shared:\n1. Most important thing visible in this chart/table?\n2. What does the OI data tell you about market direction?\n3. Any squeeze or unusual activity visible?\n4. What should I do right now?\n\nBe specific, refer to actual numbers and colors you can see.`
+        sendToAIWithVision(full, '📸 Analyze my dashboard snapshot')
+      }
+    }, 300)
+  }
+}
+
+const _origSendAIMsg = typeof sendAIMessage !== 'undefined' ? sendAIMessage : () => {}
+function sendAIMessage() {
+  if (snapshotBase64) {
+    const input = document.getElementById('aiInput')
+    const msg = input?.value?.trim()
+    if (input) input.value = ''
+    const ctx = typeof buildMarketContext !== 'undefined' ? buildMarketContext()
+              : typeof buildStocksContext !== 'undefined' ? buildStocksContext()
+              : typeof buildPulseContext  !== 'undefined' ? buildPulseContext()
+              : 'Market data.'
+    const full = `You are KAMAKSHIVA, expert Indian F&O analyst.\n\nCurrent Data:\n${ctx}\n\nTrader shared a screenshot. Question: ${msg || 'Analyze what you see and give trading insights.'}\n\nBe specific, refer to visual elements you can see.`
+    sendToAIWithVision(full, msg || '📸 Analyze my dashboard')
+  } else {
+    _origSendAIMsg()
+  }
+}
 </script>
 
 <!-- ══ TELEGRAM MODAL ══ -->
@@ -3991,12 +4282,14 @@ setInterval(loadData, 2*60*1000)
     </div>
     <!-- Quick Action Buttons -->
     <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:6px;flex-wrap:wrap">
+      <button id="snapshotBtn" onclick="captureAndAsk()" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:7px;border:1.5px solid rgba(52,211,153,0.5);background:rgba(52,211,153,0.15);color:#6ee7b7;cursor:pointer;white-space:nowrap;transition:all 0.15s">📸 Snapshot</button>
       <button onclick="aiQuick('brief')" class="ai-quick-btn">📋 Market Brief</button>
       <button onclick="aiQuick('strategy')" class="ai-quick-btn">⚡ Why this strategy?</button>
       <button onclick="aiQuick('risk')" class="ai-quick-btn">🛡️ Risk check</button>
       <button onclick="aiQuick('squeeze')" class="ai-quick-btn">⚡ Squeeze analysis</button>
     </div>
     <!-- Chat Messages -->
+    <div id="snapshotPreview" style="padding:0 14px;background:#0c1220"></div>
     <div id="aiMessages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
       <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">
         <div style="font-size:24px;margin-bottom:8px">🤖</div>
@@ -4006,7 +4299,7 @@ setInterval(loadData, 2*60*1000)
     </div>
     <!-- Input -->
     <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:8px;background:#0c1220">
-      <input id="aiInput" type="text" placeholder="Ask about current market, strategy, risk..." 
+      <input id="aiInput" type="text" placeholder="Ask a question, or paste a screenshot (Ctrl+V)..." 
         style="flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(139,92,246,0.4);background:rgba(255,255,255,0.07);color:white;font-size:13px;outline:none;font-family:'Inter',sans-serif"
         onkeydown="if(event.key==='Enter')sendAIMessage()"
         onfocus="this.style.borderColor='rgba(139,92,246,0.8)'"

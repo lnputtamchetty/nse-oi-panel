@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>LNP KAMAKSHIVA · Stock F&O Command Centre</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
@@ -235,6 +236,24 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   </div>
 </div>
 
+<!-- OI SPIKE ALERT STRIP -->
+<div id="spikeStrip" style="display:none;background:#070d1c;border-bottom:2px solid rgba(239,68,68,0.3);padding:0 16px;overflow:hidden">
+  <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+    <span style="font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.4);text-transform:uppercase;flex-shrink:0">⚡ OI SPIKES</span>
+    <div id="spikeTicker" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;flex:1"></div>
+    <button onclick="openSpikePanel()" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.15);color:#fca5a5;cursor:pointer;flex-shrink:0;white-space:nowrap">View All →</button>
+  </div>
+</div>
+
+<!-- OI SPIKE DETAIL PANEL (slides down) -->
+<div id="spikePanelWrap" style="display:none;background:var(--bg);border-bottom:2px solid var(--border);max-height:350px;overflow-y:auto;padding:10px 16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <span style="font-size:11px;font-weight:800;color:var(--text)">⚡ OI Spike Details — Plain English</span>
+    <button onclick="closeSpikePanel()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer">✕ Close</button>
+  </div>
+  <div id="spikePanelContent"></div>
+</div>
+
 <div class="main3">
   <!-- LEFT: PULSE SIGNALS -->
   <div class="left-col">
@@ -442,7 +461,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
         <div class="tg-input-label">Chat ID</div>
         <input class="tg-input" id="tgChat" type="text" placeholder="-100..." oninput="saveTgCreds()"/>
       </div>
-      <button class="tg-send-btn" onclick="sendTgNow()">📤 Send Top Trades to Telegram</button>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:4px">What to send?</div>
+        <button onclick="sendTgNow('trades')" class="tg-send-btn" style="background:var(--blue)">📤 Top 5 Trades (text)</button>
+        <button onclick="sendTgNow('snapshot')" class="tg-send-btn" style="background:linear-gradient(135deg,#7c3aed,#1d4ed8)">📸 Page Snapshot (screenshot)</button>
+        <button onclick="sendTgNow('stock')" class="tg-send-btn" style="background:var(--teal)" id="tgStockBtn">📊 Current Stock Analysis</button>
+      </div>
       <div class="tg-status" id="tgStatus"></div>
     </div>
   </div>
@@ -1421,6 +1445,7 @@ async function startScan() {
       if (sv.score >= 60) allTrades.push({sym, d, s:sv, strat:sv.fut, isFut:true, isDemo:true})
       updatePulse(sym, d, sv)
       prevSnaps[sym] = buildSnap(d)
+      // Detect spikes for this stock (needs prev snap, so runs after storing)
     }
     if (fill) fill.style.width = '100%'
     _finishScan(btn, prog, luEl, 'Demo · Start proxy for live data')
@@ -1471,6 +1496,7 @@ function _finishScan(btn, prog, luEl, msg) {
   renderPulse()
   renderTicker()
   renderMovingBar()
+  renderSpikeStrip()
   resetCD()
 }
 
@@ -2195,25 +2221,77 @@ function saveTgCreds() {
   if(cht) localStorage.setItem(TG_CHAT_KEY,cht)
 }
 
-async function sendTgNow() {
+async function sendTgNow(mode='trades') {
   saveTgCreds()
   const token  = localStorage.getItem(TG_TOKEN_KEY)
   const chat   = localStorage.getItem(TG_CHAT_KEY)
   const status = document.getElementById('tgStatus')
-  if (!token||!chat) { if(status){status.textContent='⚠️ Enter bot token and chat ID first';status.style.color='var(--red)'} return }
-  const btn = document.querySelector('.tg-send-btn')
-  if (btn) btn.disabled = true
+  if (!token||!chat) { if(status){status.textContent='⚠️ Enter token and chat ID first';status.style.color='var(--red)'} return }
   if (status) { status.textContent='Sending...'; status.style.color='var(--text3)' }
-  const sorted = Object.values(scanResults).sort((a,b)=>(b.s?.score||0)-(a.s?.score||0))
-  const lines  = sorted.slice(0,5).map(({d,s},i) => `${i+1}. ${s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':'💰'} *${d.sym}* — ${s.pri?.name||'—'} | Score ${s.score} (${s.grade}) | Risk ₹${((s.pri?.risk||0)/1000).toFixed(0)}K→₹${((s.pri?.rew||0)/1000).toFixed(0)}K`)
-  const msg = `🏆 *KAMAKSHIVA Stock F&O*\n⏰ ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} IST\n\n*Top Trades:*\n${lines.join('\n')}\n\n${sorted.filter(r=>r.s?.isWhaleAlert).length?'🐋 Whale: '+sorted.filter(r=>r.s?.isWhaleAlert).map(r=>r.d.sym).join(', '):''}\n_LNP KAMAKSHIVA_`
+  document.querySelectorAll('.tg-send-btn').forEach(b=>b.disabled=true)
+
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text:msg,parse_mode:'Markdown'})})
-    const data = await res.json()
-    if (data.ok) { if(status){status.textContent='✅ Sent!';status.style.color='var(--green)'} setTimeout(closeTgModalDirect, 1500) }
-    else { if(status){status.textContent='❌ '+data.description;status.style.color='var(--red)'} }
-  } catch(e) { if(status){status.textContent='❌ Network error';status.style.color='var(--red)'} }
-  if (btn) btn.disabled = false
+    if (mode === 'snapshot' || mode === 'stock') {
+      // Screenshot using html2canvas if available, else fallback to text
+      let imgBase64 = null
+      if (typeof html2canvas !== 'undefined') {
+        if (status) status.textContent = '📸 Capturing screenshot...'
+        try {
+          // For stock mode, capture just the centreCol
+          const el = mode === 'stock' && selectedSym
+            ? document.getElementById('centreCol')
+            : document.body
+          const canvas = await html2canvas(el || document.body, {
+            scale: 0.6, useCORS: true, logging: false,
+            backgroundColor: '#f0f2f5'
+          })
+          imgBase64 = canvas.toDataURL('image/jpeg', 0.75).split(',')[1]
+        } catch(e) { imgBase64 = null }
+      }
+
+      if (imgBase64) {
+        if (status) status.textContent = '📤 Sending image...'
+        // Send via sendPhoto
+        const formData = new FormData()
+        formData.append('chat_id', chat)
+        // Convert base64 to blob
+        const byteChars = atob(imgBase64)
+        const byteArr = new Uint8Array(byteChars.length)
+        for (let i=0; i<byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i)
+        const blob = new Blob([byteArr], {type:'image/jpeg'})
+        formData.append('photo', blob, 'kamakshiva.jpg')
+        const caption = mode === 'stock' && selectedSym
+          ? `📊 ${selectedSym} — KAMAKSHIVA Analysis · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} IST`
+          : `🏆 KAMAKSHIVA Stock F&O · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} IST`
+        formData.append('caption', caption)
+        const res = await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {method:'POST', body: formData})
+        const data = await res.json()
+        if (data.ok) { if(status){status.textContent='✅ Screenshot sent!';status.style.color='var(--green)'} setTimeout(closeTgModalDirect,1500) }
+        else { if(status){status.textContent='❌ '+data.description;status.style.color='var(--red)'} }
+      } else {
+        // Fallback to text if html2canvas not loaded
+        if (status) status.textContent = 'html2canvas not loaded — sending text summary...'
+        await sendTgNow('trades')
+      }
+    } else {
+      // mode === 'trades' — text summary
+      const sorted = Object.values(scanResults).sort((a,b)=>(b.s?.score||0)-(a.s?.score||0))
+      const lines  = sorted.slice(0,5).map(({d,s},i) =>
+        `${i+1}. ${s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':'💰'} *${d.sym}* — ${s.pri?.name||'—'} | Score ${s.score} (${s.grade}) | ₹${((s.pri?.risk||0)/1000).toFixed(0)}K→₹${((s.pri?.rew||0)/1000).toFixed(0)}K`)
+      const whales = sorted.filter(r=>r.s?.isWhaleAlert).map(r=>r.d.sym).join(', ')
+      const squeeze= sorted.filter(r=>r.s?.ceSqueezing||r.s?.peSqueezing).map(r=>r.d.sym).join(', ')
+      const msg = `🏆 *KAMAKSHIVA Stock F&O*\n⏰ ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} IST\n\n*Top Trades:*\n${lines.join('\n')}${whales?'\n\n🐋 Whale: '+whales:''}${squeeze?'\n⚡ Squeeze: '+squeeze:''}\n\n_LNP KAMAKSHIVA_`
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`,
+        {method:'POST',headers:{'Content-Type':'application/json'},
+         body:JSON.stringify({chat_id:chat,text:msg,parse_mode:'Markdown'})})
+      const data = await res.json()
+      if (data.ok) { if(status){status.textContent='✅ Sent!';status.style.color='var(--green)'} setTimeout(closeTgModalDirect,1500) }
+      else { if(status){status.textContent='❌ '+data.description;status.style.color='var(--red)'} }
+    }
+  } catch(e) {
+    if(status){status.textContent='❌ '+e.message;status.style.color='var(--red)'}
+  }
+  document.querySelectorAll('.tg-send-btn').forEach(b=>b.disabled=false)
 }
 
 // ── AI PANEL ─────────────────────────────────────────────────
@@ -2747,6 +2825,135 @@ function guessSector(sym) {
     RECLTD:'Finance', PFC:'Finance', IRFC:'Finance', HUDCO:'Finance',
   }
   return map[sym] || 'F&O'
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OI SPIKE DETECTION — per stock, shown in strip above 3-col
+// ═══════════════════════════════════════════════════════════════
+let stockSpikeCards = []  // [{sym, card}, ...]
+
+function detectStockSpikes(sym, d) {
+  const prev = prevSnaps[sym]
+  if (!prev) return []
+  const spikes = []
+  const spot = d.spot
+
+  d.nearStrikes.forEach(row => {
+    const ceOI  = row.ce?.openInterest || 0
+    const peOI  = row.pe?.openInterest || 0
+    const prevR = prev[row.strike] || {ce: ceOI, pe: peOI}
+    const cePct = prevR.ce > 10000 ? (ceOI - prevR.ce) / prevR.ce * 100 : 0
+    const pePct = prevR.pe > 10000 ? (peOI - prevR.pe) / prevR.pe * 100 : 0
+    const ceAbsL = Math.abs((ceOI - prevR.ce) / 100000).toFixed(2)
+    const peAbsL = Math.abs((peOI - prevR.pe) / 100000).toFixed(2)
+
+    if (Math.abs(cePct) >= 15 && ceOI > 30000) {
+      spikes.push(buildStockSpikeCard({
+        sym, strike: row.strike, side: 'CE',
+        pct: cePct, absL: ceAbsL,
+        totalOI: (ceOI/100000).toFixed(1),
+        isSurge: cePct > 0, spot, dte: getDTE(d.expiry)
+      }))
+    }
+    if (Math.abs(pePct) >= 15 && peOI > 30000) {
+      spikes.push(buildStockSpikeCard({
+        sym, strike: row.strike, side: 'PE',
+        pct: pePct, absL: peAbsL,
+        totalOI: (peOI/100000).toFixed(1),
+        isSurge: pePct > 0, spot, dte: getDTE(d.expiry)
+      }))
+    }
+  })
+  return spikes
+}
+
+function buildStockSpikeCard({sym, strike, side, pct, absL, totalOI, isSurge, spot, dte}) {
+  const isCE     = side === 'CE'
+  const isAbove  = strike > spot
+  const mag      = Math.abs(pct)
+  const intensity= mag >= 40 ? 'MASSIVE' : mag >= 25 ? 'LARGE' : 'NOTABLE'
+  const dist     = Math.abs(Math.round(strike - spot))
+
+  const what = isSurge
+    ? `${intensity} ${side} OI SURGE at ${sym} ₹${strike}: +${absL}L contracts added`
+    : `${intensity} ${side} OI DROP at ${sym} ₹${strike}: −${absL}L contracts closed`
+
+  let action = ''
+  if (!isSurge && isCE && isAbove)       action = '⚡ BULLISH — ceiling weakening, breakout possible'
+  else if (!isSurge && !isCE && !isAbove) action = '⚡ BEARISH — floor weakening, breakdown possible'
+  else if (isSurge && isCE && isAbove)    action = '🛡️ New resistance added — don\'t chase longs above'
+  else if (isSurge && !isCE && !isAbove)  action = '🛡️ New support added — don\'t chase shorts below'
+  else                                     action = `Watch price near ₹${strike}`
+
+  const why = isSurge
+    ? (isCE ? `Institutions writing CE at ₹${strike} — defending as resistance ${dist}pts from spot`
+             : `Institutions writing PE at ₹${strike} — defending as support ${dist}pts from spot`)
+    : (isCE ? `CE writers COVERING at ₹${strike} — ceiling losing institutional backing`
+             : `PE writers COVERING at ₹${strike} — floor losing institutional backing`)
+
+  return {
+    sym, strike, side, pct, absL, totalOI, isSurge, intensity, what, why, action, dte,
+    color: isSurge ? (isCE ? 'var(--red)' : 'var(--green)') : 'var(--purple)',
+    bg:    isSurge ? (isCE ? 'var(--red-bg)' : 'var(--green-bg)') : 'var(--pur-bg)',
+    bd:    isSurge ? (isCE ? 'var(--red-bd)' : 'var(--green-bd)') : 'var(--pur-bd)',
+    emoji: isSurge ? (isCE ? '🔴' : '🟢') : '⚡'
+  }
+}
+
+function renderSpikeStrip() {
+  const strip   = document.getElementById('spikeStrip')
+  const ticker  = document.getElementById('spikeTicker')
+  if (!strip || !ticker) return
+
+  // Collect spikes from all scanned stocks
+  stockSpikeCards = []
+  Object.values(scanResults).forEach(({sym, d}) => {
+    if (d) detectStockSpikes(sym, d).forEach(card => stockSpikeCards.push(card))
+  })
+
+  if (!stockSpikeCards.length) { strip.style.display = 'none'; return }
+
+  strip.style.display = 'block'
+  ticker.innerHTML = stockSpikeCards.map(card =>
+    `<span onclick="openSpikePanel()" style="display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;background:${card.isSurge?(card.side==='CE'?'rgba(192,57,43,0.2)':'rgba(26,122,80,0.2)'):'rgba(109,40,217,0.2)'};color:${card.color};border:1px solid ${card.bd};white-space:nowrap">
+      ${card.emoji} <strong>${card.sym}</strong> ₹${card.strike} ${card.side} ${card.isSurge?'▲':'▼'}${Math.abs(card.pct).toFixed(0)}%
+    </span>`
+  ).join('')
+
+  // Also fire alert toasts for big spikes
+  stockSpikeCards.filter(c => Math.abs(c.pct) >= 25).forEach(card => {
+    fire({type: card.isSurge ? 'spike' : 'warn', sym: card.sym, msg: card.what})
+  })
+}
+
+function openSpikePanel() {
+  const wrap    = document.getElementById('spikePanelWrap')
+  const content = document.getElementById('spikePanelContent')
+  if (!wrap || !content) return
+  wrap.style.display = 'block'
+  content.innerHTML = !stockSpikeCards.length
+    ? '<div style="padding:20px;text-align:center;color:var(--text3)">No OI spikes detected yet. Spikes appear after 2 scans.</div>'
+    : stockSpikeCards.map(card => `
+      <div style="background:${card.bg};border:1.5px solid ${card.bd};border-radius:10px;padding:11px 13px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span style="font-size:16px">${card.emoji}</span>
+            <div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:${card.color}">${card.sym} ₹${card.strike} ${card.side}</span>
+              <span style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:${card.color};color:white;margin-left:6px">${card.intensity} ${card.isSurge?'SURGE':'DROP'} ${card.isSurge?'▲':'▼'}${Math.abs(card.pct).toFixed(0)}%</span>
+            </div>
+          </div>
+          <button onclick="closeSpikePanel();selectTrade('${card.sym}')" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1.5px solid ${card.bd};background:white;color:${card.color};cursor:pointer;font-weight:700">Analyse →</button>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">${card.what}</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${card.why}</div>
+        <div style="font-size:11px;font-weight:700;color:${card.color}">${card.action}</div>
+      </div>`).join('')
+}
+
+function closeSpikePanel() {
+  const wrap = document.getElementById('spikePanelWrap')
+  if (wrap) wrap.style.display = 'none'
 }
 
 loadWL()

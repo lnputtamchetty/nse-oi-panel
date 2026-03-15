@@ -165,6 +165,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   <span class="status-pill" id="srcPill">⚪ Demo</span>
   <span class="status-pill" id="marketPill">—</span>
   <span class="status-pill banned" id="banPill" style="display:none">🚫 <span id="banCount">0</span> Stocks Banned</span>
+  <!-- Expiry countdowns -->
+  <span class="status-pill" id="niftyExpPill" style="background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue)">NIFTY: —</span>
+  <span class="status-pill" id="bnfExpPill" style="background:var(--pur-bg);border-color:var(--pur-bd);color:var(--purple)">BNF: —</span>
+  <!-- Market Regime -->
+  <span class="status-pill" id="regimePill" style="background:var(--bg3)">📊 Regime: —</span>
   <span class="data-freshness" id="freshnessEl">Last refresh: —</span>
 </div>
 
@@ -1308,16 +1313,51 @@ function testPulseAlert() {
   if(el){el.textContent='✅ Test fired!';el.style.color='var(--green)';setTimeout(()=>el.textContent='',3000)}
 }
 
+function getDTE(exp){
+  try{const p=exp.split('-'),m={JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11},mm=m[p[1]?.toUpperCase()];if(mm===undefined)return'?';const d=new Date(parseInt(p[2]),mm,parseInt(p[0])),t=new Date();t.setHours(0,0,0,0);return Math.max(0,Math.round((d-t)/86400000))}catch(e){return'?'}
+}
+function getNextExpiry(weekday) {
+  const MN=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+  const d=new Date(); let days=(weekday-d.getDay()+7)%7; if(days===0)days=7
+  d.setDate(d.getDate()+days)
+  return `${String(d.getDate()).padStart(2,'0')}-${MN[d.getMonth()]}-${d.getFullYear()}`
+}
 function detectMarketStatus() {
   const now = new Date()
   const h = now.getHours(), m = now.getMinutes()
   const mins = h*60+m
   const isWeekday = now.getDay() >= 1 && now.getDay() <= 5
   const marketPill = document.getElementById('marketPill')
-  if (!isWeekday) { marketPill.textContent = '📅 Weekend — Market Closed'; marketPill.className='status-pill demo'; return }
-  if (mins >= 9*60+15 && mins <= 15*60+30) { marketPill.textContent = '🟢 Market Open'; marketPill.className='status-pill live' }
+  if (!isWeekday) { marketPill.textContent = '📅 Weekend — Market Closed'; marketPill.className='status-pill demo' }
+  else if (mins >= 9*60+15 && mins <= 15*60+30) { marketPill.textContent = '🟢 Market Open'; marketPill.className='status-pill live' }
   else if (mins < 9*60+15) { marketPill.textContent = `⏰ Opens in ${9*60+15-mins}min`; marketPill.className='status-pill' }
   else { marketPill.textContent = '🔴 Market Closed'; marketPill.className='status-pill demo' }
+
+  // Expiry countdowns
+  const niftyExp = getNextExpiry(4)  // Thursday
+  const bnfExp   = getNextExpiry(3)  // Wednesday
+  const nDTE = getDTE(niftyExp), bDTE = getDTE(bnfExp)
+  const nPill = document.getElementById('niftyExpPill')
+  const bPill = document.getElementById('bnfExpPill')
+  if (nPill) {
+    nPill.textContent = `NIFTY: ${nDTE===0?'🔴 TODAY':nDTE===1?'🟡 TOMORROW':nDTE+'D'} to expiry`
+    if (nDTE===0) nPill.style.cssText='background:var(--red-bg);border-color:var(--red-bd);color:var(--red)'
+    else if (nDTE===1) nPill.style.cssText='background:var(--yel-bg);border-color:var(--yel-bd);color:var(--yellow)'
+  }
+  if (bPill) bPill.textContent = `BNF: ${bDTE===0?'🔴 TODAY':bDTE===1?'🟡 TMRW':bDTE+'D'}`
+
+  // Market regime based on time + day
+  const regimePill = document.getElementById('regimePill')
+  if (regimePill) {
+    if (!isWeekday) regimePill.textContent = '📅 Market Closed'
+    else if (mins >= 9*60+15 && mins <= 9*60+45) regimePill.textContent = '⚡ Opening Volatility — Wait 15min'
+    else if (mins >= 9*60+45 && mins <= 11*60+30) regimePill.textContent = '📊 Morning Trend Session'
+    else if (mins >= 11*60+30 && mins <= 13*60) regimePill.textContent = '😴 Midday Consolidation — Low activity'
+    else if (mins >= 13*60 && mins <= 14*60+30) regimePill.textContent = '📈 Afternoon Momentum'
+    else if (mins >= 14*60+30 && mins <= 15*60+30) regimePill.textContent = '⚠️ Closing Hour — Expiry pinning active'
+    else regimePill.textContent = '🔴 Market Closed'
+    if (nDTE===0) regimePill.textContent += ' · EXPIRY DAY'
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════

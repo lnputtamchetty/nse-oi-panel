@@ -448,6 +448,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 </div>
 
 <script>
+
 // ══════════════════════════════════════════════════════════
 // BUTTERFLY OPTION CHAIN — Professional NSE layout
 // CALL side | STRIKE | PUT side
@@ -871,11 +872,11 @@ function saveAS() {
 async function fetchChain(sym) {
   const enc = encodeURIComponent(sym)
   try {
-    const r = await fetch(`http://localhost:3001/chain?symbol=${enc}&type=equity`,{signal:AbortSignal.timeout(3500)})
+    const r = await fetch(`http://localhost:3001/chain?symbol=${enc}&type=equity`,{signal:AbortSignal.timeout(2000)})
     if (r.ok) { const j=await r.json(); if(j?.records) return j }
   } catch(e){}
   try {
-    const r = await fetch(`/api/chain?symbol=${enc}&type=equity`,{signal:AbortSignal.timeout(9000)})
+    const r = await fetch(`/api/chain?symbol=${enc}&type=equity`,{signal:AbortSignal.timeout(5000)})
     if (r.ok) { const j=await r.json(); if(j?.records) return j }
   } catch(e){}
   return null
@@ -954,166 +955,240 @@ function computeStrategy(d) {
   const aCe=atmRow.ce?.lastPrice||0,aPe=atmRow.pe?.lastPrice||0
   const cW=ceWall.ce?.lastPrice||0,pW=peWall.pe?.lastPrice||0
 
-  // ── Specific strike prices from live chain ──
+  // ── Specific strikes from live chain ──
   const otm1CeStrike = d.strikeList.find(r => r.strike > d.atm + step)?.strike || (d.atm + step)
   const otm1PeStrike = d.strikeList.find(r => r.strike < d.atm - step)?.strike || (d.atm - step)
   const otm1CeLTP    = d.strikeList.find(r => r.strike === otm1CeStrike)?.ce?.lastPrice || 0
   const otm1PeLTP    = d.strikeList.find(r => r.strike === otm1PeStrike)?.pe?.lastPrice || 0
+  const otm2CeStrike = d.strikeList.find(r => r.strike > otm1CeStrike + step)?.strike || (otm1CeStrike + step)
+  const otm2PeStrike = d.strikeList.find(r => r.strike < otm1PeStrike - step)?.strike || (otm1PeStrike - step)
+  const otm2CeLTP    = d.strikeList.find(r => r.strike === otm2CeStrike)?.ce?.lastPrice || 0
+  const otm2PeLTP    = d.strikeList.find(r => r.strike === otm2PeStrike)?.pe?.lastPrice || 0
   const ceHedge      = d.strikeList.find(r => r.strike === ceWall.strike + step)?.ce?.lastPrice || 0
   const peHedge      = d.strikeList.find(r => r.strike === peWall.strike - step)?.pe?.lastPrice || 0
-  const entryBull    = Math.round(spot + step * 0.3)  // just above current for bullish entry
-  const entryBear    = Math.round(spot - step * 0.3)  // just below for bearish
-  const slBull       = Math.round(peWall.strike - step * 0.5) // SL below PE wall
-  const slBear       = Math.round(ceWall.strike + step * 0.5) // SL above CE wall
-  const tgtBull      = ceWall.strike  // target = CE wall
-  const tgtBear      = peWall.strike  // target = PE wall
+  const entryBull    = Math.round(spot + step * 0.3)
+  const entryBear    = Math.round(spot - step * 0.3)
+  const slBull       = Math.round(peWall.strike - step * 0.5)
+  const slBear       = Math.round(ceWall.strike + step * 0.5)
 
-  let pri={}
-  if(dir==='bull'&&ivState!=='HIGH'){
-    // IV low/normal + bullish → buy OTM1 CE for leverage (cheaper than ATM, wall breakout play)
-    pri={name:'BUY OTM CE',type:'Breakout Play',cat:'bull',
-      legs:[{a:'BUY',d:`${otm1CeStrike} CE`,p:otm1CeLTP.toFixed(1),note:'1 strike OTM'}],
-      risk:Math.round(otm1CeLTP*lot),rew:Math.round(otm1CeLTP*lot*2.5),rr:'1:2.5',
-      entry:`Enter when spot breaks ₹${Math.round(spot+step*0.5)} on volume`,
-      sl:`Exit if ${otm1CeStrike} CE premium drops below ₹${Math.round(otm1CeLTP*0.5)}`,
-      target:`₹${ceWall.strike} level = ₹${Math.round(otm1CeLTP*lot*2.5).toLocaleString('en-IN')} per lot`,
-      when:`Spot close above ₹${d.atm} + strong volume`,avoid:'IV above 30% — buy ATM instead',
-      exit:`Book 50% at 1.5x, trail rest to CE wall ₹${ceWall.strike}`}
-  } else if(dir==='bull'&&ivState==='HIGH'){
-    // High IV + bullish → bull call spread (cap premium cost)
-    pri={name:'BULL CALL SPREAD',type:'Defined Bull',cat:'bull',
-      legs:[{a:'BUY',d:`${d.atm} CE`,p:aCe.toFixed(1),note:'ATM, pay premium'},
-             {a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'CE wall, collect premium'}],
-      risk:Math.round(Math.max(0,aCe-cW)*lot),
-      rew:Math.round((ceWall.strike-d.atm)*lot-Math.max(0,aCe-cW)*lot),rr:'1:2',
-      entry:`Enter near ₹${d.atm} with spot trending up`,
-      sl:`If spot closes below ₹${d.atm-step} — exit full position`,
-      target:`₹${ceWall.strike} — max profit = ₹${Math.round((ceWall.strike-d.atm-Math.max(0,aCe-cW))*lot).toLocaleString('en-IN')}`,
-      when:'IV is high — spread reduces cost vs naked buy',avoid:'Tight spreads below ₹5 net premium',
-      exit:`Close when spot reaches ₹${Math.round(ceWall.strike-step*0.5)}`}
-  } else if(dir==='bear'&&ivState!=='HIGH'){
-    pri={name:'BUY OTM PE',type:'Breakdown Play',cat:'bear',
-      legs:[{a:'BUY',d:`${otm1PeStrike} PE`,p:otm1PeLTP.toFixed(1),note:'1 strike OTM'}],
-      risk:Math.round(otm1PeLTP*lot),rew:Math.round(otm1PeLTP*lot*2.5),rr:'1:2.5',
-      entry:`Enter when spot breaks below ₹${Math.round(spot-step*0.5)} on volume`,
-      sl:`Exit if ${otm1PeStrike} PE premium drops below ₹${Math.round(otm1PeLTP*0.5)}`,
-      target:`₹${peWall.strike} level = ₹${Math.round(otm1PeLTP*lot*2.5).toLocaleString('en-IN')} per lot`,
-      when:`Spot close below ₹${d.atm} + strong volume`,avoid:'IV above 30% — buy ATM instead',
-      exit:`Book 50% at 1.5x, trail rest to PE wall ₹${peWall.strike}`}
-  } else if(dir==='bear'&&ivState==='HIGH'){
-    pri={name:'BEAR PUT SPREAD',type:'Defined Bear',cat:'bear',
-      legs:[{a:'BUY',d:`${d.atm} PE`,p:aPe.toFixed(1),note:'ATM, pay premium'},
-             {a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1),note:'PE wall, collect premium'}],
-      risk:Math.round(Math.max(0,aPe-pW)*lot),
-      rew:Math.round((d.atm-peWall.strike)*lot-Math.max(0,aPe-pW)*lot),rr:'1:2',
-      entry:`Enter near ₹${d.atm} with spot trending down`,
-      sl:`If spot closes above ₹${d.atm+step} — exit full position`,
-      target:`₹${peWall.strike} — max profit = ₹${Math.round((d.atm-peWall.strike-Math.max(0,aPe-pW))*lot).toLocaleString('en-IN')}`,
-      when:'IV is high — spread reduces cost vs naked buy',avoid:'Tight spreads below ₹5',
-      exit:`Close when spot reaches ₹${Math.round(peWall.strike+step*0.5)}`}
-  } else if(dCe<step*3){
-    // Near CE wall → sell CE premium (classic wall sell)
-    pri={name:'BEAR CALL SPREAD',type:'Sell CE Wall',cat:'sell',
-      legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'CE wall — max OI here'},
-             {a:'BUY',d:`${ceWall.strike+step} CE`,p:ceHedge.toFixed(1),note:'Hedge — defines max loss'}],
-      risk:Math.round((step-Math.max(0,cW-ceHedge))*lot),
-      rew:Math.round(Math.max(0,cW-ceHedge)*lot),rr:'1:1',
-      entry:`Sell when spot approaches ₹${ceWall.strike-step*0.5} — wall intact`,
-      sl:`If spot closes above ₹${ceWall.strike+step} — exit or roll`,
-      target:`Full premium decay = ₹${Math.round(Math.max(0,cW-ceHedge)*lot).toLocaleString('en-IN')} per lot`,
-      when:`CE wall OI ${((ceWall.ce?.openInterest||0)/100000).toFixed(0)}L strong, spot stalling below wall`,
-      avoid:'Do NOT sell if CE OI is dropping (squeeze risk)',
-      exit:`Exit if spot closes above ₹${ceWall.strike} — that means wall broken`}
-  } else if(dPe<step*3){
-    pri={name:'BULL PUT SPREAD',type:'Sell PE Wall',cat:'sell',
-      legs:[{a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1),note:'PE wall — max OI here'},
-             {a:'BUY',d:`${peWall.strike-step} PE`,p:peHedge.toFixed(1),note:'Hedge — defines max loss'}],
-      risk:Math.round((step-Math.max(0,pW-peHedge))*lot),
-      rew:Math.round(Math.max(0,pW-peHedge)*lot),rr:'1:1',
-      entry:`Sell when spot approaches ₹${peWall.strike+step*0.5} — wall intact`,
-      sl:`If spot closes below ₹${peWall.strike-step} — exit or roll`,
-      target:`Full decay = ₹${Math.round(Math.max(0,pW-peHedge)*lot).toLocaleString('en-IN')} per lot`,
-      when:`PE wall OI ${((peWall.pe?.openInterest||0)/100000).toFixed(0)}L strong, spot bouncing off wall`,
-      avoid:'Do NOT sell if PE OI is dropping (put squeeze risk)',
-      exit:`Exit if spot closes below ₹${peWall.strike}`}
-  } else {
-    // Range: Iron Condor — sell both walls
-    pri={name:'IRON CONDOR',type:'Sell Both Walls',cat:'sell',
-      legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'CE wall sell'},
-             {a:'BUY',d:`${ceWall.strike+step} CE`,p:ceHedge.toFixed(1),note:'CE hedge'},
-             {a:'SELL',d:`${peWall.strike} PE`,p:pW.toFixed(1),note:'PE wall sell'},
-             {a:'BUY',d:`${peWall.strike-step} PE`,p:peHedge.toFixed(1),note:'PE hedge'}],
-      risk:Math.round((step-Math.max(0,cW-ceHedge+pW-peHedge))*lot),
-      rew:Math.round(Math.max(0,cW-ceHedge+pW-peHedge)*lot),rr:'1:1',
-      entry:`Enter when spot is between ₹${peWall.strike} and ₹${ceWall.strike}`,
-      sl:`Exit CE side if spot > ₹${ceWall.strike}. Exit PE side if spot < ₹${peWall.strike}`,
-      target:`Full premium = ₹${Math.round(Math.max(0,cW-ceHedge+pW-peHedge)*lot).toLocaleString('en-IN')}. Hold to expiry if in range`,
-      when:`Both walls have heavy OI, IV elevated, DTE 5-10 days`,
-      avoid:'Near results or high VIX — condor will get blown up',
-      exit:`Roll or close 1DTE regardless of profit`}
+  // ── Score every strategy independently ──
+  // Each gets a score 0-100 based on: direction fit, IV fit, DTE fit, wall proximity
+  const isHighIV = ivState === 'HIGH'
+  const isLowIV  = ivState === 'LOW'
+  const isShortDTE = dte <= 3
+  const isMedDTE   = dte >= 4 && dte <= 8
+  const ceWallOIL  = (ceWall.ce?.openInterest||0)/100000
+  const peWallOIL  = (peWall.pe?.openInterest||0)/100000
+  const nearCE = dCe < step * 3
+  const nearPE = dPe < step * 3
+
+  function mkScore(base, conds) {
+    // conds = array of [conditionMet, points]
+    return Math.min(100, conds.reduce((t,[c,p]) => t + (c ? p : 0), base))
   }
 
-  let alt={}
-  if(dir==='bull'){
-    // Alternate: ATM CE buy (safer than OTM)
-    alt={name:'BUY ATM CE',type:'Safe Bull Entry',cat:'bull',
-      legs:[{a:'BUY',d:`${d.atm} CE`,p:aCe.toFixed(1),note:'ATM — highest delta (0.5)'}],
-      risk:Math.round(aCe*lot),rew:Math.round(aCe*lot*2),rr:'1:2',
-      entry:`Entry above ₹${d.atm} spot`,sl:`Exit if spot drops below ₹${d.atm-step}`,
-      target:`₹${ceWall.strike} = target`,when:'More conservative than OTM buy',
-      avoid:'2 days before expiry — theta kills it',exit:`Book at ₹${Math.round(aCe*2)} premium or spot at CE wall`}
-  } else if(dir==='bear'){
-    alt={name:'BUY ATM PE',type:'Safe Bear Entry',cat:'bear',
-      legs:[{a:'BUY',d:`${d.atm} PE`,p:aPe.toFixed(1),note:'ATM — highest delta (0.5)'}],
-      risk:Math.round(aPe*lot),rew:Math.round(aPe*lot*2),rr:'1:2',
-      entry:`Entry below ₹${d.atm} spot`,sl:`Exit if spot rises above ₹${d.atm+step}`,
-      target:`₹${peWall.strike} = target`,when:'More conservative than OTM buy',
-      avoid:'Near expiry — buy ITM instead',exit:`Book at ₹${Math.round(aPe*2)} or spot at PE wall`}
-  } else if(dCe<step*4){
-    // Near CE wall alternate: naked CE sell (higher reward, higher risk)
-    alt={name:'SELL CE (NAKED)',type:'High Reward Wall Sell',cat:'sell',
-      legs:[{a:'SELL',d:`${ceWall.strike} CE`,p:cW.toFixed(1),note:'No hedge — maximum premium'}],
-      risk:Math.round(step*2*lot),rew:Math.round(cW*lot),rr:'1:0.5',
-      entry:`Sell when spot is ₹${dCe}pts below wall and momentum fading`,
-      sl:`If spot touches ₹${ceWall.strike} intraday — exit immediately`,
-      target:`CE expires worthless = full ₹${Math.round(cW*lot).toLocaleString('en-IN')} per lot`,
-      when:'High confidence wall will hold. High IV preferred.',
-      avoid:'If OI at CE wall is falling (squeeze) — do NOT sell naked',
-      exit:`Exit 1DTE regardless. Never hold naked short to expiry day`}
-  } else {
-    alt={name:'SHORT STRADDLE',type:'High IV Premium Sell',cat:'sell',
-      legs:[{a:'SELL',d:`${d.atm} CE`,p:aCe.toFixed(1),note:'ATM CE sell'},
-             {a:'SELL',d:`${d.atm} PE`,p:aPe.toFixed(1),note:'ATM PE sell'}],
-      risk:Math.round((aCe+aPe)*1.5*lot),rew:Math.round((aCe+aPe)*lot),rr:'1:0.7',
-      entry:`Sell near market open when IV is spiked`,
-      sl:`Exit if spot moves ${step}pts in either direction`,
-      target:`Full ₹${Math.round((aCe+aPe)*lot).toLocaleString('en-IN')} per lot at expiry`,
-      when:'IV is HIGH, range-bound expected, 3-5 DTE',
-      avoid:'Results day or high VIX — straddle gets blown',
-      exit:`Buy back when combined premium drops to ₹${Math.round((aCe+aPe)*0.3)}`}
-  }
+  const candidates = []
 
-  let fut={}
-  if(dir==='bull'||(dir==='range'&&bull>=bear)){
-    fut={name:'LONG FUTURES',type:'Leverage Bull',cat:'fut',
-      legs:[{a:'BUY',d:`${d.sym} ${d.expiry} Fut`,p:`~₹${Math.round(spot)}`,note:`${lot} shares per lot`}],
-      risk:Math.round(step*2*lot),rew:Math.round((ceWall.strike-spot)*lot),rr:'1:'+((ceWall.strike-spot)/(step*2)).toFixed(1),
-      entry:`BUY above ₹${entryBull} (spot + momentum confirm)`,
-      sl:`SL at ₹${slBull} (below PE wall — institutions will defend it)`,
-      target:`T1: ₹${Math.round(spot+(ceWall.strike-spot)*0.5)} · T2: ₹${tgtBull} (CE wall = ${Math.round((ceWall.strike-spot)*lot/1000)}K per lot)`,
-      when:'Strong bullish signal, PCR < 0.9, CE OI stable',
-      avoid:'Near CE wall already — risk:reward poor. Wait for breakout',
-      exit:`Exit at CE wall ₹${ceWall.strike} or SL at ₹${slBull}. Never hold overnight if loss > 1%`}
+  // 1. BUY ATM CE
+  candidates.push({ name:'BUY ATM CE', type:'Directional Bull', cat:'bull', score: mkScore(0, [
+    [dir==='bull', 35], [!isHighIV, 25], [isShortDTE||isMedDTE, 20], [pcr<0.9, 10], [ceSqueezing, 10]
+  ]), build: () => ({
+    legs: [{a:'BUY', d:`${d.atm} CE`, p:aCe.toFixed(1), note:'ATM — delta 0.5, balanced risk'}],
+    risk: Math.round(aCe*lot), rew: Math.round(aCe*lot*2), rr:'1:2',
+    entry: `Enter above ₹${d.atm} with spot trending up and volume`,
+    sl:    `Exit if ${d.atm} CE drops below ₹${Math.round(aCe*0.5)} (50% SL rule)`,
+    target:`₹${ceWall.strike} = ₹${Math.round(aCe*lot*2).toLocaleString('en-IN')} per lot`,
+    when:  `Bullish breakout, IV normal or low, DTE 3-7`,
+    avoid: `IV above 28% — spread is better. Avoid 1DTE.`,
+    exit:  `Book 60% at 1.5x, trail rest with SL at cost`
+  })})
+
+  // 2. BUY OTM CE
+  candidates.push({ name:'BUY OTM CE', type:'Breakout Leverage', cat:'bull', score: mkScore(0, [
+    [dir==='bull', 30], [!isHighIV, 25], [isMedDTE, 25], [pcr<0.85, 10], [dCe>step*2, 10]
+  ]), build: () => ({
+    legs: [{a:'BUY', d:`${otm1CeStrike} CE`, p:otm1CeLTP.toFixed(1), note:'OTM — cheaper, higher reward'}],
+    risk: Math.round(otm1CeLTP*lot), rew: Math.round(otm1CeLTP*lot*3), rr:'1:3',
+    entry: `Enter only after spot crosses ₹${d.atm+step*0.5} with strong volume`,
+    sl:    `Stop if premium drops below ₹${Math.round(otm1CeLTP*0.4)}`,
+    target:`₹${ceWall.strike} — OTM move = ₹${Math.round(otm1CeLTP*lot*3).toLocaleString('en-IN')} per lot`,
+    when:  `Strong bull momentum, IV < 20%, 5+ days left`,
+    avoid: `Near expiry or high IV — theta kills OTM fast`,
+    exit:  `Book 50% at 2x, let rest run to CE wall`
+  })})
+
+  // 3. BULL CALL SPREAD
+  candidates.push({ name:'BULL CALL SPREAD', type:'Defined Bull', cat:'bull', score: mkScore(0, [
+    [dir==='bull', 30], [isHighIV, 25], [isMedDTE, 20], [pcr<1.0, 15], [!nearCE, 10]
+  ]), build: () => ({
+    legs: [{a:'BUY', d:`${d.atm} CE`, p:aCe.toFixed(1), note:'ATM buy'},
+           {a:'SELL', d:`${ceWall.strike} CE`, p:cW.toFixed(1), note:'Wall sell — caps profit, reduces cost'}],
+    risk: Math.round(Math.max(1,aCe-cW)*lot), rew: Math.round((ceWall.strike-d.atm-Math.max(0,aCe-cW))*lot), rr:'1:2',
+    entry: `Buy ATM, sell CE wall when IV is elevated`,
+    sl:    `Exit spread if spot closes below ₹${d.atm-step}`,
+    target:`Spot at ₹${ceWall.strike} = max profit ₹${Math.round((ceWall.strike-d.atm)*lot).toLocaleString('en-IN')}`,
+    when:  `Bullish but IV high — spread reduces premium cost`,
+    avoid: `Tight spread < ₹5 net premium — not worth it`,
+    exit:  `Close at 75% of max profit or ₹${ceWall.strike-step*0.5}`
+  })})
+
+  // 4. BEAR CALL SPREAD (sell CE wall)
+  candidates.push({ name:'BEAR CALL SPREAD', type:'Sell CE Wall', cat:'sell', score: mkScore(0, [
+    [nearCE||dir==='bear'||dir==='range', 30], [ceWallOIL>20, 25], [isMedDTE||isShortDTE, 20], [!ceSqueezing, 15], [pcr>=1.0, 10]
+  ]), build: () => ({
+    legs: [{a:'SELL', d:`${ceWall.strike} CE`, p:cW.toFixed(1), note:`CE wall — ${ceWallOIL.toFixed(0)}L OI defending here`},
+           {a:'BUY',  d:`${ceWall.strike+step} CE`, p:ceHedge.toFixed(1), note:'Hedge — caps your max loss'}],
+    risk: Math.round((step-Math.max(0,cW-ceHedge))*lot), rew: Math.round(Math.max(0,cW-ceHedge)*lot), rr:'1:1',
+    entry: `Sell when spot is ${dCe}pts below CE wall ₹${ceWall.strike}, momentum fading`,
+    sl:    `Exit IMMEDIATELY if spot closes above ₹${ceWall.strike} — wall broken`,
+    target:`Premium decays to zero = ₹${Math.round(Math.max(0,cW-ceHedge)*lot).toLocaleString('en-IN')} per lot`,
+    when:  `${ceWallOIL.toFixed(0)}L CE OI at ${ceWall.strike} — strong resistance. Spot stalling.`,
+    avoid: `Do NOT enter if CE OI is dropping fast (squeeze risk)`,
+    exit:  `Buy back at 50% profit. Exit 1DTE always.`
+  })})
+
+  // 5. BUY ATM PE
+  candidates.push({ name:'BUY ATM PE', type:'Directional Bear', cat:'bear', score: mkScore(0, [
+    [dir==='bear', 35], [!isHighIV, 25], [isShortDTE||isMedDTE, 20], [pcr>1.1, 10], [peSqueezing, 10]
+  ]), build: () => ({
+    legs: [{a:'BUY', d:`${d.atm} PE`, p:aPe.toFixed(1), note:'ATM — delta 0.5, balanced risk'}],
+    risk: Math.round(aPe*lot), rew: Math.round(aPe*lot*2), rr:'1:2',
+    entry: `Enter below ₹${d.atm} with spot trending down and volume`,
+    sl:    `Exit if ${d.atm} PE drops below ₹${Math.round(aPe*0.5)}`,
+    target:`₹${peWall.strike} = ₹${Math.round(aPe*lot*2).toLocaleString('en-IN')} per lot`,
+    when:  `Bearish breakdown, IV normal or low, DTE 3-7`,
+    avoid: `IV above 28% — bear put spread is better`,
+    exit:  `Book 60% at 1.5x, trail rest`
+  })})
+
+  // 6. BUY OTM PE
+  candidates.push({ name:'BUY OTM PE', type:'Breakdown Leverage', cat:'bear', score: mkScore(0, [
+    [dir==='bear', 30], [!isHighIV, 25], [isMedDTE, 25], [pcr>1.2, 10], [dPe>step*2, 10]
+  ]), build: () => ({
+    legs: [{a:'BUY', d:`${otm1PeStrike} PE`, p:otm1PeLTP.toFixed(1), note:'OTM — cheaper, higher reward'}],
+    risk: Math.round(otm1PeLTP*lot), rew: Math.round(otm1PeLTP*lot*3), rr:'1:3',
+    entry: `Enter only after spot breaks below ₹${d.atm-step*0.5} with volume`,
+    sl:    `Stop if premium drops below ₹${Math.round(otm1PeLTP*0.4)}`,
+    target:`₹${peWall.strike} — ₹${Math.round(otm1PeLTP*lot*3).toLocaleString('en-IN')} per lot`,
+    when:  `Strong bear momentum, IV < 20%, 5+ days left`,
+    avoid: `Near expiry or high IV`,
+    exit:  `Book 50% at 2x, trail rest`
+  })})
+
+  // 7. BEAR PUT SPREAD
+  candidates.push({ name:'BEAR PUT SPREAD', type:'Defined Bear', cat:'bear', score: mkScore(0, [
+    [dir==='bear', 30], [isHighIV, 25], [isMedDTE, 20], [pcr>1.0, 15], [!nearPE, 10]
+  ]), build: () => ({
+    legs: [{a:'BUY',  d:`${d.atm} PE`, p:aPe.toFixed(1), note:'ATM buy'},
+           {a:'SELL', d:`${peWall.strike} PE`, p:pW.toFixed(1), note:'Wall sell — reduces premium cost'}],
+    risk: Math.round(Math.max(1,aPe-pW)*lot), rew: Math.round((d.atm-peWall.strike-Math.max(0,aPe-pW))*lot), rr:'1:2',
+    entry: `Buy ATM PE, sell PE wall. Enter when bearish.`,
+    sl:    `Exit if spot closes above ₹${d.atm+step}`,
+    target:`₹${peWall.strike} = max profit ₹${Math.round((d.atm-peWall.strike)*lot).toLocaleString('en-IN')}`,
+    when:  `Bearish + IV high — spread reduces cost`,
+    avoid: `Tight spread or PE wall showing squeeze`,
+    exit:  `Close at 75% of max profit`
+  })})
+
+  // 8. BULL PUT SPREAD (sell PE wall)
+  candidates.push({ name:'BULL PUT SPREAD', type:'Sell PE Wall', cat:'sell', score: mkScore(0, [
+    [nearPE||dir==='bull'||dir==='range', 30], [peWallOIL>20, 25], [isMedDTE||isShortDTE, 20], [!peSqueezing, 15], [pcr<=1.1, 10]
+  ]), build: () => ({
+    legs: [{a:'SELL', d:`${peWall.strike} PE`, p:pW.toFixed(1), note:`PE wall — ${peWallOIL.toFixed(0)}L OI defending here`},
+           {a:'BUY',  d:`${peWall.strike-step} PE`, p:peHedge.toFixed(1), note:'Hedge'}],
+    risk: Math.round((step-Math.max(0,pW-peHedge))*lot), rew: Math.round(Math.max(0,pW-peHedge)*lot), rr:'1:1',
+    entry: `Sell when spot bounces off PE wall ₹${peWall.strike}, ${dPe}pts below current`,
+    sl:    `Exit IMMEDIATELY if spot closes below ₹${peWall.strike-step}`,
+    target:`₹${Math.round(Math.max(0,pW-peHedge)*lot).toLocaleString('en-IN')} per lot at decay`,
+    when:  `${peWallOIL.toFixed(0)}L PE OI at ${peWall.strike} — strong support`,
+    avoid: `Do NOT enter if PE OI dropping fast`,
+    exit:  `Buy back at 50% profit. Exit 1DTE.`
+  })})
+
+  // 9. IRON CONDOR
+  candidates.push({ name:'IRON CONDOR', type:'Sell Both Walls', cat:'sell', score: mkScore(0, [
+    [dir==='range', 30], [isHighIV, 25], [isMedDTE, 20], [ceWallOIL>15&&peWallOIL>15, 15], [!ceSqueezing&&!peSqueezing, 10]
+  ]), build: () => ({
+    legs: [{a:'SELL', d:`${ceWall.strike} CE`, p:cW.toFixed(1), note:'CE wall sell'},
+           {a:'BUY',  d:`${ceWall.strike+step} CE`, p:ceHedge.toFixed(1), note:'CE hedge'},
+           {a:'SELL', d:`${peWall.strike} PE`, p:pW.toFixed(1), note:'PE wall sell'},
+           {a:'BUY',  d:`${peWall.strike-step} PE`, p:peHedge.toFixed(1), note:'PE hedge'}],
+    risk: Math.round(step*lot), rew: Math.round(Math.max(0,cW-ceHedge+pW-peHedge)*lot), rr:'1:1',
+    entry: `Enter when spot between ₹${peWall.strike} and ₹${ceWall.strike}, IV elevated`,
+    sl:    `CE side: exit if spot > ₹${ceWall.strike}. PE side: exit if spot < ₹${peWall.strike}`,
+    target:`Full premium ₹${Math.round(Math.max(0,cW-ceHedge+pW-peHedge)*lot).toLocaleString('en-IN')}. Hold in range.`,
+    when:  `Range-bound, both walls strong, IV high, 5-10 DTE`,
+    avoid: `Results, high VIX. Never on expiry week.`,
+    exit:  `Close at 50% profit or 1DTE. Never hold to expiry with condor.`
+  })})
+
+  // 10. SHORT STRADDLE
+  candidates.push({ name:'SHORT STRADDLE', type:'High IV Neutral', cat:'sell', score: mkScore(0, [
+    [dir==='range', 25], [isHighIV, 35], [isShortDTE, 20], [Math.abs(pcr-1)<0.2, 10], [!ceSqueezing&&!peSqueezing, 10]
+  ]), build: () => ({
+    legs: [{a:'SELL', d:`${d.atm} CE`, p:aCe.toFixed(1), note:'ATM CE sell'},
+           {a:'SELL', d:`${d.atm} PE`, p:aPe.toFixed(1), note:'ATM PE sell'}],
+    risk: Math.round((aCe+aPe)*2*lot), rew: Math.round((aCe+aPe)*lot), rr:'1:0.5',
+    entry: `Sell both ATM options when IV is spiked and market is flat`,
+    sl:    `Exit if spot moves ${step}pts in either direction from ₹${d.atm}`,
+    target:`Full ₹${Math.round((aCe+aPe)*lot).toLocaleString('en-IN')} at expiry if spot near ₹${d.atm}`,
+    when:  `IV HIGH, range-bound expected, 2-4 DTE. Best on expiry week.`,
+    avoid: `Results day, high VIX > 20, any directional catalyst`,
+    exit:  `Buy back when combined premium = ₹${Math.round((aCe+aPe)*0.3)}`
+  })})
+
+  // 11. SHORT STRANGLE
+  candidates.push({ name:'SHORT STRANGLE', type:'Wide Neutral Sell', cat:'sell', score: mkScore(0, [
+    [dir==='range', 25], [isHighIV, 30], [isMedDTE, 25], [ceWallOIL>10&&peWallOIL>10, 10], [!ceSqueezing&&!peSqueezing, 10]
+  ]), build: () => ({
+    legs: [{a:'SELL', d:`${otm1CeStrike} CE`, p:otm1CeLTP.toFixed(1), note:'OTM CE — safer than ATM sell'},
+           {a:'SELL', d:`${otm1PeStrike} PE`, p:otm1PeLTP.toFixed(1), note:'OTM PE — safer than ATM sell'}],
+    risk: Math.round((otm1CeLTP+otm1PeLTP)*3*lot), rew: Math.round((otm1CeLTP+otm1PeLTP)*lot), rr:'1:0.4',
+    entry: `Sell OTM options when IV elevated and range confirmed`,
+    sl:    `Exit CE side if spot > ₹${otm1CeStrike}. Exit PE side if spot < ₹${otm1PeStrike}.`,
+    target:`₹${Math.round((otm1CeLTP+otm1PeLTP)*lot).toLocaleString('en-IN')} per lot at decay`,
+    when:  `IV HIGH, wider breakeven than straddle, 5-8 DTE`,
+    avoid: `Low IV — not enough premium. Never near results.`,
+    exit:  `Close at 40% profit. Widen only if market stays calm.`
+  })})
+
+  // ── Pick top 2 strategies (different categories if possible) ──
+  candidates.sort((a, b) => b.score - a.score)
+  const top1 = candidates[0]
+  // Top 2 should be different category from top 1
+  const top2 = candidates.find(c => c.cat !== top1.cat) || candidates[1]
+
+  const pri = { ...top1.build(), name: top1.name, type: top1.type, cat: top1.cat, stratScore: top1.score }
+  const alt = { ...top2.build(), name: top2.name, type: top2.type, cat: top2.cat, stratScore: top2.score }
+
+  // ── Futures strategy ──
+  let fut = {}
+  if (dir==='bull' || (dir==='range' && bull>=bear)) {
+    fut = {
+      name:'LONG FUTURES', type:'Leverage Bull', cat:'fut',
+      legs: [{a:'BUY', d:`${d.sym} ${d.expiry} Fut`, p:`~₹${Math.round(spot)}`, note:`${lot} shares per lot`}],
+      risk: Math.round(step*2*lot), rew: Math.round((ceWall.strike-spot)*lot),
+      rr: '1:' + ((ceWall.strike-spot) / (step*2)).toFixed(1),
+      entry: `BUY above ₹${entryBull} — confirm with volume + momentum`,
+      sl:    `SL at ₹${slBull} — below PE wall where institutions defend`,
+      target:`T1: ₹${Math.round(spot+(ceWall.strike-spot)*0.5)} · T2: ₹${ceWall.strike} = ₹${Math.round((ceWall.strike-spot)*lot).toLocaleString('en-IN')} per lot`,
+      when:  `Strong bull signal, PCR < 0.9, spot above all moving averages`,
+      avoid: `Already near CE wall — risk:reward poor. Wait for pullback.`,
+      exit:  `Trail SL. Exit at CE wall or if spot closes below ₹${d.atm-step}`
+    }
   } else {
-    fut={name:'SHORT FUTURES',type:'Leverage Bear',cat:'fut',
-      legs:[{a:'SELL',d:`${d.sym} ${d.expiry} Fut`,p:`~₹${Math.round(spot)}`,note:`${lot} shares per lot`}],
-      risk:Math.round(step*2*lot),rew:Math.round((spot-peWall.strike)*lot),rr:'1:'+((spot-peWall.strike)/(step*2)).toFixed(1),
-      entry:`SELL below ₹${entryBear} (spot + momentum confirm)`,
-      sl:`SL at ₹${slBear} (above CE wall — strong resistance)`,
-      target:`T1: ₹${Math.round(spot-(spot-peWall.strike)*0.5)} · T2: ₹${tgtBear} (PE wall = ${Math.round((spot-peWall.strike)*lot/1000)}K per lot)`,
-      when:'Strong bearish signal, PCR > 1.2, PE OI stable',
-      avoid:'Near PE wall already — bounce risk high',
-      exit:`Exit at PE wall ₹${peWall.strike} or SL at ₹${slBear}. Never average losing futures`}
+    fut = {
+      name:'SHORT FUTURES', type:'Leverage Bear', cat:'fut',
+      legs: [{a:'SELL', d:`${d.sym} ${d.expiry} Fut`, p:`~₹${Math.round(spot)}`, note:`${lot} shares per lot`}],
+      risk: Math.round(step*2*lot), rew: Math.round((spot-peWall.strike)*lot),
+      rr: '1:' + ((spot-peWall.strike) / (step*2)).toFixed(1),
+      entry: `SELL below ₹${entryBear} — confirm with volume + breakdown`,
+      sl:    `SL at ₹${slBear} — above CE wall`,
+      target:`T1: ₹${Math.round(spot-(spot-peWall.strike)*0.5)} · T2: ₹${peWall.strike} = ₹${Math.round((spot-peWall.strike)*lot).toLocaleString('en-IN')} per lot`,
+      when:  `Strong bear signal, PCR > 1.2, spot below all moving averages`,
+      avoid: `Already near PE wall — bounce risk. Wait for dead cat bounce.`,
+      exit:  `Trail SL. Exit at PE wall or if spot closes above ₹${d.atm+step}`
+    }
   }
 
   // Whale alert
@@ -1184,34 +1259,42 @@ async function startScan() {
   if(tEl) tEl.innerHTML = '<div class="loading-state"><div class="ring"></div><span class="scanning">Building your trade list...</span></div>'
 
   const syms = [...watchlist]
-  for (let i=0; i<syms.length; i++) {
-    const sym = syms[i]
-    const lbl = document.getElementById('scanLbl')
-    if(lbl) lbl.textContent = `${sym} (${i+1}/${syms.length})`
-    const fill = document.getElementById('progFill')
-    if(fill) fill.style.width = `${Math.round(((i+1)/syms.length)*100)}%`
+  const BATCH = 4  // fetch 4 stocks in parallel
+  let completed = 0
+
+  async function scanOne(sym) {
     try {
       const raw = await fetchChain(sym)
-      let d, isDemo=false
-      if(raw){d=parseChain(raw,sym);if(!d){d=buildDemo(sym);isDemo=true}}
-      else{d=buildDemo(sym);isDemo=true}
-      const s=computeStrategy(d)
-      scanResults[sym]={d,s,isDemo,ts:Date.now()}
-      allTrades.push({sym,d,s,strat:s.pri,isDemo})
-      if(s.score>=60) allTrades.push({sym,d,s,strat:s.fut,isFut:true,isDemo})
-      updatePulse(sym,d,s)
-      checkAlerts(sym,d,s)
-      prevSnaps[sym]=buildSnap(d)
-    } catch(e) {
-      const d=buildDemo(sym),s=computeStrategy(d)
-      scanResults[sym]={d,s,isDemo:true,ts:Date.now()}
-      allTrades.push({sym,d,s,strat:s.pri,isDemo:true})
+      let d, isDemo = false
+      if (raw) { d = parseChain(raw, sym); if (!d) { d = buildDemo(sym); isDemo = true } }
+      else { d = buildDemo(sym); isDemo = true }
+      const sv = computeStrategy(d)
+      scanResults[sym] = {d, s:sv, isDemo, ts:Date.now()}
+      allTrades.push({sym, d, s:sv, strat:sv.pri, isDemo})
+      if (sv.score >= 60) allTrades.push({sym, d, s:sv, strat:sv.fut, isFut:true, isDemo})
+      updatePulse(sym, d, sv)
+      checkAlerts(sym, d, sv)
+      prevSnaps[sym] = buildSnap(d)
+    } catch(err) {
+      const d = buildDemo(sym), sv = computeStrategy(d)
+      scanResults[sym] = {d, s:sv, isDemo:true, ts:Date.now()}
+      allTrades.push({sym, d, s:sv, strat:sv.pri, isDemo:true})
     }
+    completed++
+    const lbl = document.getElementById('scanLbl')
+    if (lbl) lbl.textContent = `${completed}/${syms.length} done`
+    const fill = document.getElementById('progFill')
+    if (fill) fill.style.width = `${Math.round((completed/syms.length)*100)}%`
     renderRightPanel()
     renderCentre()
     renderPulse()
     renderMovingBar()
-    await sleep(600)
+  }
+
+  for (let i = 0; i < syms.length; i += BATCH) {
+    const batch = syms.slice(i, i + BATCH)
+    await Promise.all(batch.map(sym => scanOne(sym)))
+    if (i + BATCH < syms.length) await sleep(150)
   }
   isScanning=false
   if(btn) btn.classList.remove('spinning')
@@ -2235,6 +2318,217 @@ function resetCD(){if(cdInt)clearInterval(cdInt);cdSec=120;updCD();cdInt=setInte
 function updCD(){const el=document.getElementById('cdEl');if(!el)return;const m=Math.floor(cdSec/60),s=cdSec%60;el.textContent=m+':'+String(s).padStart(2,'0');el.classList.toggle('urgent',cdSec<=20)}
 
 // ═══════════════════════════════════════════════════════════════
+// STOCK DETAIL AI — Fundamentals + News + Projection
+// Uses Claude API with web_search tool
+// Cached per session (30 min) to avoid repeated API calls
+// ═══════════════════════════════════════════════════════════════
+const aiDetailCache = {}  // sym → {html, ts}
+const AI_CACHE_TTL  = 30 * 60 * 1000  // 30 minutes
+
+async function loadStockAIDetail(sym, d, s) {
+  const container = document.getElementById('aiDetailBox_' + sym)
+  if (!container) return
+
+  // Check cache
+  const cached = aiDetailCache[sym]
+  if (cached && Date.now() - cached.ts < AI_CACHE_TTL) {
+    container.innerHTML = cached.html
+    return
+  }
+
+  // Show loading state
+  container.innerHTML = `
+    <div style="padding:16px;text-align:center;color:var(--text3)">
+      <div style="width:24px;height:24px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--blue);animation:spin 0.8s linear infinite;margin:0 auto 10px"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--blue)">🤖 AI analysing ${sym}...</div>
+      <div style="font-size:11px;margin-top:4px">Fetching news · reading OI · building projection</div>
+    </div>`
+
+  try {
+    const ceWallOIL = ((d.ceWall?.ce?.openInterest||0)/100000).toFixed(1)
+    const peWallOIL = ((d.peWall?.pe?.openInterest||0)/100000).toFixed(1)
+
+    const prompt = `You are KAMAKSHIVA, expert Indian F&O and equity analyst.
+
+Analyse NSE stock: ${sym} (${d.info.n}, ${d.info.sec} sector)
+
+Current OI Data:
+- Spot: ₹${d.spot.toLocaleString('en-IN')}
+- CE Wall (resistance): ₹${d.ceWall.strike} with ${ceWallOIL}L OI
+- PE Wall (support): ₹${d.peWall.strike} with ${peWallOIL}L OI
+- PCR: ${d.pcr.toFixed(2)} (${d.pcr>1.1?'Bearish':d.pcr<0.9?'Bullish':'Neutral'})
+- ATM IV: ${(d.atmIV||0).toFixed(1)}% (${s.ivState})
+- Max Pain: ₹${d.maxPain}
+- DTE: ${s.dte} days
+- Signal: ${s.bias}
+- Top Strategy: ${s.pri?.name} (Score ${s.score}/100)
+
+Please provide a JSON response with this EXACT structure (no markdown, pure JSON):
+{
+  "news": [
+    {"headline": "...", "sentiment": "bullish|bearish|neutral", "impact": "brief 1-line impact on stock"},
+    {"headline": "...", "sentiment": "...", "impact": "..."},
+    {"headline": "...", "sentiment": "...", "impact": "..."}
+  ],
+  "fundamentals": {
+    "52w_high": "estimate or NA",
+    "52w_low": "estimate or NA", 
+    "trend": "uptrend|downtrend|sideways",
+    "institutional": "FII buying|FII selling|neutral|unknown",
+    "key_level": "one key price level to watch and why"
+  },
+  "projection": {
+    "bull_case": "If [trigger] → spot reaches ₹X because [reason]",
+    "bear_case": "If [trigger] → spot falls to ₹X because [reason]",
+    "base_case": "Most likely: spot stays between ₹X-₹Y until expiry because [reason]",
+    "confidence": "low|medium|high",
+    "expiry_view": "1-2 sentences on what happens at expiry given current OI"
+  },
+  "risk_factors": ["factor 1", "factor 2", "factor 3"]
+}`
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }]
+      })
+    })
+
+    const data = await response.json()
+    // Extract text from response (may have tool_use blocks)
+    const textBlock = data.content?.find(b => b.type === 'text')
+    const raw = textBlock?.text || ''
+
+    // Parse JSON from response
+    let parsed = null
+    try {
+      const jsonStart = raw.indexOf('{')
+      const jsonEnd   = raw.lastIndexOf('}') + 1
+      if (jsonStart >= 0 && jsonEnd > jsonStart) {
+        parsed = JSON.parse(raw.slice(jsonStart, jsonEnd))
+      }
+    } catch(e) { parsed = null }
+
+    const html = renderAIDetailHTML(sym, d, s, parsed, raw)
+    aiDetailCache[sym] = { html, ts: Date.now() }
+    container.innerHTML = html
+
+  } catch(err) {
+    container.innerHTML = `
+      <div style="padding:12px 14px;background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;font-size:12px;color:var(--red)">
+        ⚠️ Could not load AI analysis. Check internet connection.
+        <button onclick="loadStockAIDetail('${sym}',scanResults['${sym}']?.d,scanResults['${sym}']?.s)"
+          style="margin-left:10px;padding:3px 8px;border-radius:5px;border:1px solid var(--red-bd);background:white;color:var(--red);cursor:pointer;font-size:11px">Retry</button>
+      </div>`
+  }
+}
+
+function renderAIDetailHTML(sym, d, s, parsed, rawText) {
+  if (!parsed) {
+    // Fallback: show raw text nicely
+    return `<div style="padding:12px 14px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:7px">🤖 AI Analysis</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7;white-space:pre-wrap">${rawText.replace(/[*][*](.*?)[*][*]/g,'<strong>$1</strong>').replace(/\n/g,'<br>')}</div>
+    </div>`
+  }
+
+  const news = parsed.news || []
+  const fund = parsed.fundamentals || {}
+  const proj = parsed.projection || {}
+  const risks = parsed.risk_factors || []
+
+  const sentColor = s => s==='bullish'?'var(--green)':s==='bearish'?'var(--red)':'var(--text3)'
+  const sentBg    = s => s==='bullish'?'var(--green-bg)':s==='bearish'?'var(--red-bg)':'var(--bg3)'
+  const sentBd    = s => s==='bullish'?'var(--green-bd)':s==='bearish'?'var(--red-bd)':'var(--border)'
+  const confColor = c => c==='high'?'var(--green)':c==='medium'?'var(--yellow)':'var(--text3)'
+
+  return `
+    <!-- NEWS SECTION -->
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:9px">📰 Recent News & Impact</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        ${news.map(n => `
+          <div style="background:${sentBg(n.sentiment)};border:1.5px solid ${sentBd(n.sentiment)};border-radius:8px;padding:8px 11px">
+            <div style="display:flex;align-items:flex-start;gap:7px">
+              <span style="font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;background:${sentColor(n.sentiment)};color:white;flex-shrink:0;margin-top:1px">${(n.sentiment||'neutral').toUpperCase()}</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--text);line-height:1.4">${n.headline||''}</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:3px">${n.impact||''}</div>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- PROJECTION SECTION -->
+    <div style="padding:12px 14px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3)">🎯 AI Price Projection</div>
+        <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;background:${confColor(proj.confidence)};color:white">${(proj.confidence||'medium').toUpperCase()} CONFIDENCE</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:8px;padding:8px 11px">
+          <div style="font-size:9px;font-weight:800;color:var(--green);margin-bottom:3px">🟢 BULL CASE</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">${proj.bull_case||'—'}</div>
+        </div>
+        <div style="background:var(--red-bg);border:1.5px solid var(--red-bd);border-radius:8px;padding:8px 11px">
+          <div style="font-size:9px;font-weight:800;color:var(--red);margin-bottom:3px">🔴 BEAR CASE</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">${proj.bear_case||'—'}</div>
+        </div>
+        <div style="background:var(--blue-bg);border:1.5px solid var(--blue-bd);border-radius:8px;padding:8px 11px">
+          <div style="font-size:9px;font-weight:800;color:var(--blue);margin-bottom:3px">⚪ BASE CASE (Most Likely)</div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5">${proj.base_case||'—'}</div>
+        </div>
+        ${proj.expiry_view ? `<div style="background:var(--pur-bg);border:1px solid var(--pur-bd);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--text2)"><strong style="color:var(--purple)">📌 Expiry view:</strong> ${proj.expiry_view}</div>` : ''}
+      </div>
+    </div>
+
+    <!-- FUNDAMENTALS + RISKS -->
+    <div style="padding:12px 14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px">📊 Key Levels</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${fund['52w_high']&&fund['52w_high']!='NA' ? `<div style="font-size:11px"><span style="color:var(--text3)">52W High:</span> <strong>${fund['52w_high']}</strong></div>` : ''}
+            ${fund['52w_low']&&fund['52w_low']!='NA'   ? `<div style="font-size:11px"><span style="color:var(--text3)">52W Low:</span> <strong>${fund['52w_low']}</strong></div>` : ''}
+            ${fund.trend    ? `<div style="font-size:11px"><span style="color:var(--text3)">Trend:</span> <strong style="color:${fund.trend==='uptrend'?'var(--green)':fund.trend==='downtrend'?'var(--red)':'var(--text)'}">${fund.trend}</strong></div>` : ''}
+            ${fund.institutional ? `<div style="font-size:11px"><span style="color:var(--text3)">Institutions:</span> <strong>${fund.institutional}</strong></div>` : ''}
+            ${fund.key_level ? `<div style="font-size:11px;background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:6px;padding:5px 8px;margin-top:3px"><strong style="color:var(--yellow)">👁 Watch:</strong> ${fund.key_level}</div>` : ''}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px">⚠️ Risk Factors</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            ${risks.map(r => `<div style="font-size:11px;color:var(--text2);padding:3px 0;border-bottom:1px solid var(--border)">• ${r}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`
+}
+
+function toggleAIDetail(sym, el) {
+  if (!el) return
+  const chev = document.getElementById('aiDetailChev_' + sym)
+  if (el.style.display === 'none') {
+    el.style.display = 'block'
+    if (chev) chev.textContent = '▼ Hide'
+    // Lazy load AI detail
+    const r = scanResults[sym]
+    if (r && !el.innerHTML.trim()) {
+      loadStockAIDetail(sym, r.d, r.s)
+    }
+  } else {
+    el.style.display = 'none'
+    if (chev) chev.textContent = '▶ Load Analysis'
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 loadWL()
@@ -2604,75 +2898,101 @@ _Powered by LNP KAMAKSHIVA_`
 async function fetchSmartWatchlist() {
   const btn = document.getElementById('smartWLBtn')
   if (btn) { btn.textContent = '⏳ Fetching...'; btn.disabled = true }
-  const found = new Set()
-  const sources = []
 
-  // Helper: fetch from proxy (local first, Vercel fallback)
-  async function fetchPulse(type) {
+  const found = new Map()  // sym → source label
+  const prom = []
+
+  async function tryFetch(type) {
     for (const base of ['http://localhost:3001', '/api']) {
       try {
-        const r = await fetch(`${base}/pulse?type=${type}`, { signal: AbortSignal.timeout(4000) })
+        const r = await fetch(`${base}/pulse?type=${type}`, {signal: AbortSignal.timeout(3500)})
         if (r.ok) return await r.json()
       } catch(e) {}
     }
     return null
   }
 
-  try {
-    // 1. OI Spurters — stocks with biggest OI spike today (institutional activity)
-    const spurters = await fetchPulse('oi-spurters')
-    if (spurters?.data?.length) {
-      const syms = spurters.data.slice(0,8).map(d => d.symbol?.toUpperCase()).filter(Boolean)
-      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`⚡ OI Spike: ${s}`) } })
-    }
+  // Fetch all 4 sources in parallel
+  const [spurters, gainers, losers, active] = await Promise.all([
+    tryFetch('oi-spurters'),
+    tryFetch('gainers'),
+    tryFetch('losers'),
+    tryFetch('active'),
+  ])
 
-    // 2. Gainers — potential breakout stocks
-    const gainers = await fetchPulse('gainers')
-    if (gainers?.data?.length) {
-      const syms = gainers.data.slice(0,6).map(d => d.symbol?.toUpperCase()).filter(Boolean)
-      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`🟢 Gainer: ${s}`) } })
-    }
+  // Priority 1: OI Spurters — institutional activity NOW
+  if (spurters?.data?.length) {
+    spurters.data.slice(0, 10).forEach(d => {
+      const sym = (d.symbol||d.underlying||'').toUpperCase().replace(' EQ','')
+      if (sym && fnoMaster.find(f=>f.s===sym) && !found.has(sym))
+        found.set(sym, '⚡ OI Spike')
+    })
+  }
 
-    // 3. Losers — potential breakdown / put buy stocks
-    const losers = await fetchPulse('losers')
-    if (losers?.data?.length) {
-      const syms = losers.data.slice(0,6).map(d => d.symbol?.toUpperCase()).filter(Boolean)
-      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`🔴 Loser: ${s}`) } })
-    }
+  // Priority 2: Gainers — potential CE breakout plays
+  if (gainers?.data?.length) {
+    gainers.data.slice(0, 10).forEach(d => {
+      const sym = (d.symbol||d.underlying||'').toUpperCase().replace(' EQ','')
+      if (sym && fnoMaster.find(f=>f.s===sym) && !found.has(sym))
+        found.set(sym, '🟢 Gainer')
+    })
+  }
 
-    // 4. Active by volume — liquid stocks
-    const active = await fetchPulse('active')
-    if (active?.data?.length) {
-      const syms = active.data.slice(0,5).map(d => d.symbol?.toUpperCase()).filter(Boolean)
-      syms.forEach(s => { if (fnoMaster.find(f => f.s === s)) { found.add(s); sources.push(`📊 Active: ${s}`) } })
+  // Priority 3: Losers — potential PE breakdown plays
+  if (losers?.data?.length) {
+    losers.data.slice(0, 10).forEach(d => {
+      const sym = (d.symbol||d.underlying||'').toUpperCase().replace(' EQ','')
+      if (sym && fnoMaster.find(f=>f.s===sym) && !found.has(sym))
+        found.set(sym, '🔴 Loser')
+    })
+  }
+
+  // Priority 4: Active by volume — liquid stocks
+  if (active?.data?.length) {
+    active.data.slice(0, 8).forEach(d => {
+      const sym = (d.symbol||d.underlying||'').toUpperCase().replace(' EQ','')
+      if (sym && fnoMaster.find(f=>f.s===sym) && !found.has(sym))
+        found.set(sym, '📊 Active')
+    })
+  }
+
+  // Priority 5: Fill remaining slots with full F&O universe
+  // sorted by lot size (bigger lot = more liquid/institutional)
+  if (found.size < 20) {
+    const byLot = [...fnoMaster].sort((a,b) => b.lot - a.lot)
+    for (const f of byLot) {
+      if (found.size >= 20) break
+      if (!found.has(f.s)) found.set(f.s, '📋 F&O')
     }
-  } catch(e) {}
+  }
 
   if (btn) { btn.textContent = '🎯 Smart Pick'; btn.disabled = false }
 
-  const newList = [...found].slice(0, 20)
-  if (newList.length >= 3) {
-    // Show confirmation in modal
-    const res = document.getElementById('pasteRes')
-    if (res) {
-      res.innerHTML = `<div style="background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:8px;padding:8px 10px;margin-bottom:6px">
-        <div style="font-size:10px;font-weight:800;color:var(--green);margin-bottom:4px">✅ Smart Pick: ${newList.length} active stocks found</div>
-        <div style="font-size:10px;color:var(--text2);line-height:1.6">${sources.slice(0,10).join(' · ')}</div>
-      </div>`
-    }
-    watchlist = newList
-    renderWLChips()
-  } else {
-    // Proxy offline — fall back to high-liquidity defaults
-    const fallback = ['RELIANCE','TCS','HDFCBANK','INFY','ICICIBANK','SBIN','AXISBANK',
-      'BAJFINANCE','TATAMOTORS','LT','SUNPHARMA','BHARTIARTL','ZOMATO','ADANIENT','HAL',
-      'NTPC','RVNL','BEL','JSWENERGY','KOTAKBANK']
-    watchlist = fallback.slice(0,20)
-    renderWLChips()
-    const res = document.getElementById('pasteRes')
-    if (res) res.innerHTML = '<span style="color:var(--yellow);font-size:11px">⚠️ Proxy offline — loaded top 20 liquid F&O stocks as fallback</span>'
+  const newList = [...found.keys()].slice(0, 20)
+  const summary = [...found.entries()].slice(0, 20)
+    .reduce((acc, [sym, src]) => {
+      acc[src] = (acc[src] || []).concat(sym)
+      return acc
+    }, {})
+
+  const summaryText = Object.entries(summary)
+    .map(([src, syms]) => `${src}: ${syms.slice(0,3).join(', ')}${syms.length>3?'...':''}`)
+    .join(' · ')
+
+  const res = document.getElementById('pasteRes')
+  if (res) {
+    res.innerHTML = found.size >= 10
+      ? `<div style="background:var(--green-bg);border:1.5px solid var(--green-bd);border-radius:8px;padding:8px 10px">
+           <div style="font-size:10px;font-weight:800;color:var(--green);margin-bottom:3px">✅ Smart Pick: ${newList.length} stocks selected</div>
+           <div style="font-size:10px;color:var(--text2);line-height:1.7">${summaryText}</div>
+         </div>`
+      : `<span style="color:var(--yellow);font-size:11px">⚠️ Proxy offline — loaded top ${newList.length} liquid F&O stocks</span>`
   }
+
+  watchlist = newList
+  renderWLChips()
 }
+
 
 </script>
 </body>

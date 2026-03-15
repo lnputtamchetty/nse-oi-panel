@@ -2672,7 +2672,85 @@ function renderLearnTab(d, s) {
   </div>`
 }
 
+// ═══════════════════════════════════════════════════════════════
+// LIVE F&O MASTER LIST — fetched from NSE on startup
+// Falls back to hardcoded 69 if proxy offline
+// ═══════════════════════════════════════════════════════════════
+async function refreshFnoMaster() {
+  try {
+    // Try fno-lots first — has symbol + lot size
+    for (const base of ['http://localhost:3001', '/api']) {
+      try {
+        const r = await fetch(`${base}/pulse?type=fno-lots`, {signal: AbortSignal.timeout(4000)})
+        if (!r.ok) continue
+        const data = await r.json()
+        // NSE fo-lot-size-list format: array of {underlying, lotSize, ...}
+        const rows = data?.data || data?.records || []
+        if (!rows.length) continue
+
+        const newList = []
+        rows.forEach(row => {
+          const sym = (row.underlying || row.symbol || '').toUpperCase().trim()
+          const lot = parseInt(row.lotSize || row.lot || 0)
+          if (!sym || !lot || sym === 'SYMBOL') return  // skip header rows
+          // Lookup existing info for sector/name
+          const existing = fnoMaster.find(f => f.s === sym)
+          newList.push({
+            s:   sym,
+            n:   existing?.n || row.companyName || row.name || sym,
+            lot: lot,
+            sec: existing?.sec || guessSector(sym)
+          })
+        })
+
+        if (newList.length > 50) {
+          fnoMaster = newList
+          console.log(`F&O Master updated: ${newList.length} stocks from NSE`)
+          // Refresh the FNO list UI if modal is open
+          const modal = document.getElementById('fnoOverlay')
+          if (modal && modal.style.display !== 'none') renderFnoList('')
+          return
+        }
+      } catch(e) {}
+    }
+  } catch(e) {}
+  // Proxy offline — keep hardcoded 69
+}
+
+function guessSector(sym) {
+  const map = {
+    HDFCBANK:'Banking', ICICIBANK:'Banking', SBIN:'Banking', AXISBANK:'Banking',
+    KOTAKBANK:'Banking', BANKBARODA:'Banking', PNB:'Banking', FEDERALBNK:'Banking',
+    IDFCFIRSTB:'Banking', INDUSINDBK:'Banking', AUBANK:'Banking', BANDHANBNK:'Banking',
+    RBLBANK:'Banking', KARURVYSYA:'Banking',
+    TCS:'IT', INFY:'IT', WIPRO:'IT', HCLTECH:'IT', TECHM:'IT', MPHASIS:'IT',
+    PERSISTENT:'IT', LTIM:'IT', COFORGE:'IT', OFSS:'IT',
+    RELIANCE:'Energy', ONGC:'Energy', BPCL:'Energy', IOC:'Energy',
+    NTPC:'Power', TATAPOWER:'Power', POWERGRID:'Power', NHPC:'Power', JSWENERGY:'Power',
+    TATAMOTORS:'Auto', MARUTI:'Auto', BAJAJ_AUTO:'Auto', HEROMOTOCO:'Auto',
+    EICHERMOT:'Auto', ASHOKLEY:'Auto', TVSMOTOR:'Auto', M_M:'Auto',
+    SUNPHARMA:'Pharma', DRREDDY:'Pharma', CIPLA:'Pharma', AUROPHARMA:'Pharma',
+    LUPIN:'Pharma', DIVISLAB:'Pharma',
+    LT:'Infra', ADANIPORTS:'Infra', RVNL:'Infra', IRB:'Infra',
+    TATASTEEL:'Metal', JSWSTEEL:'Metal', HINDALCO:'Metal', VEDL:'Metal', NMDC:'Metal',
+    BHARTIARTL:'Telecom', IDEA:'Telecom',
+    BAJFINANCE:'NBFC', BAJAJFINSV:'NBFC', CHOLAFIN:'NBFC', MUTHOOTFIN:'NBFC',
+    ZOMATO:'Internet', NAUKRI:'Internet', PAYTM:'Internet',
+    HAL:'Defence', BEL:'Defence', COCHINSHIP:'Defence', BEML:'Defence', BDL:'Defence',
+    DIXON:'Electronics', POLYCAB:'Capital Goods', HAVELLS:'Capital Goods',
+    TITAN:'Consumer', ITC:'FMCG', HINDUNILVR:'FMCG', NESTLEIND:'FMCG', BRITANNIA:'FMCG',
+    ASIANPAINT:'Paints', BERGEPAINT:'Paints',
+    DLF:'Realty', GODREJPROP:'Realty', OBEROIRLTY:'Realty', PRESTIGE:'Realty',
+    HDFCLIFE:'Insurance', SBILIFE:'Insurance', ICICIGI:'Insurance', LICI:'Insurance',
+    GRASIM:'Cement', ULTRACEMCO:'Cement', SHREECEM:'Cement', JKCEMENT:'Cement',
+    IRCTC:'Travel', INDIGO:'Aviation', TIINDIA:'Auto Ancillary',
+    RECLTD:'Finance', PFC:'Finance', IRFC:'Finance', HUDCO:'Finance',
+  }
+  return map[sym] || 'F&O'
+}
+
 loadWL()
+refreshFnoMaster()  // fetch live F&O list in background
 renderCentre()
 startScan()
 resetCD()

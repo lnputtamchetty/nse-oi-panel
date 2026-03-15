@@ -248,19 +248,76 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .tbtn{font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:white;cursor:pointer}
 .tdismiss{position:absolute;top:7px;right:8px;font-size:13px;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* ── BUTTERFLY CHAIN ── */
+.bfly-wrap{overflow-x:auto;margin-top:0}
+.bfly-top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 16px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.bfly-card{background:white;border-radius:9px;padding:9px 12px;border:1px solid var(--border)}
+.bfly-card-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:4px}
+.bfly-card-val{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}
+.bfly-card-sub{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4}
+.bfly-tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:900px}
+.bfly-tbl thead tr{background:var(--bg3)}
+.bfly-tbl th{padding:7px 5px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);border-bottom:2px solid var(--border);white-space:nowrap}
+.bfly-tbl th.ce-col{color:var(--red);text-align:right}
+.bfly-tbl th.pe-col{color:var(--green);text-align:left}
+.bfly-tbl th.strike-col{text-align:center;color:var(--text2);min-width:80px}
+.bfly-tbl td{padding:5px 5px;border-bottom:1px solid var(--border);white-space:nowrap;vertical-align:middle}
+.bfly-tbl td.ce-val{text-align:right;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px}
+.bfly-tbl td.pe-val{text-align:left;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px}
+.bfly-tbl td.strike-cell{text-align:center;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:12px;color:var(--text);position:relative}
+/* Row highlights */
+.bfly-tbl tr.row-atm td{background:rgba(29,85,212,0.06)}
+.bfly-tbl tr.row-atm td.strike-cell{color:var(--blue);font-size:13px}
+.bfly-tbl tr.row-cewall td{background:rgba(192,57,43,0.05);border-left:3px solid var(--red)}
+.bfly-tbl tr.row-pewall td{background:rgba(26,122,80,0.05)}
+.bfly-tbl tr.row-pewall td:last-child{border-right:3px solid var(--green)}
+.bfly-tbl tr.row-pin td{background:rgba(180,83,9,0.07)}
+.bfly-tbl tr.row-squeeze td{background:rgba(234,179,8,0.1);animation:squeezeGlow 2s ease-in-out infinite}
+@keyframes squeezeGlow{0%,100%{background:rgba(234,179,8,0.1)}50%{background:rgba(234,179,8,0.2)}}
+.bfly-tbl tr:hover td{background:rgba(29,85,212,0.05)!important;cursor:pointer}
+/* OI Bar */
+.oi-bar-cell{width:80px;position:relative}
+.oi-bar-ce{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.oi-bar-pe{display:flex;align-items:center;justify-content:flex-start;gap:4px}
+.bar-fill-ce{height:6px;border-radius:3px 0 0 3px;background:var(--red);flex-shrink:0;transition:width 0.3s;min-width:1px}
+.bar-fill-pe{height:6px;border-radius:0 3px 3px 0;background:var(--green);flex-shrink:0;transition:width 0.3s;min-width:1px}
+.oi-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:36px}
+.oi-num.ce{color:var(--red);text-align:right}
+.oi-num.pe{color:var(--green)}
+/* Buildup signal */
+.bdup{font-size:11px;font-weight:800;padding:2px 6px;border-radius:5px;white-space:nowrap;cursor:help}
+.bdup.long-build{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.bdup.short-build{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
+.bdup.squeeze{background:#fef9c3;color:#854d0e;border:1px solid #fde047;animation:squeezeGlow 1.5s ease-in-out infinite}
+.bdup.unwind{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.bdup.neutral{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+/* Delta cell */
+.delta-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700}
+.delta-bar{display:inline-block;height:3px;border-radius:2px;margin-left:3px;vertical-align:middle}
+/* IV cell */
+.iv-num{font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace}
+/* LTP change */
+.ltp-up{color:var(--green);font-weight:700}
+.ltp-dn{color:var(--red);font-weight:700}
+/* Hover tooltip */
+.bfly-tooltip{position:fixed;background:#0f172a;color:white;border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.65;max-width:280px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.4);pointer-events:none;border:1px solid rgba(255,255,255,0.15);display:none}
+.bfly-tooltip.show{display:block}
+.bfly-tooltip .tt-title{font-size:11px;font-weight:800;color:#60a5fa;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
 </style>
 </head>
 <body>
-<div class="toast-wrap" id="toastWrap"></div>
-
-<!-- HEADER -->
 <div class="header">
-  <div class="hrow1">
-    <div style="display:flex;align-items:center;gap:10px">
+  <!-- ROW 1: Logo + Nav + Action buttons -->
+  <div class="header-row1">
+    <div class="header-left">
       <div class="logo">LNP</div>
-      <div class="htitle">
-        <div class="htitle-main"><span class="k">KAMAKSHIVA</span><span class="d">·</span><span class="o">STOCK F&O</span></div>
-        <div class="htitle-sub">Command Centre · Live OI Intelligence</div>
+      <div class="header-title">
+        <div class="header-title-main">
+          <span class="kamak">KAMAKSHIVA</span>
+          <span class="dot">·</span>
+          <span class="oi">NSE OI PANEL</span>
+        </div>
+        <div class="header-title-sub">Indian Indexes · Real-Time Option Chain Intelligence</div>
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -269,196 +326,927 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
         <a class="nav-link active" href="stocks.html">📈 Stocks</a>
         <a class="nav-link" href="pulse.html">⚡ Pulse</a>
       </div>
-      <div style="width:1px;height:18px;background:rgba(255,255,255,0.12)"></div>
-      <div class="hbtns">
-        <button class="hbtn scan-btn" id="scanBtn" onclick="startScan()">↻ Scan</button>
-        <div style="position:relative">
-          <button class="hbtn alert-active" id="alertBtn" onclick="openAlertModal()">🔔 Alerts</button>
-          <div class="abadge" id="aBadge">0</div>
-        </div>
-        <span class="cd" id="cdEl">2:00</span>
+      <div style="width:1px;height:20px;background:rgba(255,255,255,0.15)"></div>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadData()">↻</button>
+      <button class="tg-btn" onclick="openTgModal()">✈️</button>
+      <div style="position:relative">
+        <button class="alert-settings-btn" id="alertSettingsBtn" onclick="openAlertModal()">🔔 Alerts</button>
+        <div class="alert-badge" id="alertBadge">0</div>
       </div>
+      <span class="countdown" id="countdownTimer">2:00</span>
     </div>
   </div>
-  <div class="hrow2">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="scan-prog" id="scanProg">
-        <span id="scanLbl" style="font-size:11px;color:rgba(255,255,255,0.6)">Scanning...</span>
-        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-      </div>
-      <span class="lu" id="luEl">—</span>
+  <!-- ROW 2: Index tabs + status -->
+  <div class="header-row2">
+    <div class="index-tabs" style="height:36px">
+      <button class="tab active" onclick="switchIndex(this,'NIFTY')">NIFTY</button>
+      <button class="tab" onclick="switchIndex(this,'BANKNIFTY')">BANKNIFTY</button>
+      <button class="tab" onclick="switchIndex(this,'FINNIFTY')">FINNIFTY</button>
+      <button class="tab" onclick="switchIndex(this,'MIDCPNIFTY')">MIDCAP</button>
+      <button class="tab" onclick="switchIndex(this,'NIFTY NEXT 50')">NEXT50</button>
+      <button class="tab" onclick="switchIndex(this,'SENSEX')">SENSEX</button>
     </div>
     <div style="display:flex;align-items:center;gap:6px">
-      <span style="font-size:11px;color:rgba(255,255,255,0.4)">Watchlist:</span>
-      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7)" id="wlSummary">Loading...</span>
-      <button class="hbtn" style="font-size:10px;padding:3px 8px" onclick="openWL()">✏️ Edit</button>
+      <span style="font-size:9px;color:rgba(255,255,255,0.25);font-weight:700;text-transform:uppercase;letter-spacing:1.5px">Charts</span>
+      <a href="https://www.tradingview.com/chart/?symbol=NSE:NIFTY" target="_blank" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(29,85,212,0.2);color:#93c5fd;border:1px solid rgba(29,85,212,0.3);text-decoration:none">NIFTY</a>
+      <a href="https://www.tradingview.com/chart/?symbol=NSE:BANKNIFTY" target="_blank" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(29,85,212,0.2);color:#93c5fd;border:1px solid rgba(29,85,212,0.3);text-decoration:none">BNF</a>
+      <a href="https://www.tradingview.com/chart/?symbol=NSE:INDIAVIX" target="_blank" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);text-decoration:none">🌡️VIX</a>
+      <a href="https://www.nseindia.com/market-data/fii-dii-trading-activity" target="_blank" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:rgba(245,158,11,0.2);color:#fde68a;border:1px solid rgba(245,158,11,0.3);text-decoration:none">FII/DII</a>
+      <span class="last-update" id="lastUpdate" style="font-size:11px;color:rgba(255,255,255,0.4);font-family:'JetBrains Mono',monospace;margin-left:6px">—</span>
     </div>
   </div>
 </div>
 
-<!-- TICKER -->
-<div class="ticker-bar">
-  <span class="ticker-label">⚡</span>
-  <div style="flex:1;overflow:hidden;position:relative;height:18px">
-    <div class="ticker-inner" id="tickerEl">
-      <span class="chip info">Scanning watchlist... best trades will appear shortly</span>
-      <span class="chip info">Scanning watchlist... best trades will appear shortly</span>
+<!-- ══ ROW 2: EXPIRY BAR — its own clean strip ══ -->
+<div class="expiry-row">
+  <span class="expiry-row-label">Expiries</span>
+  <div class="expiry-bar" id="expiryBar">
+    <span style="font-size:11px;color:rgba(255,255,255,0.3);font-style:italic">Loading...</span>
+  </div>
+</div>
+
+<!-- ══ ROW 3: ALERT TICKER ══ -->
+<div class="alert-bar" id="alertBar">
+  <span class="alert-bar-label">⚡ Alerts</span>
+  <div class="alert-ticker">
+    <div class="alert-ticker-inner" id="alertTicker">
+      <span class="alert-chip info">Waiting for data to load...</span>
+      <span class="alert-chip info">Waiting for data to load...</span>
     </div>
   </div>
 </div>
 
-<!-- MAIN 3-COL -->
-<div class="main3">
-
-  <!-- LEFT: MARKET PULSE -->
-  <div class="left-col">
-    <!-- CE OI BUILD -->
-    <div class="pulse-section">
-      <div class="pulse-section-head" onclick="togglePS(this)">
-        <div class="pulse-section-title">
-          <div class="pulse-icon" style="background:var(--red-bg);border:1px solid var(--red-bd)">🔴</div>
-          <span style="color:var(--red)">CE OI Building</span>
-        </div>
-        <span class="pulse-count" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)" id="cntCE">0</span>
-        <span style="font-size:10px;color:var(--text3)">▼</span>
-      </div>
-      <div class="pulse-items" id="bodyCE"><div class="pulse-empty">Scanning...</div></div>
-    </div>
-    <!-- PE OI BUILD -->
-    <div class="pulse-section">
-      <div class="pulse-section-head" onclick="togglePS(this)">
-        <div class="pulse-section-title">
-          <div class="pulse-icon" style="background:var(--green-bg);border:1px solid var(--green-bd)">🟢</div>
-          <span style="color:var(--green)">PE OI Building</span>
-        </div>
-        <span class="pulse-count" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)" id="cntPE">0</span>
-        <span style="font-size:10px;color:var(--text3)">▼</span>
-      </div>
-      <div class="pulse-items" id="bodyPE"><div class="pulse-empty">Scanning...</div></div>
-    </div>
-    <!-- SHORT COVERING -->
-    <div class="pulse-section">
-      <div class="pulse-section-head" onclick="togglePS(this)">
-        <div class="pulse-section-title">
-          <div class="pulse-icon" style="background:var(--pur-bg);border:1px solid var(--pur-bd)">⚡</div>
-          <span style="color:var(--purple)">Short Covering</span>
-        </div>
-        <span class="pulse-count" style="background:var(--pur-bg);color:var(--purple);border:1px solid var(--pur-bd)" id="cntSC">0</span>
-        <span style="font-size:10px;color:var(--text3)">▼</span>
-      </div>
-      <div class="pulse-items" id="bodySC"><div class="pulse-empty">Scanning...</div></div>
-    </div>
-    <!-- NEAR WALL -->
-    <div class="pulse-section">
-      <div class="pulse-section-head" onclick="togglePS(this)">
-        <div class="pulse-section-title">
-          <div class="pulse-icon" style="background:var(--yel-bg);border:1px solid var(--yel-bd)">🎯</div>
-          <span style="color:var(--yellow)">Near Wall</span>
-        </div>
-        <span class="pulse-count" style="background:var(--yel-bg);color:var(--yellow);border:1px solid var(--yel-bd)" id="cntNW">0</span>
-        <span style="font-size:10px;color:var(--text3)">▼</span>
-      </div>
-      <div class="pulse-items" id="bodyNW"><div class="pulse-empty">Scanning...</div></div>
-    </div>
-    <!-- PCR EXTREMES -->
-    <div class="pulse-section">
-      <div class="pulse-section-head" onclick="togglePS(this)">
-        <div class="pulse-section-title">
-          <div class="pulse-icon" style="background:var(--blue-bg);border:1px solid var(--blue-bd)">⚖️</div>
-          <span style="color:var(--blue)">PCR Extremes</span>
-        </div>
-        <span class="pulse-count" style="background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bd)" id="cntPCR">0</span>
-        <span style="font-size:10px;color:var(--text3)">▼</span>
-      </div>
-      <div class="pulse-items" id="bodyPCR"><div class="pulse-empty">Scanning...</div></div>
-    </div>
+<div class="main">
+  <div class="command" id="commandPanel">
+    <div class="loading" id="loadingLeft"><div class="loading-ring"></div><div class="loading-text">LOADING CHAIN DATA</div></div>
+    <div id="commandContent" style="display:none"></div>
   </div>
-
-  <!-- CENTRE: TOP TRADES -->
-  <div class="centre-col">
-    <div class="centre-head">
-      <div>
-        <div class="centre-title">🏆 Best Trades Today — Ranked by Score</div>
-        <div class="centre-sub" id="centreSubEl">Scanning watchlist... results appear as each stock loads</div>
-      </div>
-    </div>
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;gap:5px;flex-wrap:wrap">
-      <span class="fchip on" onclick="setF('all',this)">All</span>
-      <span class="fchip" onclick="setF('bull',this)" style="color:var(--green)">🟢 Bullish</span>
-      <span class="fchip" onclick="setF('bear',this)" style="color:var(--red)">🔴 Bearish</span>
-      <span class="fchip" onclick="setF('sell',this)" style="color:var(--purple)">💰 Sell Premium</span>
-      <span class="fchip" onclick="setF('fut',this)" style="color:var(--teal)">🔷 Futures</span>
-      <span class="fchip" onclick="setF('A',this)" style="color:var(--yellow)">🏆 A-Grade only</span>
-    </div>
-    <div class="trade-cards" id="tradeCards">
-      <div class="loading-state"><div class="ring"></div><span class="scanning">Scanning stocks, building trade list...</span></div>
-    </div>
-  </div>
-
-  <!-- RIGHT: DETAIL -->
-  <div class="right-col" id="rightCol">
-    <div class="detail-empty" id="detailEmpty">
-      <div class="icon">📊</div>
-      <div style="font-size:14px;font-weight:800;color:var(--text)">Select any trade</div>
-      <div style="font-size:12px;line-height:1.6;color:var(--text3)">Click a trade card or a stock<br>from the pulse panel<br>to see full OI chain</div>
-    </div>
-    <div id="detailContent" style="display:none"></div>
-  </div>
-
-</div>
-
-<!-- WATCHLIST MODAL -->
-<div id="wlOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;display:none;align-items:center;justify-content:center">
-  <div style="background:var(--bg2);border-radius:13px;width:440px;max-width:95vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;border:1.5px solid var(--border)">
-    <div style="background:linear-gradient(135deg,#0c1222,#172040);padding:13px 16px;display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:13px;font-weight:800;color:white">📋 Watchlist — picks stocks to scan</span>
-      <button onclick="closeWL()" style="font-size:16px;color:rgba(255,255,255,0.5);background:none;border:none;cursor:pointer">✕</button>
-    </div>
-    <div style="padding:14px 16px;overflow-y:auto;flex:1">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px">Current (<span id="wlCnt">0</span>/20)</div>
-      <div id="wlChips" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:6px">📋 Paste from Chartink / CSV</div>
-      <textarea id="pasteTA" style="width:100%;height:70px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg3);color:var(--text);resize:none;font-family:'JetBrains Mono',monospace;outline:none" placeholder="RELIANCE, TCS, HDFCBANK or paste Chartink results..."></textarea>
-      <button onclick="importPaste()" style="width:100%;padding:7px;border-radius:7px;border:1.5px solid var(--blue-bd);background:var(--blue-bg);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;margin-top:5px">📋 Import — auto-filter F&O only</button>
-      <div id="pasteRes" style="font-size:11px;margin-top:4px;min-height:14px"></div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:10px 0 6px">Quick Add</div>
-      <div id="quickAdd" style="display:flex;gap:5px;flex-wrap:wrap"></div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin:10px 0 6px">Search</div>
-      <input id="wlSearch" type="text" placeholder="Type symbol..." oninput="onWLSearch(this.value)" style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none"/>
-      <div id="wlSearchRes" style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap"></div>
-      <button onclick="saveWL()" style="width:100%;padding:10px;border-radius:9px;border:none;background:var(--blue);color:white;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px">✅ Save & Scan</button>
-    </div>
+  <div class="warroom" id="warRoom">
+    <div class="loading" id="loadingRight"><div class="loading-ring"></div><div class="loading-text">BUILDING ANALYSIS</div></div>
+    <div id="warContent" style="display:none;padding-bottom:24px"></div>
   </div>
 </div>
-
-<!-- ALERT MODAL -->
-<div class="alert-overlay" id="alertOverlay" onclick="closeAlertEv(event)">
-  <div class="alert-modal">
-    <div class="am-head">
-      <span class="am-title">🔔 Alert Settings</span>
-      <button onclick="closeAlert()" style="font-size:16px;color:rgba(255,255,255,0.5);background:none;border:none;cursor:pointer">✕</button>
-    </div>
-    <div class="am-body">
-      <div class="am-sec">Channels</div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:700">🔊 Sound</div><div style="font-size:11px;color:var(--text3)">Beep on OI spike or signal</div></div><label class="tgl"><input type="checkbox" id="alSnd" checked onchange="saveAS()"><span class="tslider"></span></label></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:700">📱 Popup</div><div style="font-size:11px;color:var(--text3)">On-screen toast notification</div></div><label class="tgl"><input type="checkbox" id="alPop" checked onchange="saveAS()"><span class="tslider"></span></label></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:700">✈️ Telegram</div><div style="font-size:11px;color:var(--text3)">Auto-send to bot</div></div><label class="tgl"><input type="checkbox" id="alTG" onchange="saveAS()"><span class="tslider"></span></label></div>
-      <div class="am-sec">Alert On</div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:700">OI Spike</div></div><label class="tgl"><input type="checkbox" id="alOI" checked onchange="saveAS()"><span class="tslider"></span></label></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:700">Signal Change</div></div><label class="tgl"><input type="checkbox" id="alSig" checked onchange="saveAS()"><span class="tslider"></span></label></div>
-      <div class="trow"><div><div style="font-size:13px;font-weight:700">Near Wall</div></div><label class="tgl"><input type="checkbox" id="alWall" checked onchange="saveAS()"><span class="tslider"></span></label></div>
-      <div class="am-sec">Thresholds</div>
-      <div style="display:flex;justify-content:space-between;padding:7px 0"><span style="font-size:12px;font-weight:600;color:var(--text2)">OI spike %</span><input class="tinput" id="alOIT" type="number" value="15" oninput="saveAS()"/></div>
-      <div style="display:flex;justify-content:space-between;padding:7px 0"><span style="font-size:12px;font-weight:600;color:var(--text2)">Wall proximity (pts)</span><input class="tinput" id="alWT" type="number" value="30" oninput="saveAS()"/></div>
-      <div class="am-sec">History</div>
-      <div id="alertHist" style="max-height:160px;overflow-y:auto"><div style="font-size:12px;color:var(--text3);padding:6px 0">No alerts yet</div></div>
-      <button class="test-btn" onclick="testAlert()">🔊 Test Alert</button>
-      <div id="testStatus" style="font-size:11px;color:var(--text3);text-align:center;margin-top:4px"></div>
-    </div>
-  </div>
-</div>
-
 <script>
+let currentIndex   = 'NIFTY'
+let prevData       = null
+let chainData      = null
+let allExpiries    = []         // all expiries from NSE for current index
+let selectedExpiry = null       // currently selected expiry
+let prevOISnapshot = {}         // for spike detection {strike: {ce, pe}}
+let alertHistory   = []         // rolling alerts for ticker
+let oiSpikeAlerts  = []         // prominent OI spike cards shown in panel
+// Strategy persistence tracker — stores last 5 strategy names
+// When same strategy appears 3+ times in a row = CONFIRMED signal
+let strategyHistory = []   // ['BEAR CALL SPREAD', 'BEAR CALL SPREAD', 'IRON CONDOR', ...]
+let indexHistory    = []   // full snapshots: [{name,dir,score,ceOI,peOI,pcr,iv,spot,ceW,peW,ts}]
+const INDEX_SYMBOLS={'NIFTY':'NIFTY','BANKNIFTY':'BANKNIFTY','FINNIFTY':'FINNIFTY','MIDCPNIFTY':'MIDCPNIFTY','NIFTY NEXT 50':'NIFTY NEXT 50','SENSEX':'SENSEX'}
+// Data source indicator
+let dataSource = 'demo'
+
+async function fetchChain(symbol){
+  const nseSymbol=INDEX_SYMBOLS[symbol]||symbol
+  const encoded=encodeURIComponent(nseSymbol)
+  const nseUrl=`https://www.nseindia.com/api/option-chain-indices?symbol=${encoded}`
+
+  // Strategy 1: Local proxy on trading PC (most reliable — never blocked by NSE)
+  // Run nse-proxy.js on your PC to enable this
+  try {
+    const res = await fetch(`http://localhost:3001/chain?symbol=${encoded}`,{signal:AbortSignal.timeout(4000)})
+    if(res.ok){const json=await res.json();if(json&&json.records){dataSource='local';return json}}
+  } catch(e){}
+
+  // Strategy 2: Vercel server proxy (chain.js)
+  try {
+    const res = await fetch(`/api/chain?symbol=${encoded}`,{signal:AbortSignal.timeout(12000)})
+    if(res.ok){const json=await res.json();if(json&&json.records){dataSource='vercel';return json}}
+  } catch(e){}
+
+  // Strategy 3: Public CORS proxies (fallback)
+  const proxies=[
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(nseUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(nseUrl)}`,
+  ]
+  for(const url of proxies){
+    try{
+      const res=await fetch(url,{signal:AbortSignal.timeout(10000)})
+      if(!res.ok)continue
+      const json=await res.json()
+      if(json&&json.records){dataSource='proxy';return json}
+    }catch(e){continue}
+  }
+
+  dataSource='demo'
+  return null
+}
+function parseChain(raw){
+  const records   = raw.records
+  const data      = records.data||[]
+  const spot      = records.underlyingValue||0
+  const allExpDates = records.expiryDates||[]
+  // Use selectedExpiry if set and valid, otherwise nearest
+  const expiry    = (selectedExpiry && allExpDates.includes(selectedExpiry))
+                    ? selectedExpiry : (allExpDates[0]||'')
+  // Update global expiry list
+  allExpiries = allExpDates
+  const strikes={}
+  for(const row of data){if(row.expiryDate!==expiry)continue;const k=row.strikePrice;if(!strikes[k])strikes[k]={strike:k,ce:{},pe:{}};if(row.CE)strikes[k].ce=row.CE;if(row.PE)strikes[k].pe=row.PE}
+  const strikeList=Object.values(strikes).sort((a,b)=>a.strike-b.strike)
+  let atm=strikeList.reduce((best,s)=>Math.abs(s.strike-spot)<Math.abs(best.strike-spot)?s:best,strikeList[0])
+  let maxPainStrike=0,minPainVal=Infinity
+  for(const s of strikeList){let loss=0;for(const other of strikeList){if(other.strike<s.strike)loss+=(other.ce.openInterest||0)*(s.strike-other.strike);if(other.strike>s.strike)loss+=(other.pe.openInterest||0)*(other.strike-s.strike)}if(loss<minPainVal){minPainVal=loss;maxPainStrike=s.strike}}
+  const ceWall=strikeList.reduce((b,s)=>(s.ce.openInterest||0)>(b.ce.openInterest||0)?s:b,strikeList[0])
+  const peWall=strikeList.reduce((b,s)=>(s.pe.openInterest||0)>(b.pe.openInterest||0)?s:b,strikeList[0])
+  const totalCeOI=strikeList.reduce((s,r)=>s+(r.ce.openInterest||0),0)
+  const totalPeOI=strikeList.reduce((s,r)=>s+(r.pe.openInterest||0),0)
+  const pcr=totalCeOI>0?totalPeOI/totalCeOI:1
+  const atmIV=((atm.ce.impliedVolatility||0)+(atm.pe.impliedVolatility||0))/2
+  const atmIdx=strikeList.indexOf(atm)
+  return{spot,expiry,allExpiries,atm:atm.strike,maxPainStrike,ceWall,peWall,pcr,totalCeOI,totalPeOI,atmIV,
+    skewStrikes:strikeList.slice(Math.max(0,atmIdx-3),atmIdx+4),
+    nearStrikes:strikeList.slice(Math.max(0,atmIdx-7),atmIdx+8),
+    strikeList,atmRow:atm,timestamp:new Date()}
+}
+function computeStrategy(d){
+  // ── IV ANALYSIS (Natenberg core) ──
+  const atmIV    = d.atmIV || 15
+  const ivNormal = currentIndex==='BANKNIFTY'?20:14
+  const ivHigh   = ivNormal * 1.5
+  const ivLow    = ivNormal * 0.7
+  const ivState  = atmIV > ivHigh ? 'HIGH' : atmIV < ivLow ? 'LOW' : 'NORMAL'
+  const ivAction = ivState==='HIGH'
+    ? `IV ${atmIV.toFixed(1)}% is ELEVATED — premium expensive. Favour selling (Iron Condor, Straddle Sell).`
+    : ivState==='LOW'
+    ? `IV ${atmIV.toFixed(1)}% is LOW — premium cheap. Favour buying (Buy CE/PE, Debit Spread).`
+    : `IV ${atmIV.toFixed(1)}% is normal — both buying and selling valid. Follow OI direction.`
+  const ivPct    = Math.min(100, Math.round((atmIV / ivHigh) * 100))
+  const{spot,ceWall,peWall,maxPainStrike,pcr}=d
+  const ceWallStr=ceWall.strike,peWallStr=peWall.strike
+  const distToCe=ceWallStr-spot,distToPe=spot-peWallStr
+  const inRange=spot>peWallStr&&spot<ceWallStr,abovePain=spot>maxPainStrike
+  const step      = ceWallStr>20000?100:50
+  const dte       = getDTE(d.expiry)
+  const dteLabel  = dte===0?'EXPIRY DAY':dte===1?'TOMORROW':dte<=3?'NEAR EXPIRY':dte<=7?'THIS WEEK':'FAR EXPIRY'
+  let bullSignals=0,bearSignals=0,reasons=[]
+  if(pcr>1.3){bearSignals+=2;reasons.push({dir:'bear',text:`PCR ${pcr.toFixed(2)} — strongly bearish (heavy put buying)`})}
+  else if(pcr>1.1){bearSignals+=1;reasons.push({dir:'bear',text:`PCR ${pcr.toFixed(2)} — mildly bearish`})}
+  else if(pcr<0.7){bullSignals+=2;reasons.push({dir:'bull',text:`PCR ${pcr.toFixed(2)} — strongly bullish (heavy call buying)`})}
+  else if(pcr<0.9){bullSignals+=1;reasons.push({dir:'bull',text:`PCR ${pcr.toFixed(2)} — mildly bullish`})}
+  else{reasons.push({dir:'neut',text:`PCR ${pcr.toFixed(2)} — neutral, no strong directional bias`})}
+  if(distToCe<150){bearSignals+=2;reasons.push({dir:'bear',text:`Only ${Math.round(distToCe)}pts to CE wall — strong resistance nearby`})}
+  else if(distToCe<300){bearSignals+=1;reasons.push({dir:'warn',text:`${Math.round(distToCe)}pts to CE wall — watch resistance`})}
+  if(distToPe<150){bullSignals+=2;reasons.push({dir:'bull',text:`Only ${Math.round(distToPe)}pts to PE wall — strong support nearby`})}
+  if(!abovePain&&Math.abs(spot-maxPainStrike)<200){bullSignals+=1;reasons.push({dir:'bull',text:`Spot below max pain (${maxPainStrike}) — gravity pulls up`})}
+  else if(abovePain&&Math.abs(spot-maxPainStrike)<200){bearSignals+=1;reasons.push({dir:'bear',text:`Spot above max pain (${maxPainStrike}) — gravity pulls down`})}
+  let dir='range',zone='IN RANGE',bias='NEUTRAL'
+  if(!inRange&&spot>=ceWallStr){dir='bull';zone='ABOVE CE WALL';bias='STRONG BULL'}
+  else if(!inRange&&spot<=peWallStr){dir='bear';zone='BELOW PE WALL';bias='STRONG BEAR'}
+  else if(bullSignals>bearSignals+1){dir='bull';bias='BULLISH'}
+  else if(bearSignals>bullSignals+1){dir='bear';bias='BEARISH'}
+  else if(bearSignals===bullSignals&&bearSignals>0){dir='range';bias='RANGE BOUND'}
+  // ── STRATEGY ENGINE — 5 strategies ──────────────────────
+  // 1. LONG CE        — price broke above CE wall (momentum/breakout)
+  // 2. LONG PE        — price broke below PE wall (momentum/breakdown)
+  // 3. BEAR CALL SPREAD — near CE wall or bearish bias
+  // 4. BULL PUT SPREAD  — near PE wall or bullish bias
+  // 5. IRON CONDOR      — range bound, neutral PCR
+
+  const atmCePrice = d.atmRow.ce?.lastPrice || 0
+  const atmPePrice = d.atmRow.pe?.lastPrice || 0
+
+  // All strategies as an array — show primary + secondary
+  let allStrategies = []
+
+  // BREAKOUT — price above CE wall
+  if (!inRange && spot >= ceWallStr) {
+    allStrategies.push({
+      name:'LONG CE (BREAKOUT)',
+      type:'Momentum / Bullish',
+      tag:'🚀 AGGRESSIVE',
+      tagColor:'var(--green)',
+      rationale:`CE wall at ${ceWallStr} has been broken. ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L contracts were defending it — now that wall is gone, price can run freely. Momentum trade.`,
+      legs:[{action:'BUY',desc:`${d.atm} CE (ATM)`,price:atmCePrice.toFixed(1)}],
+      risk: Math.round(atmCePrice * 25),
+      reward: Math.round(atmCePrice * 25 * 2),
+      rr:'1:2.0 (target 2x premium)',
+      exit:`Exit at 2x premium OR if price falls back below ${ceWallStr}`,
+      when:'Enter on breakout candle close above ' + ceWallStr,
+      avoid:'Do NOT enter if OI at ' + ceWallStr + ' is still very high — wall may not be truly broken'
+    })
+    allStrategies.push({
+      name:'BULL PUT SPREAD',
+      type:'Range / Bullish',
+      tag:'🛡️ SAFER',
+      tagColor:'var(--blue)',
+      rationale:`Breakout confirmed. Sell puts at old resistance-turned-support at ${ceWallStr}. Lower risk than buying CE outright.`,
+      legs:[{action:'SELL',desc:`${ceWallStr} PE`,price:(d.strikeList.find(s=>s.strike===ceWallStr)?.pe?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${ceWallStr-step} PE`,price:'hedge'}],
+      risk: step * 25,
+      reward: Math.round(((d.strikeList.find(s=>s.strike===ceWallStr)?.pe?.lastPrice||0)) * 25),
+      rr:'Limited risk',
+      exit:`Exit if spot falls back below ${ceWallStr}`,
+      when:'Enter after breakout is confirmed — not before',
+      avoid:'Avoid if breakout happened on very low volume'
+    })
+  }
+  // BREAKDOWN — price below PE wall
+  else if (!inRange && spot <= peWallStr) {
+    allStrategies.push({
+      name:'LONG PE (BREAKDOWN)',
+      type:'Momentum / Bearish',
+      tag:'🔻 AGGRESSIVE',
+      tagColor:'var(--red)',
+      rationale:`PE wall at ${peWallStr} has been broken. ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L contracts were supporting it — now that floor is gone, price can fall freely.`,
+      legs:[{action:'BUY',desc:`${d.atm} PE (ATM)`,price:atmPePrice.toFixed(1)}],
+      risk: Math.round(atmPePrice * 25),
+      reward: Math.round(atmPePrice * 25 * 2),
+      rr:'1:2.0 (target 2x premium)',
+      exit:`Exit at 2x premium OR if price recovers above ${peWallStr}`,
+      when:'Enter on breakdown candle close below ' + peWallStr,
+      avoid:'Do NOT enter if PE wall OI is still building — wall may hold'
+    })
+    allStrategies.push({
+      name:'BEAR CALL SPREAD',
+      type:'Range / Bearish',
+      tag:'🛡️ SAFER',
+      tagColor:'var(--blue)',
+      rationale:`Breakdown confirmed. Sell calls at old support-turned-resistance at ${peWallStr}. Lower risk than buying PE outright.`,
+      legs:[{action:'SELL',desc:`${peWallStr} CE`,price:(d.strikeList.find(s=>s.strike===peWallStr)?.ce?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${peWallStr+step} CE`,price:'hedge'}],
+      risk: step * 25,
+      reward: Math.round(((d.strikeList.find(s=>s.strike===peWallStr)?.ce?.lastPrice||0)) * 25),
+      rr:'Limited risk',
+      exit:`Exit if spot recovers above ${peWallStr}`,
+      when:'Enter after breakdown confirmed — not during the fall',
+      avoid:'Avoid if breakdown happened near end of day — gap risk overnight'
+    })
+  }
+  // NEAR CE WALL — bearish bias
+  else if (distToCe < 200) {
+    const ss=ceWallStr,bs=ceWallStr-step
+    const sp=ceWall.ce?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.ce?.lastPrice||0
+    allStrategies.push({
+      name:'BEAR CALL SPREAD',
+      type:'Near Resistance',
+      tag:'⚡ PRIMARY',
+      tagColor:'var(--red)',
+      rationale:`Only ${Math.round(distToCe)}pts from CE wall at ${ss} which has ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L OI. Sell the wall, collect premium — institutions will defend it.`,
+      legs:[{action:'SELL',desc:`${ss} CE`,price:sp.toFixed(1)},{action:'BUY',desc:`${bs} CE`,price:bp.toFixed(1)}],
+      risk:Math.abs((ss-bs)*25-Math.round((sp-bp)*25)),reward:Math.abs(Math.round((sp-bp)*25)),
+      rr: Math.abs(Math.round((sp-bp)*25)) > 0 ? '1:'+(Math.abs(Math.round((sp-bp)*25))/Math.abs((ss-bs)*25-Math.round((sp-bp)*25))).toFixed(2) : '—',
+      exit:`Exit if ${ss} CE OI drops >20% OR spot closes above ${ss+step}`,
+      when:'Enter when spot is within 100pts of ' + ss,
+      avoid:'Avoid if PCR is below 0.8 — too bullish, wall may break'
+    })
+    allStrategies.push({
+      name:'IRON CONDOR',
+      type:'Range Bound',
+      tag:'🛡️ ALTERNATIVE',
+      tagColor:'var(--blue)',
+      rationale:`Sell both walls — CE at ${ceWallStr} and PE at ${peWallStr}. Collect premium from both sides while market stays in range.`,
+      legs:[{action:'SELL',desc:`${ceWallStr} CE`,price:sp.toFixed(1)},{action:'BUY',desc:`${ceWallStr+step} CE`,price:'hedge'},{action:'SELL',desc:`${peWallStr} PE`,price:(peWall.pe?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${peWallStr-step} PE`,price:'hedge'}],
+      risk: step*25, reward: Math.round((sp+(peWall.pe?.lastPrice||0))*25),
+      rr:'Defined risk both sides',
+      exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}`,
+      when:'Best entered Monday/Tuesday morning when both walls intact',
+      avoid:'Never hold Iron Condor into news events or RBI policy'
+    })
+  }
+  // NEAR PE WALL — bullish bias
+  else if (distToPe < 200) {
+    const ss=peWallStr,bs=peWallStr+step
+    const sp=peWall.pe?.lastPrice||0,bp=d.strikeList.find(s=>s.strike===bs)?.pe?.lastPrice||0
+    allStrategies.push({
+      name:'BULL PUT SPREAD',
+      type:'Near Support',
+      tag:'⚡ PRIMARY',
+      tagColor:'var(--green)',
+      rationale:`Only ${Math.round(distToPe)}pts from PE wall at ${ss} which has ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L OI. Sell the floor, collect premium — institutions will defend it.`,
+      legs:[{action:'SELL',desc:`${ss} PE`,price:sp.toFixed(1)},{action:'BUY',desc:`${bs} PE`,price:bp.toFixed(1)}],
+      risk:Math.abs((bs-ss)*25-Math.round((sp-bp)*25)),reward:Math.abs(Math.round((sp-bp)*25)),
+      rr: Math.abs(Math.round((sp-bp)*25)) > 0 ? '1:'+(Math.abs(Math.round((sp-bp)*25))/Math.abs((bs-ss)*25-Math.round((sp-bp)*25))).toFixed(2) : '—',
+      exit:`Exit if ${ss} PE OI drops >20% OR spot closes below ${ss-step}`,
+      when:'Enter when spot bounces near ' + ss + ' with volume confirmation',
+      avoid:'Avoid on expiry day — gap risk is high near support'
+    })
+    allStrategies.push({
+      name:'IRON CONDOR',
+      type:'Range Bound',
+      tag:'🛡️ ALTERNATIVE',
+      tagColor:'var(--blue)',
+      rationale:`Sell both walls — PE at ${peWallStr} and CE at ${ceWallStr}. Collect premium from both sides while market stays in range.`,
+      legs:[{action:'SELL',desc:`${peWallStr} PE`,price:sp.toFixed(1)},{action:'BUY',desc:`${peWallStr-step} PE`,price:'hedge'},{action:'SELL',desc:`${ceWallStr} CE`,price:(ceWall.ce?.lastPrice||0).toFixed(1)},{action:'BUY',desc:`${ceWallStr+step} CE`,price:'hedge'}],
+      risk: step*25, reward: Math.round((sp+(ceWall.ce?.lastPrice||0))*25),
+      rr:'Defined risk both sides',
+      exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}`,
+      when:'Best entered Monday/Tuesday morning when both walls intact',
+      avoid:'Never hold Iron Condor into news events or RBI policy'
+    })
+  }
+  // IN RANGE — neutral
+  else {
+    const sc=ceWallStr,bc=ceWallStr+step,sp2=peWallStr,bp2=peWallStr-step
+    const scP=ceWall.ce?.lastPrice||0,spP=peWall.pe?.lastPrice||0,mg=Math.round((scP+spP)*25)
+    if (bearSignals > bullSignals) {
+      const bs2=ceWallStr-step,bp3=ceWall.ce?.lastPrice||0,bb3=d.strikeList.find(s=>s.strike===bs2)?.ce?.lastPrice||0
+      allStrategies.push({
+        name:'BEAR CALL SPREAD',
+        type:'Range / Bearish Bias',
+        tag:'⚡ PRIMARY',
+        tagColor:'var(--red)',
+        rationale:`PCR and signals lean bearish. Sell CE wall at ${sc} — ${(ceWall.ce?.openInterest/100000||0).toFixed(1)}L OI defending this level.`,
+        legs:[{action:'SELL',desc:`${sc} CE`,price:bp3.toFixed(1)},{action:'BUY',desc:`${bs2} CE`,price:bb3.toFixed(1)}],
+        risk:Math.abs((sc-bs2)*25-Math.round((bp3-bb3)*25)),reward:Math.abs(Math.round((bp3-bb3)*25)),
+        rr:'Defined risk',
+        exit:`Exit if ${sc} CE OI drops >20% OR spot closes above ${sc+step}`,
+        when:'Enter when PCR is rising (more put buying) + spot near top of range',
+        avoid:'Avoid if market has strong bullish news catalyst'
+      })
+    } else if (bullSignals > bearSignals) {
+      const bs3=peWallStr+step,bp4=peWall.pe?.lastPrice||0,bb4=d.strikeList.find(s=>s.strike===bs3)?.pe?.lastPrice||0
+      allStrategies.push({
+        name:'BULL PUT SPREAD',
+        type:'Range / Bullish Bias',
+        tag:'⚡ PRIMARY',
+        tagColor:'var(--green)',
+        rationale:`PCR and signals lean bullish. Sell PE wall at ${sp2} — ${(peWall.pe?.openInterest/100000||0).toFixed(1)}L OI defending this level.`,
+        legs:[{action:'SELL',desc:`${sp2} PE`,price:bp4.toFixed(1)},{action:'BUY',desc:`${bs3} PE`,price:bb4.toFixed(1)}],
+        risk:Math.abs((bs3-sp2)*25-Math.round((bp4-bb4)*25)),reward:Math.abs(Math.round((bp4-bb4)*25)),
+        rr:'Defined risk',
+        exit:`Exit if ${sp2} PE OI drops >20% OR spot closes below ${sp2-step}`,
+        when:'Enter when PCR is falling (more call buying) + spot near bottom of range',
+        avoid:'Avoid if market has bearish global cues overnight'
+      })
+    }
+    allStrategies.push({
+      name:'IRON CONDOR',
+      type:'Range Bound',
+      tag: bullSignals===bearSignals ? '⚡ PRIMARY' : '🛡️ ALTERNATIVE',
+      tagColor:'var(--purple)',
+      rationale:`Market in range between ${sp2} and ${sc}. Sell both walls and collect premium from both sides. ${mg > 0 ? 'Premium collected: ₹'+mg.toLocaleString('en-IN') : ''}`,
+      legs:[{action:'SELL',desc:`${sc} CE`,price:scP.toFixed(1)},{action:'BUY',desc:`${bc} CE`,price:'hedge'},{action:'SELL',desc:`${sp2} PE`,price:spP.toFixed(1)},{action:'BUY',desc:`${bp2} PE`,price:'hedge'}],
+      risk:step*25-Math.abs(mg),reward:Math.abs(mg),
+      rr: Math.abs(mg) > 0 ? '1:'+(Math.abs(mg)/(step*25-Math.abs(mg))).toFixed(2) : '—',
+      exit:`Exit if spot breaks above ${sc} or below ${sp2}`,
+      when:'Best entered early week (Mon/Tue). Time decay works for you every day.',
+      avoid:'Never hold into RBI policy, budget day, or major global events'
+    })
+  }
+
+  // ── EXPIRY DAY OVERRIDE ──
+  if (dte === 0) {
+    allStrategies = []
+    const atmCeP = d.atmRow.ce?.lastPrice||0
+    const atmPeP = d.atmRow.pe?.lastPrice||0
+    allStrategies.push({
+      name:'STRADDLE SELL (EXPIRY DAY)',type:'Expiry Day — Sell Premium',tag:'🔴 EXPIRY ONLY',tagColor:'var(--red)',
+      rationale:`Expiry day — both ATM CE and PE will decay to near-zero by 3:30pm. Sell both and collect full premium. Works best when market stays near max pain (${d.maxPainStrike}).`,
+      legs:[{action:'SELL',desc:`${d.atm} CE (ATM)`,price:atmCeP.toFixed(1)},{action:'SELL',desc:`${d.atm} PE (ATM)`,price:atmPeP.toFixed(1)}],
+      risk:step*25,reward:Math.round((atmCeP+atmPeP)*25),rr:'High reward, capped loss with SL',
+      exit:`Exit BOTH if spot moves more than ${step*2}pts from ${d.atm}. Hard exit by 3:00pm.`,
+      when:'Only on expiry Thursday. Only if spot is within 100pts of max pain.',
+      avoid:'Never without a stop loss. Never if large news after 12pm. Exit by 3:00pm hard.'
+    })
+    allStrategies.push({
+      name:'STRANGLE SELL (EXPIRY SAFER)',type:'Expiry Day — Wider Range',tag:'🟡 EXPIRY SAFER',tagColor:'var(--yellow)',
+      rationale:`Sell OTM CE wall (${ceWallStr}) + OTM PE wall (${peWallStr}). Wider range = safer. Both expire worthless if market stays between the two walls.`,
+      legs:[{action:'SELL',desc:`${ceWallStr} CE`,price:(ceWall.ce?.lastPrice||0).toFixed(1)},{action:'SELL',desc:`${peWallStr} PE`,price:(peWall.pe?.lastPrice||0).toFixed(1)}],
+      risk:step*25,reward:Math.round(((ceWall.ce?.lastPrice||0)+(peWall.pe?.lastPrice||0))*25),rr:'Lower premium but safer range',
+      exit:`Exit if spot breaks above ${ceWallStr} or below ${peWallStr}. Exit by 3:00pm.`,
+      when:'Expiry day when both CE wall and PE wall OI is still intact.',
+      avoid:'Exit by 3:00pm regardless. Never hold into final auction.'
+    })
+  }
+
+  // ── SYNTHETIC / FUTURES STRATEGIES — high conviction only ──
+  if (dte >= 2) {
+    const confidence_pre = bullSignals + bearSignals >= 3 ? (Math.abs(bullSignals-bearSignals)>=2?4:3) : 2
+    if (confidence_pre >= 4) {
+      const atmCeP2 = d.atmRow.ce?.lastPrice||0
+      const atmPeP2 = d.atmRow.pe?.lastPrice||0
+      if (dir==='bull' || (!isInRange(spot,peWallStr,ceWallStr) && spot>=ceWallStr)) {
+        allStrategies.push({
+          name:'SYNTHETIC LONG',type:'Futures Alternative',tag:'🔷 FUTURES ALT',tagColor:'#0891b2',
+          rationale:`Buy ATM CE + Sell ATM PE = same payoff as buying Nifty futures but capital efficient. Profits unlimited on upside. Use when strongly bullish with high confidence.`,
+          legs:[{action:'BUY',desc:`${d.atm} CE (ATM)`,price:atmCeP2.toFixed(1)},{action:'SELL',desc:`${d.atm} PE (ATM)`,price:atmPeP2.toFixed(1)}],
+          risk:Math.round(Math.abs(atmCeP2-atmPeP2)*25),reward:Math.round(atmCeP2*25*3),rr:'Unlimited upside',
+          exit:`Exit if spot falls below ${peWallStr} OR CE reaches 2x premium`,
+          when:'Confidence 4-5/5 + confirmed bullish + DTE ≥ 2 days',
+          avoid:'Never on expiry day. Always define your stop loss level before entering.'
+        })
+      }
+      if (dir==='bear' || (!isInRange(spot,peWallStr,ceWallStr) && spot<=peWallStr)) {
+        allStrategies.push({
+          name:'SYNTHETIC SHORT',type:'Futures Alternative',tag:'🔷 FUTURES ALT',tagColor:'#0891b2',
+          rationale:`Buy ATM PE + Sell ATM CE = same payoff as shorting Nifty futures. Profits unlimited on downside. Use when strongly bearish with high confidence.`,
+          legs:[{action:'BUY',desc:`${d.atm} PE (ATM)`,price:atmPeP2.toFixed(1)},{action:'SELL',desc:`${d.atm} CE (ATM)`,price:atmCeP2.toFixed(1)}],
+          risk:Math.round(Math.abs(atmPeP2-atmCeP2)*25),reward:Math.round(atmPeP2*25*3),rr:'Unlimited downside',
+          exit:`Exit if spot rises above ${ceWallStr} OR PE reaches 2x premium`,
+          when:'Confidence 4-5/5 + confirmed bearish + DTE ≥ 2 days',
+          avoid:'Never on expiry day. Always define your stop loss before entering.'
+        })
+      }
+    }
+  }
+
+  // Primary = first strategy, secondary = second
+  const strategy = allStrategies[0]
+  const strategy2 = allStrategies[1] || null
+  if (strategy) { strategy.dteLabel = dteLabel; strategy.dte = dte }
+
+  // ── FUTURES STRATEGY — always shown as 3rd card ──
+  const atmCeF = d.atmRow.ce?.lastPrice||0, atmPeF = d.atmRow.pe?.lastPrice||0
+  const futLot = currentIndex==='BANKNIFTY'?15:currentIndex==='SENSEX'?10:25
+  let futStrat = {}
+  if (dir==='bull'||(!inRange&&spot>=ceWallStr)) {
+    futStrat = {
+      name:'SYNTHETIC LONG (Futures Equiv.)',type:'Futures / High Conviction',tag:'🔷 FUTURES',tagColor:'#0891b2',
+      rationale:`Buy ATM CE + Sell ATM PE = acts exactly like buying ${currentIndex} futures but at lower capital. Each 1pt up = ₹${futLot} profit. SL below PE wall at ${peWallStr}.`,
+      legs:[{action:'BUY',desc:`${d.atm} CE (ATM)`,price:atmCeF.toFixed(1)},{action:'SELL',desc:`${d.atm} PE (ATM)`,price:atmPeF.toFixed(1)}],
+      risk:Math.round(Math.abs(atmCeF-atmPeF)*futLot),reward:Math.round(step*futLot*2),rr:'Unlimited upside',
+      exit:`Exit if ${currentIndex} falls below ${peWallStr} OR CE reaches 2x premium`,
+      when:`Confirmed bullish + DTE ≥ 2 days + CE wall broken or PCR < 0.9`,
+      avoid:`Never on expiry day. Never without a defined SL. Results day = huge gap risk.`
+    }
+  } else {
+    futStrat = {
+      name:'SYNTHETIC SHORT (Futures Equiv.)',type:'Futures / High Conviction',tag:'🔷 FUTURES',tagColor:'#0891b2',
+      rationale:`Buy ATM PE + Sell ATM CE = acts exactly like shorting ${currentIndex} futures. Each 1pt down = ₹${futLot} profit. Cover at PE wall target ${peWallStr}.`,
+      legs:[{action:'BUY',desc:`${d.atm} PE (ATM)`,price:atmPeF.toFixed(1)},{action:'SELL',desc:`${d.atm} CE (ATM)`,price:atmCeF.toFixed(1)}],
+      risk:Math.round(Math.abs(atmPeF-atmCeF)*futLot),reward:Math.round(step*futLot*2),rr:'Unlimited downside',
+      exit:`Exit if ${currentIndex} rises above ${ceWallStr} OR PE reaches 2x premium`,
+      when:`Confirmed bearish + DTE ≥ 2 days + PE wall broken or PCR > 1.2`,
+      avoid:`Never on expiry day. Never without SL. This is equivalent to a naked futures short.`
+    }
+  }
+  // Confidence score 1-5 based on signal alignment
+  const totalSig = bullSignals + bearSignals
+  const dominance = Math.abs(bullSignals - bearSignals)
+  let confidence = 1
+  if (totalSig >= 4 && dominance >= 3) confidence = 5
+  else if (totalSig >= 3 && dominance >= 2) confidence = 4
+  else if (totalSig >= 2 && dominance >= 1) confidence = 3
+  else if (totalSig >= 1) confidence = 2
+  else confidence = 1
+
+  return{dir,zone,bias,strategy,strategy2,futStrat,allStrategies,reasons,bullSignals,bearSignals,confidence,dte,dteLabel,atmIV,ivState,ivAction,ivPct}
+}
+// OI history — store last 5 snapshots for sparkline
+let oiHistory = []  // [{time, ceWallOI, peWallOI, ceWallStrike, peWallStrike}]
+
+function storeOISnapshot(d) {
+  const snap = {
+    time: new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    ceWallOI: d.ceWall.ce?.openInterest || 0,
+    peWallOI: d.peWall.pe?.openInterest || 0,
+    ceStrike: d.ceWall.strike,
+    peStrike: d.peWall.strike
+  }
+  oiHistory.push(snap)
+  if (oiHistory.length > 8) oiHistory.shift()  // keep last 8 snapshots
+}
+
+function renderConfidence(score) {
+  const labels = ['','Very Weak','Weak','Moderate','Strong','Very Strong']
+  const classes = ['','conf-weak','conf-weak','conf-mod','conf-strong','conf-max']
+  const dots = [1,2,3,4,5].map(i =>
+    `<div class="conf-dot ${i<=score ? 'filled-'+score : ''}"></div>`
+  ).join('')
+  return `<div class="confidence-wrap">
+    <span class="confidence-label">Signal Strength</span>
+    <div class="confidence-dots">${dots}</div>
+    <span class="confidence-text ${classes[score]}">${labels[score]}</span>
+  </div>`
+}
+
+// Unique ID counter for strategy card toggles
+let _cardId = 0
+
+function renderPayoffDiagram(strat, d) {
+  if (!strat || !d) return ''
+  const step = Math.round((d.ceWall.strike - d.peWall.strike) / 8) || 50
+  const center = d.atm
+  const strikes = []
+  for (let i = -4; i <= 4; i++) strikes.push(center + i * step)
+
+  // Calculate approximate P&L at each strike
+  const lot = 25 // approximate for index
+  const pnl = strikes.map(s => {
+    let pl = 0
+    if (strat.name?.includes('BEAR CALL SPREAD') || strat.name?.includes('BEAR CALL')) {
+      const sellStrike = d.ceWall.strike, buyStrike = d.ceWall.strike + step
+      const credit = (strat.reward || 0) / lot
+      if (s <= sellStrike) pl = credit
+      else if (s >= buyStrike) pl = credit - step
+      else pl = credit - (s - sellStrike)
+    } else if (strat.name?.includes('BULL PUT SPREAD') || strat.name?.includes('BULL PUT')) {
+      const sellStrike = d.peWall.strike, buyStrike = d.peWall.strike - step
+      const credit = (strat.reward || 0) / lot
+      if (s >= sellStrike) pl = credit
+      else if (s <= buyStrike) pl = credit - step
+      else pl = credit - (sellStrike - s)
+    } else if (strat.name?.includes('IRON CONDOR')) {
+      const cSell = d.ceWall.strike, pSell = d.peWall.strike
+      const credit = (strat.reward || 0) / lot
+      if (s >= pSell && s <= cSell) pl = credit
+      else if (s > cSell) pl = credit - Math.min(step, s - cSell)
+      else pl = credit - Math.min(step, pSell - s)
+    } else if (strat.name?.includes('BUY ATM CE')) {
+      pl = Math.max(-(strat.risk/lot), s - center - (strat.risk/lot))
+    } else if (strat.name?.includes('BUY ATM PE')) {
+      pl = Math.max(-(strat.risk/lot), center - s - (strat.risk/lot))
+    } else {
+      return 0
+    }
+    return Math.round(pl * lot)
+  })
+
+  const maxPL = Math.max(...pnl, 1)
+  const minPL = Math.min(...pnl, -1)
+  const range = maxPL - minPL || 1
+  const chartH = 50
+
+  const bars = strikes.map((s, i) => {
+    const v = pnl[i]
+    const isProfit = v >= 0
+    const h = Math.round(Math.abs(v) / range * chartH * 0.8)
+    const yProfit = chartH/2 - (v > 0 ? h : 0)
+    const isATM = s === center
+    return `<g title="₹${s}: ${v>=0?'+':''}₹${v.toLocaleString('en-IN')}">
+      <rect x="${i*16+2}" y="${yProfit}" width="13" height="${Math.max(1,h)}"
+        fill="${v>0?'#16a34a':'#dc2626'}" opacity="${isATM?1:0.75}" rx="1"/>
+      <text x="${i*16+8.5}" y="${chartH+12}" text-anchor="middle"
+        font-size="7" fill="#8899b0">${s===center?'ATM':''}</text>
+    </g>`
+  }).join('')
+
+  const beText = pnl.some(p=>p>0)&&pnl.some(p=>p<0)?
+    `Break-even: ~₹${strikes[pnl.findIndex(p=>p>=0)]} & ₹${strikes[pnl.findLastIndex?pnl.findLastIndex(p=>p>=0):pnl.length-1]}`:''
+
+  return `<div style="margin:10px 0;padding:10px 12px;background:var(--bg3);border-radius:9px;border:1px solid var(--border)">
+    <div style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+      📊 Payoff at Expiry — ${strat.name}
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="flex:1;position:relative">
+        <svg width="100%" viewBox="0 0 ${strikes.length*16+4} ${chartH+20}" style="overflow:visible">
+          <line x1="0" y1="${chartH/2}" x2="${strikes.length*16+4}" y2="${chartH/2}"
+            stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>
+          ${bars}
+        </svg>
+      </div>
+      <div style="flex-shrink:0;font-size:11px;color:var(--text2)">
+        <div style="color:var(--green);font-weight:700">Max Profit: ₹${Math.max(...pnl).toLocaleString('en-IN')}</div>
+        <div style="color:var(--red);font-weight:700;margin-top:3px">Max Loss: ₹${Math.min(...pnl).toLocaleString('en-IN')}</div>
+        <div style="color:var(--text3);font-size:10px;margin-top:3px">${beText}</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px">🟢 Green = profit zone · 🔴 Red = loss zone · Each bar = one strike</div>
+  </div>`
+}
+
+function renderFuturesStratCard(f) {
+  if (!f||!f.name) return ''
+  const cardId = 'fut_' + Date.now()
+  return `<div class="strategy-card" style="margin-bottom:0;border-color:#0891b2;border-width:1.5px">
+    <div style="background:linear-gradient(135deg,#0891b2,#0e7490);padding:9px 14px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:1px;text-transform:uppercase">🔷 FUTURES STRATEGY</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.7)">${f.type}</span>
+    </div>
+    <div style="padding:12px 14px;background:linear-gradient(135deg,#ecfeff,#f0fdfa)">
+      <div style="font-size:16px;font-weight:800;color:#0891b2;margin-bottom:10px">${f.name}</div>
+      <div>${(f.legs||[]).map(l=>`<div class="leg" style="border-color:rgba(8,145,178,0.3)"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
+      <div class="strategy-stats">
+        <div class="stat"><div class="stat-label">Margin ~</div><div class="stat-val rr" style="color:#0891b2">₹${(f.risk||0).toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${(f.reward||0).toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">R:R</div><div class="stat-val rr">${f.rr||'—'}</div></div>
+      </div>
+      <div onclick="toggleStratDetail('${cardId}')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 2px;cursor:pointer;margin-top:8px;border-top:1px solid rgba(8,145,178,0.3)">
+        <span style="font-size:12px;font-weight:700;color:#0891b2">▼ Rationale, entry, SL & target</span>
+        <span id="${cardId}_chev" style="font-size:11px;color:var(--text3);transition:transform 0.2s;display:inline-block">▶</span>
+      </div>
+      <div id="${cardId}" style="display:none;font-size:12px;color:var(--text2);line-height:1.65;padding-bottom:4px">
+        <p style="margin-bottom:6px;font-style:italic;color:var(--text3)">${f.rationale||''}</p>
+        <div style="margin-bottom:4px"><strong style="color:var(--green)">✅ When:</strong> ${f.when||'—'}</div>
+        <div style="margin-bottom:4px"><strong style="color:var(--red)">⚠️ Avoid:</strong> ${f.avoid||'—'}</div>
+        <div><strong style="color:var(--yellow)">🚪 Exit:</strong> ${f.exit||'—'}</div>
+      </div>
+    </div>
+  </div>`
+}
+
+function renderStrategyCard(strat, isPrimary) {
+  const cardId = 'sc_' + (++_cardId)
+  const bdColor = isPrimary ? 'var(--blue-bd)' : 'var(--border)'
+  const bodyBg  = isPrimary ? 'var(--blue-bg)' : 'var(--bg3)'
+  const nameCol = isPrimary ? 'var(--blue)' : 'var(--text)'
+
+  // Build good/bad checklist inline
+  const goodItems = (strat.goodChecks||[]).map(t=>`<li style="color:var(--green);margin-bottom:3px;font-size:12px">✅ ${t}</li>`).join('')
+  const badItems  = (strat.badChecks||[]).map(t=>`<li style="color:var(--red);margin-bottom:3px;font-size:12px">❌ ${t}</li>`).join('')
+
+  return `<div class="strategy-card" style="margin-bottom:${isPrimary?'10px':'0'}">
+    <div class="strategy-head" style="background:${isPrimary?'var(--blue)':'var(--bg3)'}">
+      <span class="strategy-head-label" style="color:${isPrimary?'rgba(255,255,255,0.8)':'var(--text3)'}">${isPrimary?'⚡ PRIMARY':'🛡️ ALTERNATIVE'}</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        ${isPrimary && strategyHistory.length >= 1 ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${getStrategyPersistence(strat.name).bgColor};color:${getStrategyPersistence(strat.name).color};border:1px solid ${getStrategyPersistence(strat.name).bdColor}">${getStrategyPersistence(strat.name).label}</span>` : ''}
+        <span class="strategy-head-type" style="color:${isPrimary?'rgba(255,255,255,0.7)':'var(--text3)'}">${strat.type}</span>
+      </div>
+    </div>
+    <div class="strategy-body" style="background:${bodyBg}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div class="strategy-name" style="margin-bottom:0;color:${nameCol}">${strat.name}</div>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;background:${isPrimary?'var(--blue-bg)':'var(--bg2)'};color:${strat.tagColor||'var(--blue)'};border:1px solid ${isPrimary?'var(--blue-bd)':'var(--border)'}">${strat.tag||''}</span>
+      </div>
+      ${isPrimary && strat.confidence !== undefined ? renderConfidence(strat.confidence) : ''}
+      <div>${strat.legs.map(l=>`<div class="leg" style="border-color:${bdColor}"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
+      <div class="strategy-stats">
+        <div class="stat"><div class="stat-label">Max Risk</div><div class="stat-val risk">₹${strat.risk.toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${strat.reward.toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">R : R</div><div class="stat-val rr">${strat.rr||'—'}</div></div>
+      </div>
+
+      <!-- ▼ EXPAND ARROW — explains the strategy inline -->
+      <div style="margin-top:10px;border-top:1px solid ${bdColor}">
+        <div onclick="toggleStratDetail('${cardId}')"
+          style="display:flex;align-items:center;justify-content:space-between;padding:8px 2px;cursor:pointer;user-select:none">
+          <span style="font-size:12px;font-weight:700;color:${isPrimary?'var(--blue)':'var(--text2)'}">▼ Why this strategy? When to enter? When to exit?</span>
+          <span id="${cardId}_chev" style="font-size:11px;color:var(--text3);transition:transform 0.2s;display:inline-block">▶</span>
+        </div>
+        <div id="${cardId}" style="display:none">
+          <div style="padding:10px 12px;background:white;border-radius:8px;border:1px solid ${bdColor};margin-bottom:8px">
+            <p style="font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:8px"><em>${strat.rationale}</em></p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">✅ Enter when</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.6">${strat.when||'—'}</div>
+              </div>
+              <div>
+                <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">⚠️ Avoid if</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.6">${strat.avoid||'—'}</div>
+              </div>
+            </div>
+            ${goodItems||badItems ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+              <div><ul style="margin-left:14px">${goodItems}</ul></div>
+              <div><ul style="margin-left:14px">${badItems}</ul></div>
+            </div>` : ''}
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);font-size:12px;font-weight:600;color:var(--yellow)">
+              🚪 Exit Rule: ${strat.exit||'—'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`
+}
+
+// ══════════════════════════════════════════════════════════
+// BUTTERFLY OPTION CHAIN — Professional NSE layout
+// CALL side | STRIKE | PUT side
+// ══════════════════════════════════════════════════════════
+function renderButterflyChain(d, s, lotSize) {
+  const lot = lotSize || 25
+  const nearStrikes = d.nearStrikes || []
+  const prevSnap    = (typeof prevSnaps !== 'undefined' ? (prevSnaps[d.sym] || {}) : (typeof prevOISnapshot !== 'undefined' ? prevOISnapshot : {}))
+  const maxCeOI     = Math.max(...nearStrikes.map(r => r.ce?.openInterest||0), 1)
+  const maxPeOI     = Math.max(...nearStrikes.map(r => r.pe?.openInterest||0), 1)
+  const maxOI       = Math.max(maxCeOI, maxPeOI)
+
+  // Compute pin strike (highest CE+PE combined OI)
+  const pinStrike = nearStrikes.reduce((best, row) => {
+    const total = (row.ce?.openInterest||0) + (row.pe?.openInterest||0)
+    return total > ((best.ce?.openInterest||0)+(best.pe?.openInterest||0)) ? row : best
+  }, nearStrikes[0])?.strike
+
+  // Compute squeeze strikes (CE/PE wall OI dropping fast)
+  const squeezeStrikes = new Set()
+  nearStrikes.forEach(row => {
+    const prev = prevSnap[row.strike] || {}
+    const ceDiff = (row.ce?.openInterest||0) - (prev.ce || row.ce?.openInterest||0)
+    const peDiff = (row.pe?.openInterest||0) - (prev.pe || row.pe?.openInterest||0)
+    if (ceDiff < -20000 && row.strike === d.ceWall?.strike) squeezeStrikes.add(row.strike)
+    if (peDiff < -20000 && row.strike === d.peWall?.strike) squeezeStrikes.add(row.strike)
+  })
+
+  // Top 3 insight cards
+  const atm = d.atm || d.nearStrikes?.[Math.floor(nearStrikes.length/2)]?.strike
+  const spotVsWall = Math.abs((d.spot||0) - (d.ceWall?.strike||0)) < 50
+    ? `Spot only ${Math.abs((d.spot||0)-(d.ceWall?.strike||0))}pts from CE wall — AT DECISION POINT`
+    : Math.abs((d.spot||0) - (d.peWall?.strike||0)) < 50
+    ? `Spot only ${Math.abs((d.spot||0)-(d.peWall?.strike||0))}pts from PE wall — near support`
+    : `Spot between walls — range trade zone`
+  const squeezeCard = squeezeStrikes.size > 0
+    ? `⚡ SQUEEZE at ₹${[...squeezeStrikes].join(',')} — wall OI dropping → explosive move coming`
+    : `No active squeeze detected — walls holding`
+  const pinCard = `₹${pinStrike} = highest combined OI — expiry will pin here. ${(pinStrike||0) > (d.spot||0) ? 'Pull UP' : 'Pull DOWN'} ${Math.abs((pinStrike||0)-(d.spot||0))}pts away`
+
+  const topCards = `<div class="bfly-top">
+    <div class="bfly-card">
+      <div class="bfly-card-label">📍 Market Position</div>
+      <div class="bfly-card-val">${spotVsWall}</div>
+      <div class="bfly-card-sub">Spot ₹${(d.spot||0).toLocaleString('en-IN')} · ATM ₹${atm}</div>
+    </div>
+    <div class="bfly-card" style="border-color:${squeezeStrikes.size>0?'var(--yel-bd)':'var(--border)'}">
+      <div class="bfly-card-label">⚡ Squeeze Watch</div>
+      <div class="bfly-card-val" style="color:${squeezeStrikes.size>0?'var(--yellow)':'var(--text3)'}">${squeezeCard}</div>
+      <div class="bfly-card-sub">CE wall ₹${d.ceWall?.strike} · PE wall ₹${d.peWall?.strike}</div>
+    </div>
+    <div class="bfly-card" style="border-color:var(--pur-bd)">
+      <div class="bfly-card-label">🎯 Pin Risk (Max Pain)</div>
+      <div class="bfly-card-val" style="color:var(--purple)">${pinCard}</div>
+      <div class="bfly-card-sub">Max Pain ₹${d.maxPainStrike||d.maxPain||'—'} · DTE ${s?.dte||'—'}</div>
+    </div>
+  </div>`
+
+  // Table rows
+  const rows = nearStrikes.map(row => {
+    const ceOI  = row.ce?.openInterest || 0
+    const peOI  = row.pe?.openInterest || 0
+    const ceLTP = row.ce?.lastPrice || 0
+    const peLTP = row.pe?.lastPrice || 0
+    const ceVol = row.ce?.totalTradedVolume || row.ce?.volume || 0
+    const peVol = row.pe?.totalTradedVolume || row.pe?.volume || 0
+    const ceIV  = row.ce?.impliedVolatility || 0
+    const peIV  = row.pe?.impliedVolatility || 0
+    const prev  = prevSnap[row.strike] || {}
+    const ceDiff = ceOI - (prev.ce || ceOI)
+    const peDiff = peOI - (prev.pe || peOI)
+    const ceLTPPrev = prev.ceLTP || ceLTP
+    const peLTPPrev = prev.peLTP || peLTP
+    const ceLTPChg = ceLTP - ceLTPPrev
+    const peLTPChg = peLTP - peLTPPrev
+
+    // Approximate delta: ATM=0.5, each step away = -0.1
+    const atmIdx = nearStrikes.findIndex(r => r.strike === atm)
+    const rowIdx = nearStrikes.indexOf(row)
+    const stepsFromATM = rowIdx - atmIdx
+    const ceDelta = Math.max(0.02, Math.min(0.98, 0.5 - stepsFromATM * 0.12)).toFixed(2)
+    const peDelta = Math.max(0.02, Math.min(0.98, 0.5 + stepsFromATM * 0.12)).toFixed(2)
+
+    // OI bar widths (max 70px)
+    const ceBarW = Math.round(ceOI / maxOI * 70)
+    const peBarW = Math.round(peOI / maxOI * 70)
+
+    // 4-way buildup signal
+    function getBDup(oiDiff, ltpChg, isWall, wallOI) {
+      const bigMove = Math.abs(oiDiff) > 20000
+      if (!bigMove && !isWall) return {cls:'neutral', icon:'—', tip:'No significant change'}
+      if (oiDiff < -20000 && ltpChg > 0) return {cls:'squeeze', icon:'⚡ SQUEEZE', tip:'OI dropping + price rising = short covering. EXPLOSIVE move possible.'}
+      if (oiDiff < -20000 && ltpChg <= 0) return {cls:'unwind', icon:'📉 Unwind', tip:'OI dropping + price falling = long positions exiting. Trend weakening.'}
+      if (oiDiff > 20000 && ltpChg > 0) return {cls:'long-build', icon:'🐂 Long Build', tip:'OI rising + price rising = fresh longs entering. Strong bull trend.'}
+      if (oiDiff > 20000 && ltpChg <= 0) return {cls:'short-build', icon:'🐻 Short Build', tip:'OI rising + price falling = fresh shorts entering. Strong bear trend.'}
+      return {cls:'neutral', icon:'—', tip:'Moderate activity'}
+    }
+
+    const ceBdup = getBDup(ceDiff, ceLTPChg, row.strike===d.ceWall?.strike, ceOI)
+    const peBdup = getBDup(peDiff, peLTPChg, row.strike===d.peWall?.strike, peOI)
+
+    // Row classification
+    const isATM    = row.strike === atm
+    const isCeWall = row.strike === d.ceWall?.strike
+    const isPeWall = row.strike === d.peWall?.strike
+    const isPin    = row.strike === pinStrike && !isATM
+    const isSqueez = squeezeStrikes.has(row.strike)
+    const rowCls   = isSqueez ? 'row-squeeze' : isCeWall ? 'row-cewall' : isPeWall ? 'row-pewall' : isPin ? 'row-pin' : isATM ? 'row-atm' : ''
+
+    // Strike label
+    const strikeBadge = isCeWall ? ' 🔴' : isPeWall ? ' 🟢' : isATM ? ' ◆' : isPin ? ' 📌' : ''
+
+    // Hover tooltip data
+    const ttData = JSON.stringify({
+      strike: row.strike,
+      ceLTP, peLTP, ceOI, peOI, ceIV, peIV,
+      ceDiff, peDiff, ceLTPChg, peLTPChg, lot,
+      isCeWall, isPeWall, isATM, isPin,
+      ceValue: Math.round(ceLTP*lot), peValue: Math.round(peLTP*lot)
+    }).replace(/"/g,'&quot;')
+
+    return `<tr class="${rowCls}" onmouseenter="showBflyTT(event,'${ttData}')" onmouseleave="hideBflyTT()">
+      <td class="ce-val"><span class="bdup ${ceBdup.cls}" title="${ceBdup.tip}">${ceBdup.icon}</span></td>
+      <td class="ce-val"><span class="delta-num" style="color:var(--red)">${ceDelta}</span></td>
+      <td class="ce-val"><span class="${ceDiff>0?'ltp-up':ceDiff<0?'ltp-dn':''}">${ceDiff>=0?'+':''}${(ceDiff/100000).toFixed(2)}L</span></td>
+      <td class="ce-val">
+        <div class="oi-bar-ce">
+          <span class="oi-num ce">${(ceOI/100000).toFixed(1)}L</span>
+          <div class="bar-fill-ce" style="width:${ceBarW}px"></div>
+        </div>
+      </td>
+      <td class="ce-val">${ceVol>0?(ceVol/1000).toFixed(0)+'K':'—'}</td>
+      <td class="ce-val"><strong style="color:var(--red)">${ceLTP>0?'₹'+ceLTP.toFixed(1):'—'}</strong></td>
+      <td class="ce-val" style="font-size:10px;color:${ceLTPChg>0?'var(--green)':ceLTPChg<0?'var(--red)':'var(--text3)'}">${ceLTPChg>=0?'+':''}${ceLTPChg.toFixed(1)}</td>
+      <td class="ce-val" style="font-size:10px">${ceIV>0?ceIV.toFixed(1)+'%':'—'}</td>
+
+      <td class="strike-cell">
+        <div style="display:flex;align-items:center;justify-content:center;gap:3px">
+          ₹${row.strike.toLocaleString('en-IN')}${strikeBadge}
+        </div>
+        ${isATM?'<div style="font-size:8px;font-weight:800;color:var(--blue);text-align:center;margin-top:1px">ATM</div>':''}
+      </td>
+
+      <td class="pe-val" style="font-size:10px;color:${peIV>0?'var(--green)':'var(--text3)'}">${peIV>0?peIV.toFixed(1)+'%':'—'}</td>
+      <td class="pe-val" style="font-size:10px;color:${peLTPChg>0?'var(--green)':peLTPChg<0?'var(--red)':'var(--text3)'}">${peLTPChg>=0?'+':''}${peLTPChg.toFixed(1)}</td>
+      <td class="pe-val"><strong style="color:var(--green)">${peLTP>0?'₹'+peLTP.toFixed(1):'—'}</strong></td>
+      <td class="pe-val">${peVol>0?(peVol/1000).toFixed(0)+'K':'—'}</td>
+      <td class="pe-val">
+        <div class="oi-bar-pe">
+          <div class="bar-fill-pe" style="width:${peBarW}px"></div>
+          <span class="oi-num pe">${(peOI/100000).toFixed(1)}L</span>
+        </div>
+      </td>
+      <td class="pe-val"><span class="${peDiff>0?'ltp-up':peDiff<0?'ltp-dn':''}">${peDiff>=0?'+':''}${(peDiff/100000).toFixed(2)}L</span></td>
+      <td class="pe-val"><span class="delta-num" style="color:var(--green)">${peDelta}</span></td>
+      <td class="pe-val"><span class="bdup ${peBdup.cls}" title="${peBdup.tip}">${peBdup.icon}</span></td>
+    </tr>`
+  }).join('')
+
+  return `<div class="bfly-wrap">
+    ${topCards}
+    <div style="overflow-x:auto">
+    <table class="bfly-tbl">
+      <thead>
+        <tr>
+          <th class="ce-col">Buildup</th>
+          <th class="ce-col">Δ Delta</th>
+          <th class="ce-col">Ch OI</th>
+          <th class="ce-col" style="min-width:110px">OI ◀</th>
+          <th class="ce-col">Volume</th>
+          <th class="ce-col">LTP</th>
+          <th class="ce-col">Ch LTP</th>
+          <th class="ce-col">IV%</th>
+          <th class="strike-col">STRIKE</th>
+          <th class="pe-col">IV%</th>
+          <th class="pe-col">Ch LTP</th>
+          <th class="pe-col">LTP</th>
+          <th class="pe-col">Volume</th>
+          <th class="pe-col" style="min-width:110px">▶ OI</th>
+          <th class="pe-col">Ch OI</th>
+          <th class="pe-col">Δ Delta</th>
+          <th class="pe-col">Buildup</th>
+        </tr>
+        <tr style="background:var(--bg2)">
+          <th colspan="8" style="text-align:center;font-size:9px;color:var(--red);padding:3px;border-bottom:1px solid var(--red-bd);background:var(--red-bg)">◀ CALL (CE) — Bearish writers, Resistance</th>
+          <th class="strike-col" style="font-size:9px;color:var(--text3);padding:3px">—</th>
+          <th colspan="8" style="text-align:center;font-size:9px;color:var(--green);padding:3px;border-bottom:1px solid var(--green-bd);background:var(--green-bg)">PUT (PE) — Bullish writers, Support ▶</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    </div>
+    <div style="padding:8px 12px;background:var(--bg3);border-top:1px solid var(--border);font-size:10px;color:var(--text3);display:flex;gap:16px;flex-wrap:wrap">
+      <span>🔴 CE Wall border</span>
+      <span>🟢 PE Wall border</span>
+      <span>🟡 Squeeze glow = active</span>
+      <span>📌 Pin strike = highest combined OI</span>
+      <span>⚡ SQUEEZE = explosive move signal</span>
+      <span>Hover any row for full plain English analysis</span>
+    </div>
+  </div>`
+}
+
+// Tooltip handlers
+function showBflyTT(event, dataStr) {
+  try {
+    const d = JSON.parse(dataStr.replace(/&quot;/g,'"'))
+    const el = document.getElementById('bflyTooltip')
+    const title = document.getElementById('ttTitle')
+    const body  = document.getElementById('ttBody')
+    if (!el) return
+    title.textContent = `₹${d.strike} — ${d.isATM?'ATM (At the Money)':d.isCeWall?'CE Wall (Resistance)':d.isPeWall?'PE Wall (Support)':d.isPin?'Pin Strike':'—'}`
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+        <div>
+          <div style="font-size:10px;font-weight:800;color:#fca5a5;margin-bottom:4px">🔴 CALL (CE) side</div>
+          <div>LTP: <strong style="color:#fca5a5">₹${d.ceLTP?.toFixed(1)||'—'}</strong> (lot value ₹${d.ceValue?.toLocaleString('en-IN')||'—'})</div>
+          <div>OI: ${((d.ceOI||0)/100000).toFixed(1)}L contracts</div>
+          <div>IV: ${d.ceIV?.toFixed(1)||'—'}%</div>
+          ${d.ceDiff?`<div>OI Change: <span style="color:${d.ceDiff>0?'#86efac':'#fca5a5'}">${d.ceDiff>=0?'+':''}${((d.ceDiff||0)/100000).toFixed(2)}L</span></div>`:''}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:800;color:#86efac;margin-bottom:4px">🟢 PUT (PE) side</div>
+          <div>LTP: <strong style="color:#86efac">₹${d.peLTP?.toFixed(1)||'—'}</strong> (lot value ₹${d.peValue?.toLocaleString('en-IN')||'—'})</div>
+          <div>OI: ${((d.peOI||0)/100000).toFixed(1)}L contracts</div>
+          <div>IV: ${d.peIV?.toFixed(1)||'—'}%</div>
+          ${d.peDiff?`<div>OI Change: <span style="color:${d.peDiff>0?'#86efac':'#fca5a5'}">${d.peDiff>=0?'+':''}${((d.peDiff||0)/100000).toFixed(2)}L</span></div>`:''}
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.12);padding-top:7px;font-size:11px;color:rgba(255,255,255,0.75);line-height:1.7">
+        ${d.isCeWall?`<strong style="color:#fca5a5">This is the CE Wall (Resistance).</strong> ${((d.ceOI||0)/100000).toFixed(1)}L contracts written here = institutions defending this ceiling. If spot crosses ₹${d.strike}, all these CE writers must buy back = explosive upward squeeze.`:
+          d.isPeWall?`<strong style="color:#86efac">This is the PE Wall (Support).</strong> ${((d.peOI||0)/100000).toFixed(1)}L contracts written here = institutions defending this floor. If spot breaks below ₹${d.strike}, PE writers must buy back = explosive downward squeeze.`:
+          d.isATM?`<strong style="color:#93c5fd">ATM Strike.</strong> CE premium ₹${d.ceLTP?.toFixed(1)} costs ₹${d.ceValue?.toLocaleString()} per lot. PE premium ₹${d.peLTP?.toFixed(1)} costs ₹${d.peValue?.toLocaleString()} per lot. Highest gamma here = biggest daily move for options.`:
+          d.isPin?`<strong style="color:#fde68a">Pin Strike.</strong> Highest combined OI. Near expiry, market gravitates here like a magnet. Option writers defend this strike to maximize their profit.`:
+          `Regular strike. CE premium ₹${d.ceLTP?.toFixed(1)}, PE premium ₹${d.peLTP?.toFixed(1)}.`}
+      </div>`
+    // Position tooltip near cursor but avoid edges
+    const x = Math.min(event.clientX + 15, window.innerWidth - 310)
+    const y = Math.min(event.clientY - 10, window.innerHeight - 250)
+    el.style.left = x + 'px'
+    el.style.top  = y + 'px'
+    el.classList.add('show')
+  } catch(e) {}
+}
+
+function hideBflyTT() {
+  const el = document.getElementById('bflyTooltip')
+  if (el) el.classList.remove('show')
+}
+
 // ═══════════════════════════════════════════════════════════════
 // F&O MASTER LIST
 // ═══════════════════════════════════════════════════════════════
@@ -551,7 +1339,6 @@ let allTrades    = []   // scored trade list
 let activeFilter = 'all'
 let selectedSym  = null
 let isScanning   = false
-let alertHistory = []
 let alertUnseen  = 0
 let cdSec        = 120
 let cdInt        = null
@@ -661,6 +1448,204 @@ function parseChain(raw, sym) {
 // ═══════════════════════════════════════════════════════════════
 // COMPUTE STRATEGY + SCORE (Natenberg-based)
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// STRATEGY CHANGE DETECTOR
+// Compares current scan to previous — detects what changed
+// and generates plain English hedge/exit instructions
+// ═══════════════════════════════════════════════════════
+function detectStrategyChange(sym, d, s) {
+  const hist = stratHistory[sym] || []
+  if (hist.length === 0) return null  // first time — no comparison
+
+  const prev = hist[hist.length - 1]
+  const curr = {
+    name:   s.pri.name,
+    dir:    s.dir,
+    score:  s.score,
+    ceOI:   d.ceWall.ce?.openInterest || 0,
+    peOI:   d.peWall.pe?.openInterest || 0,
+    pcr:    d.pcr,
+    iv:     d.atmIV || 0,
+    spot:   d.spot,
+    ceW:    d.ceWall.strike,
+    peW:    d.peWall.strike,
+    ts:     Date.now()
+  }
+
+  const changes = []
+
+  // ── DIRECTION FLIP (most critical) ──
+  if (prev.dir !== curr.dir && prev.dir !== 'range' && curr.dir !== 'range') {
+    const wasDir = prev.dir === 'bull' ? '🟢 Bullish' : '🔴 Bearish'
+    const nowDir = curr.dir === 'bull' ? '🟢 Bullish' : curr.dir === 'bear' ? '🔴 Bearish' : '⚪ Neutral'
+    const hedge = curr.dir === 'bull'
+      ? `Buy 1 ATM CE (₹${d.atm} CE @ ~₹${d.atmRow.ce?.lastPrice?.toFixed(0)||'—'}) to hedge against upside. Exit any bearish positions immediately.`
+      : curr.dir === 'bear'
+      ? `Buy 1 ATM PE (₹${d.atm} PE @ ~₹${d.atmRow.pe?.lastPrice?.toFixed(0)||'—'}) to hedge against downside. Exit any bullish positions immediately.`
+      : `Close directional positions. Market has shifted to range. Consider Iron Condor.`
+    changes.push({
+      severity: 'critical',
+      icon: '🔄',
+      title: `DIRECTION FLIP: ${wasDir} → ${nowDir}`,
+      detail: `Market structure changed completely. Previous strategy (${prev.name}) may now be working against you.`,
+      action: `🛡️ HEDGE NOW: ${hedge}`,
+      urgency: 'Act immediately on next refresh confirmation'
+    })
+  }
+
+  // ── STRATEGY NAME CHANGE (same direction, different strategy) ──
+  else if (prev.name !== curr.name) {
+    const scoreChg = curr.score - prev.score
+    changes.push({
+      severity: 'warning',
+      icon: '⚠️',
+      title: `STRATEGY CHANGED: ${prev.name} → ${curr.name}`,
+      detail: `OI structure shifted. Score ${scoreChg >= 0 ? '+' : ''}${scoreChg} (${prev.score} → ${curr.score}).`,
+      action: scoreChg < 0
+        ? `🛡️ REDUCE SIZE: New strategy has lower conviction. Trade at 50% normal size until confirmed.`
+        : `✅ UPGRADE: Strategy improved. New setup has better risk/reward.`,
+      urgency: scoreChg < -10 ? 'Act on next refresh' : 'Monitor'
+    })
+  }
+
+  // ── SCORE DETERIORATION ──
+  const scoreDrop = prev.score - curr.score
+  if (scoreDrop >= 20 && prev.name === curr.name) {
+    changes.push({
+      severity: 'warning',
+      icon: '📉',
+      title: `SCORE DROPPED: ${prev.score} → ${curr.score} (−${scoreDrop} pts)`,
+      detail: `OI conditions weakening for ${curr.name}. Confidence falling.`,
+      action: `🛡️ REDUCE EXPOSURE: If you are in this trade, reduce to 50% size or place SL at ${Math.round(scoreDrop/20*30)}% of premium paid.`,
+      urgency: 'Monitor closely'
+    })
+  }
+
+  // ── CE WALL WEAKENING (dangerous for bearish trades) ──
+  const ceOIDrop = prev.ceOI > 10000 ? (curr.ceOI - prev.ceOI) / prev.ceOI * 100 : 0
+  if (ceOIDrop < -20 && (s.dir === 'bear' || s.pri.name.includes('BEAR CALL'))) {
+    const step = s.step || 50
+    changes.push({
+      severity: 'warning',
+      icon: '⚡',
+      title: `CE WALL WEAKENING: OI dropped ${Math.abs(ceOIDrop).toFixed(0)}%`,
+      detail: `The ceiling at ₹${d.ceWall.strike} is losing institutional support. Bears are exiting. SHORT COVERING risk.`,
+      action: `🛡️ HEDGE: Buy 1 lot ₹${d.ceWall.strike + step} CE to cap unlimited upside risk on your Bear Call Spread. Or exit 50% of position now.`,
+      urgency: 'Act within 1-2 candles'
+    })
+  }
+
+  // ── PE WALL WEAKENING (dangerous for bullish trades) ──
+  const peOIDrop = prev.peOI > 10000 ? (curr.peOI - prev.peOI) / prev.peOI * 100 : 0
+  if (peOIDrop < -20 && (s.dir === 'bull' || s.pri.name.includes('BULL PUT'))) {
+    const step = s.step || 50
+    changes.push({
+      severity: 'warning',
+      icon: '⚡',
+      title: `PE WALL CRACKING: OI dropped ${Math.abs(peOIDrop).toFixed(0)}%`,
+      detail: `The floor at ₹${d.peWall.strike} is losing support. Bulls are exiting. BREAKDOWN risk.`,
+      action: `🛡️ HEDGE: Buy 1 lot ₹${d.peWall.strike - step} PE to cap downside. Or exit 50% of your Bull Put Spread now.`,
+      urgency: 'Act within 1-2 candles'
+    })
+  }
+
+  // ── IV SPIKE (strategy type becoming wrong) ──
+  const ivJump = prev.iv > 0 ? ((curr.iv - prev.iv) / prev.iv * 100) : 0
+  if (ivJump >= 30) {
+    const isBuying = s.pri.cat === 'bull' || s.pri.cat === 'bear'
+    changes.push({
+      severity: isBuying ? 'warning' : 'info',
+      icon: '🌡️',
+      title: `IV SPIKE: ${prev.iv.toFixed(1)}% → ${curr.iv.toFixed(1)}% (+${ivJump.toFixed(0)}%)`,
+      detail: `Options got expensive suddenly. ${isBuying ? 'You are BUYING options — IV working against you.' : 'You are SELLING options — IV working FOR you.'}`,
+      action: isBuying
+        ? `⚠️ If you bought options: premium inflated by IV. Consider SELLING a further OTM option to create a spread and reduce vega exposure. Natenberg: high IV = sell, not buy.`
+        : `✅ IV spike BENEFITS your selling strategy. Premium is elevated. Consider adding to position if OI confirms.`,
+      urgency: isBuying ? 'Review immediately' : 'Opportunity'
+    })
+  }
+
+  // ── PCR THRESHOLD CROSSED ──
+  const pcrCrossed = (prev.pcr <= 1.0 && curr.pcr > 1.1) || (prev.pcr >= 1.0 && curr.pcr < 0.9)
+  if (pcrCrossed) {
+    const newBias = curr.pcr > 1.1 ? 'BEARISH (heavy put buying)' : 'BULLISH (heavy call buying)'
+    changes.push({
+      severity: 'warning',
+      icon: '⚖️',
+      title: `PCR SHIFTED: ${prev.pcr.toFixed(2)} → ${curr.pcr.toFixed(2)} (now ${newBias})`,
+      detail: `Market sentiment changed. Institutional positioning is flipping direction.`,
+      action: `Monitor for 1 more refresh. If PCR holds new level, adjust strategy direction accordingly.`,
+      urgency: 'Monitor'
+    })
+  }
+
+  // ── SPOT CROSSING A WALL ──
+  const prevAboveCe = prev.spot >= prev.ceW, currAboveCe = curr.spot >= curr.ceW
+  const prevBelowPe = prev.spot <= prev.peW, currBelowPe = curr.spot <= curr.peW
+  if (!prevAboveCe && currAboveCe) {
+    changes.push({
+      severity: 'critical',
+      icon: '🚨',
+      title: `BREAKOUT: Spot crossed CE wall ₹${d.ceWall.strike}!`,
+      detail: `Price moved ABOVE the resistance wall. All bearish strategies are now at maximum risk.`,
+      action: `🚨 EXIT ALL BEARISH POSITIONS NOW. If in Bear Call Spread: buy back the sold CE immediately. Loss of ₹${Math.round((curr.ceW-curr.spot)*25)} per lot — take it, don't let it grow.`,
+      urgency: 'ACT IMMEDIATELY'
+    })
+  }
+  if (!prevBelowPe && currBelowPe) {
+    changes.push({
+      severity: 'critical',
+      icon: '🚨',
+      title: `BREAKDOWN: Spot crossed PE wall ₹${d.peWall.strike}!`,
+      detail: `Price moved BELOW the support floor. All bullish strategies are now at maximum risk.`,
+      action: `🚨 EXIT ALL BULLISH POSITIONS NOW. If in Bull Put Spread: buy back the sold PE immediately. Take the loss now — don't average.`,
+      urgency: 'ACT IMMEDIATELY'
+    })
+  }
+
+  return changes.length > 0 ? changes : null
+}
+
+// ═══════════════════════════════════════════════════════
+// PERSISTENCE TRACKER — how many refreshes same strategy?
+// ═══════════════════════════════════════════════════════
+function getPersistence(sym, currentStratName, currentDir) {
+  const hist = stratHistory[sym] || []
+  if (hist.length === 0) return {count:1, multiplier:0.8, label:'1st scan', bars:1, confirmed:false}
+
+  let streak = 0
+  for (let i = hist.length - 1; i >= 0; i--) {
+    if (hist[i].name === currentStratName && hist[i].dir === currentDir) streak++
+    else break
+  }
+  streak++ // count current
+
+  const multiplier = streak <= 1 ? 0.8 : streak === 2 ? 0.9 : streak === 3 ? 1.0 : streak === 4 ? 1.1 : 1.15
+  const label      = streak === 1 ? '1st scan — unconfirmed' : streak === 2 ? '2nd scan — building' : streak === 3 ? '3rd scan — CONFIRMED ✅' : streak === 4 ? '4th scan — Strong conviction' : `${streak} scans — MAX CONVICTION 🏆`
+  const confirmed  = streak >= 3
+  return {count:streak, multiplier, label, bars:Math.min(5,streak), confirmed}
+}
+
+// Update history after each scan
+function updateStratHistory(sym, d, s) {
+  if (!stratHistory[sym]) stratHistory[sym] = []
+  stratHistory[sym].push({
+    name:  s.pri.name,
+    dir:   s.dir,
+    score: s.score,
+    ceOI:  d.ceWall.ce?.openInterest || 0,
+    peOI:  d.peWall.pe?.openInterest || 0,
+    pcr:   d.pcr,
+    iv:    d.atmIV || 0,
+    spot:  d.spot,
+    ceW:   d.ceWall.strike,
+    peW:   d.peWall.strike,
+    ts:    Date.now()
+  })
+  // Keep last 10 entries per stock
+  if (stratHistory[sym].length > 10) stratHistory[sym].shift()
+}
+
 function computeStrategy(d) {
   const {spot,ceWall,peWall,maxPain,pcr,atmRow,atmIV} = d
   const lot  = d.info.lot
@@ -711,6 +1696,28 @@ function computeStrategy(d) {
   if(dir==='bull'||(dir==='range'&&bull>=bear)){fut={name:'BUY FUTURES',type:'Futures Long',cat:'fut',legs:[{a:'BUY',d:`${d.sym} Fut (${lot} sh)`,p:`~₹${Math.round(spot)}`}],risk:Math.round(step*2*lot),rew:Math.round(step*3*lot),rr:'1:1.5',entry:`Buy above ₹${Math.round(spot+step*0.5)}`,sl:`SL: ₹${peWall.strike}`,target:`Target: ₹${ceWall.strike} = ₹${Math.round((ceWall.strike-spot)*lot).toLocaleString('en-IN')} per lot`}}
   else{fut={name:'SELL FUTURES',type:'Futures Short',cat:'fut',legs:[{a:'SELL',d:`${d.sym} Fut (${lot} sh)`,p:`~₹${Math.round(spot)}`}],risk:Math.round(step*2*lot),rew:Math.round(step*3*lot),rr:'1:1.5',entry:`Sell below ₹${Math.round(spot-step*0.5)}`,sl:`SL: ₹${ceWall.strike}`,target:`Target: ₹${peWall.strike} = ₹${Math.round((spot-peWall.strike)*lot).toLocaleString('en-IN')} per lot`}}
 
+  // ── WHALE ALERT — OI spike > 30% in one session = institutional entry ──
+  const maxOISpike = d.nearStrikes.reduce((max, row) => {
+    const prev = prevSnaps[d.sym]
+    if (!prev) return max
+    const ceOI = row.ce?.openInterest||0, peOI = row.pe?.openInterest||0
+    const prevCe = prev[row.strike]?.ce||ceOI, prevPe = prev[row.strike]?.pe||peOI
+    const cePct = prevCe>10000?Math.abs((ceOI-prevCe)/prevCe*100):0
+    const pePct = prevPe>10000?Math.abs((peOI-prevPe)/prevPe*100):0
+    return Math.max(max, cePct, pePct)
+  }, 0)
+  const isWhaleAlert = maxOISpike >= 30
+
+  // Short covering: wall OI dropping = squeeze coming
+  const ceWallOI    = ceWall.ce?.openInterest||0
+  const peWallOI    = peWall.pe?.openInterest||0
+  const prevCeWall  = prevSnaps[d.sym]?.[ceWall.strike]?.ce || ceWallOI
+  const prevPeWall  = prevSnaps[d.sym]?.[peWall.strike]?.pe || peWallOI
+  const ceWallDrop  = prevCeWall>10000?(ceWallOI-prevCeWall)/prevCeWall*100:0
+  const peWallDrop  = prevPeWall>10000?(peWallOI-prevPeWall)/prevPeWall*100:0
+  const ceSqueezing = ceWallDrop < -15  // CE wall losing OI = ceiling breaking = BULL SQUEEZE
+  const peSqueezing = peWallDrop < -15  // PE wall losing OI = floor breaking = BEAR SQUEEZE
+
   // ── SCORE (0-100) — Natenberg + OI factors ──
   let score = 0, reasons = []
 
@@ -746,10 +1753,15 @@ function computeStrategy(d) {
   else if(dte===0){score+=3;reasons.push(`Expiry day — straddle/strangle only (3/15)`)}
   else{score+=10;reasons.push(`${dte}D expiry — acceptable (10/15)`)}
 
+  // Bonus points for whale activity and squeeze
+  if (isWhaleAlert) { score = Math.min(100, score+12); reasons.push(`🐋 WHALE ALERT — OI spike ${maxOISpike.toFixed(0)}% = institutional entry (+12)`) }
+  if (ceSqueezing && dir==='bull') { score = Math.min(100, score+15); reasons.push(`⚡ CE WALL SQUEEZING — ceiling breaking = explosive upside (+15)`) }
+  if (peSqueezing && dir==='bear') { score = Math.min(100, score+15); reasons.push(`⚡ PE WALL SQUEEZING — floor breaking = explosive downside (+15)`) }
+
   const grade = score>=80?'A':score>=60?'B':score>=40?'C':'D'
   const activity = Math.abs(bull-bear)*20+(minDist<step*3?30:0)+(Math.abs(pcr-1)>0.3?20:0)+(dte<=2?15:0)
 
-  return {dir,bias,sig,score,grade,reasons,activity,bull,bear,dte,pri,alt,fut,atmIV,ivState,ivAction,step,dCe,dPe}
+  return {dir,bias,sig,score,grade,reasons,activity,bull,bear,dte,pri,alt,fut,atmIV,ivState,ivAction,step,dCe,dPe,isWhaleAlert,ceSqueezing,peSqueezing}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -778,6 +1790,14 @@ async function startScan() {
       if (raw) { d = parseChain(raw, sym); if (!d) { d=buildDemo(sym); isDemo=true } }
       else { d=buildDemo(sym); isDemo=true }
       const s = computeStrategy(d)
+      const changeReport = detectStrategyChange(sym, d, s)
+      const persistence  = getPersistence(sym, s.pri.name, s.dir)
+      // Apply persistence multiplier to score
+      const adjScore = Math.min(100, Math.round(s.score * persistence.multiplier))
+      s.adjScore     = adjScore
+      s.persistence  = persistence
+      s.changeReport = changeReport
+      updateStratHistory(sym, d, s)
       scanResults[sym] = {d,s,isDemo,ts:Date.now()}
       // Build trade entries
       allTrades.push({sym,d,s,strat:s.pri,isDemo})
@@ -859,7 +1879,7 @@ function renderTrades() {
   const el = document.getElementById('tradeCards')
 
   // Sort by score desc
-  let trades = [...allTrades].sort((a,b) => (b.s?.score||0)-(a.s?.score||0))
+  let trades = [...allTrades].sort((a,b) => (b.s?.adjScore||b.s?.score||0)-(a.s?.adjScore||a.s?.score||0))
 
   // Filter
   if (activeFilter === 'bull') trades = trades.filter(t=>t.strat?.cat==='bull')
@@ -892,7 +1912,12 @@ function renderTrades() {
   el.innerHTML = top.map((t,i) => {
     const {sym,d,s,strat,isDemo} = t
     const score = t.isFut ? (s.score-10) : s.score
-    const grade = score>=80?'A':score>=60?'B':score>=40?'C':'D'
+    // Bonus points for whale activity and squeeze
+  if (isWhaleAlert) { score = Math.min(100, score+12); reasons.push(`🐋 WHALE ALERT — OI spike ${maxOISpike.toFixed(0)}% = institutional entry (+12)`) }
+  if (ceSqueezing && dir==='bull') { score = Math.min(100, score+15); reasons.push(`⚡ CE WALL SQUEEZING — ceiling breaking = explosive upside (+15)`) }
+  if (peSqueezing && dir==='bear') { score = Math.min(100, score+15); reasons.push(`⚡ PE WALL SQUEEZING — floor breaking = explosive downside (+15)`) }
+
+  const grade = score>=80?'A':score>=60?'B':score>=40?'C':'D'
     const gradeColor = grade==='A'?'#92400e':grade==='B'?'#065f46':grade==='C'?'#5b21b6':'#6b7280'
     const gradeBg    = grade==='A'?'#fef3c7':grade==='B'?'#d1fae5':grade==='C'?'#ede9fe':'#f3f4f6'
     const gradeBd    = grade==='A'?'#fde68a':grade==='B'?'#6ee7b7':grade==='C'?'#c4b5fd':'#e5e7eb'
@@ -910,15 +1935,41 @@ function renderTrades() {
         </div>
         <div style="flex:1"></div>
         <div style="text-align:right">
-          <div style="font-size:12px;font-weight:700;color:${s.dir==='bull'?'var(--green)':s.dir==='bear'?'var(--red)':'var(--purple)'};margin-bottom:2px">${dirIcon} ${strat.name}</div>
-          <div style="font-size:10px;color:var(--text3)">${strat.type}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:flex-end">
+            <div style="font-size:12px;font-weight:700;color:${s.dir==='bull'?'var(--green)':s.dir==='bear'?'var(--red)':'var(--purple)'}">${dirIcon} ${strat.name}</div>
+            ${s.isWhaleAlert?'<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fde68a">🐋 WHALE</span>':''}
+            ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:#f0fdf4;color:#15803d;border:1px solid #86efac">⚡ SQUEEZE</span>':''}
+          </div>
+          <div style="font-size:10px;color:var(--text3);text-align:right">${strat.type}</div>
         </div>
         <div class="tc-score-wrap" style="margin-left:12px">
-          <div class="tc-score" style="color:${gradeColor}">${score}</div>
+          <div class="tc-score" style="color:${gradeColor}">${s.adjScore||score}</div>
           <div class="tc-grade" style="background:${gradeBg};color:${gradeColor};border:1px solid ${gradeBd}">${grade==='A'?'🏆 A':grade==='B'?'✅ B':grade==='C'?'⚠️ C':'❌ D'}</div>
+          <!-- Persistence bars -->
+          <div style="display:flex;gap:2px;margin-top:4px">
+            ${[1,2,3,4,5].map(n=>`<div style="width:10px;height:4px;border-radius:2px;background:${n<=(s.persistence?.bars||1)?s.persistence?.confirmed?'var(--green)':'var(--blue)':'var(--border)'}"></div>`).join('')}
+          </div>
         </div>
       </div>
       <div class="tc-body">
+        ${(()=>{
+          if (!s.changeReport || s.changeReport.length === 0) return ''
+          const cr = s.changeReport[0]  // show most severe
+          const bgColor = cr.severity==='critical'?'var(--red-bg)':cr.severity==='warning'?'var(--yel-bg)':'var(--green-bg)'
+          const bdColor = cr.severity==='critical'?'var(--red-bd)':cr.severity==='warning'?'var(--yel-bd)':'var(--green-bd)'
+          const txColor = cr.severity==='critical'?'var(--red)':cr.severity==='warning'?'var(--yellow)':'var(--green)'
+          return `<div style="background:${bgColor};border:1.5px solid ${bdColor};border-radius:8px;padding:8px 10px;margin-bottom:8px">
+            <div style="font-size:11px;font-weight:800;color:${txColor};margin-bottom:3px">${cr.icon} ${cr.title}</div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:4px;line-height:1.5">${cr.detail}</div>
+            <div style="font-size:11px;font-weight:700;color:${txColor};padding:5px 8px;background:white;border-radius:6px;line-height:1.5">${cr.action}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px">⏱️ ${cr.urgency}</div>
+          </div>`
+        })()}
+        <!-- Persistence status -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;padding:5px 8px;background:${s.persistence?.confirmed?'var(--green-bg)':'var(--bg3)'};border-radius:7px;border:1px solid ${s.persistence?.confirmed?'var(--green-bd)':'var(--border)'}">
+          <div style="display:flex;gap:3px">${[1,2,3,4,5].map(n=>`<div style="width:12px;height:6px;border-radius:2px;background:${n<=(s.persistence?.bars||1)?s.persistence?.confirmed?'var(--green)':'var(--blue)':'var(--border)'}"></div>`).join('')}</div>
+          <span style="font-size:10px;font-weight:700;color:${s.persistence?.confirmed?'var(--green)':'var(--text3)'}">${s.persistence?.label||'—'}</span>
+        </div>
         <div class="tc-score-bar"><div class="tc-score-fill" style="width:${score}%;background:${barColor}"></div></div>
         <div class="tc-legs">${(strat.legs||[]).map(l=>`<span class="tc-leg ${l.a.toLowerCase()}">${l.a} ${l.d} @ ₹${l.p}</span>`).join('')}</div>
         <div class="tc-stats">
@@ -967,6 +2018,36 @@ function renderPulse() {
 
   const pcrItems = pulseData.pcr.map(x=>({...x, strike:null, pct:null, oi:null, pcr:x.pcr, dist:null}))
   set('bodyPCR','cntPCR',pcrItems,'selectTrade')
+
+  // Sector heatmap
+  const sectors = {}
+  Object.values(scanResults).forEach(({d,s}) => {
+    const sec = d.info?.sec || '—'
+    if (!sectors[sec]) sectors[sec] = {bull:0,bear:0,count:0,pcrs:[]}
+    sectors[sec].count++
+    sectors[sec].pcrs.push(d.pcr)
+    if (s.dir==='bull') sectors[sec].bull++
+    else if (s.dir==='bear') sectors[sec].bear++
+  })
+  const sectorEl = document.getElementById('bodySector')
+  if (sectorEl) {
+    const sEntries = Object.entries(sectors).filter(([,v])=>v.count>0).sort((a,b)=>b[1].count-a[1].count).slice(0,8)
+    sectorEl.innerHTML = sEntries.length ? sEntries.map(([sec,v]) => {
+      const avgPCR = v.pcrs.reduce((a,b)=>a+b,0)/v.pcrs.length
+      const bull = v.bull/v.count, bear = v.bear/v.count
+      const signal = bull>0.5?'bull':bear>0.5?'bear':'neu'
+      const sColor = signal==='bull'?'var(--green)':signal==='bear'?'var(--red)':'var(--text3)'
+      const sBg    = signal==='bull'?'var(--green-bg)':signal==='bear'?'var(--red-bg)':'var(--bg3)'
+      const sBd    = signal==='bull'?'var(--green-bd)':signal==='bear'?'var(--red-bd)':'var(--border)'
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 6px;border-radius:7px;background:${sBg};border:1px solid ${sBd};margin-bottom:4px;cursor:pointer" onclick="setF('${signal==='bull'?'bull':signal==='bear'?'bear':'all'}',document.querySelector('.fchip'))">
+        <div style="font-size:11px;font-weight:700;color:${sColor}">${sec}</div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <span style="font-size:10px;color:var(--text3)">PCR ${avgPCR.toFixed(2)}</span>
+          <span style="font-size:10px;font-weight:700;color:${sColor}">${signal==='bull'?'🟢':signal==='bear'?'🔴':'⚪'}</span>
+        </div>
+      </div>`
+    }).join('') : '<div class="pulse-empty">Scan to see sector breakdown</div>'
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1046,17 +2127,9 @@ function renderDetail(d, s, isDemo) {
       ${renderFCard(s.fut)}
     </div>
     <!-- OI Table -->
-    <div class="oi-table-wrap">
-      <div class="oi-section-title">OI Tracker — ATM ±5 Strikes</div>
-      <table class="oitbl">
-        <thead><tr><th style="text-align:left">Strike</th><th>CE OI</th><th>CE Δ</th><th>PE OI</th><th>PE Δ</th></tr></thead>
-        <tbody>${d.nearStrikes.map(row=>{
-          const p=prev[row.strike], ceD=p?(row.ce?.openInterest||0)-p.ce:0, peD=p?(row.pe?.openInterest||0)-p.pe:0
-          const cc=ceD>0?'up':ceD<0?'dn':'neu', pc=peD>0?'up':peD<0?'dn':'neu'
-          const rc=row.strike===ceWall.strike?'cew':row.strike===peWall.strike?'pew':row.strike===atm?'atm':''
-          return `<tr class="${rc}"><td>₹${row.strike}${row.strike===ceWall.strike?' 🔴':row.strike===peWall.strike?' 🟢':row.strike===atm?' ◆':''}</td><td>${((row.ce?.openInterest||0)/100000).toFixed(1)}L</td><td class="${cc}">${ceD>=0?'+':''}${(ceD/100000).toFixed(2)}L</td><td>${((row.pe?.openInterest||0)/100000).toFixed(1)}L</td><td class="${pc}">${peD>=0?'+':''}${(peD/100000).toFixed(2)}L</td></tr>`
-        }).join('')}</tbody>
-      </table>
+    <div style="border-top:1px solid var(--border)">
+      <div style="padding:10px 14px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text3);border-bottom:1px solid var(--border)">📋 Option Chain — Butterfly View</div>
+      ${renderButterflyChain(d, s, d.info?.lot||500)}
     </div>`
 }
 
@@ -1157,6 +2230,16 @@ function checkAlerts(sym, d, s) {
     const wT = al.wT||30
     if(s.dCe>=0&&s.dCe<=wT) fire({type:'warn',msg:`🎯 ${sym} only ${s.dCe}pts from CE wall ₹${d.ceWall.strike}`,sym,time:now})
     if(s.dPe>=0&&s.dPe<=wT) fire({type:'bull',msg:`🎯 ${sym} only ${s.dPe}pts from PE wall ₹${d.peWall.strike}`,sym,time:now})
+  }
+  // Fire on critical strategy changes
+  if (s.changeReport) {
+    s.changeReport.forEach(cr => {
+      if (cr.severity === 'critical') {
+        fire({type:'spike',msg:`🚨 ${sym}: ${cr.title}`,detail:cr.action,sym,time:now})
+      } else if (cr.severity === 'warning' && al.sig) {
+        fire({type:'warn',msg:`⚠️ ${sym}: ${cr.title}`,detail:cr.action,sym,time:now})
+      }
+    })
   }
 }
 

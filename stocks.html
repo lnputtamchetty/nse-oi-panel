@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
 <style>
+
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#f0f2f5;--bg2:#ffffff;--bg3:#f0f2f5;--border:#e2e6ed;
@@ -229,6 +230,37 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .toast-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--tc,#ef4444);margin-bottom:3px}
 .toast-msg{font-size:12px;font-weight:700;color:white;line-height:1.4}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ─── NEW LAYOUT: 3-col with centre workspace ─── */
+.main3{display:grid;grid-template-columns:270px 1fr 310px;min-height:calc(100vh - 106px)}
+.centre-col{overflow-y:auto;max-height:calc(100vh - 106px);background:var(--bg);display:flex;flex-direction:column}
+.right-col{background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;max-height:calc(100vh - 106px);position:sticky;top:106px}
+
+/* ─── What's Moving bar ─── */
+.moving-bar-wrap{background:var(--bg2);border-bottom:2px solid var(--border);padding:10px 14px;flex-shrink:0}
+.moving-bar-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+.moving-bar{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.moving-bar::-webkit-scrollbar{height:3px}
+.moving-bar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* ─── Centre workspace (selected stock detail) ─── */
+.centre-workspace{flex:1;overflow-y:auto;background:var(--bg)}
+.centre-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px;color:var(--text3);text-align:center;padding:30px}
+
+/* ─── Right panel compact cards ─── */
+.rc-head{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:5}
+.rc-title{font-size:12px;font-weight:800;color:var(--text)}
+.rc-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.rc-filters{display:flex;gap:4px;flex-wrap:wrap;padding:7px 10px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.rc-cards{padding:8px}
+.rc-card{background:var(--bg2);border-radius:9px;border:1.5px solid var(--border);padding:9px 11px;cursor:pointer;transition:all 0.15s;margin-bottom:6px}
+.rc-card:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(29,78,216,0.1)}
+.rc-card.selected{border-color:var(--blue);background:var(--blue-bg)}
+.rc-card:last-child{margin-bottom:0}
+.rfchip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.rfchip:hover{border-color:var(--blue);color:var(--blue)}
+.rfchip.on{background:var(--blue);border-color:var(--blue);color:white}
+
 </style>
 </head>
 <body>
@@ -238,7 +270,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   <div class="tt-title" id="ttTitle">—</div>
   <div id="ttBody">—</div>
 </div>
-
 <!-- TOAST -->
 <div id="toastWrap" style="position:fixed;top:60px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:6px;max-width:320px;pointer-events:none"></div>
 
@@ -294,8 +325,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   <span class="ticker-label">⚡</span>
   <div style="flex:1;overflow:hidden;height:18px">
     <div class="ticker-inner" id="tickerEl">
-      <span class="chip info">Scanning watchlist — best trades loading...</span>
-      <span class="chip info">Scanning watchlist — best trades loading...</span>
+      <span class="chip info">Scanning watchlist — results loading...</span>
+      <span class="chip info">Scanning watchlist — results loading...</span>
     </div>
   </div>
 </div>
@@ -303,7 +334,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 <!-- 3-COLUMN LAYOUT -->
 <div class="main3">
 
-  <!-- LEFT PULSE -->
+  <!-- LEFT: PULSE SIGNALS -->
   <div class="left-col">
     <div class="pulse-section">
       <div class="pulse-section-head" onclick="togglePS(this)">
@@ -354,42 +385,70 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     </div>
   </div>
 
-  <!-- CENTRE TOP TRADES -->
+  <!-- CENTRE: WHAT'S MOVING + STOCK ANALYSIS WORKSPACE -->
   <div class="centre-col">
-    <div class="centre-head">
-      <div>
-        <div class="centre-title">🏆 Best Trades Today — Ranked by Score</div>
-        <div class="centre-sub" id="centreSubEl">Scanning watchlist...</div>
+
+    <!-- What's Moving horizontal strip -->
+    <div class="moving-bar-wrap">
+      <div class="moving-bar-label">
+        <span>📊 What's Moving — click to analyse</span>
+        <span id="movingBarSub" style="font-weight:400">Scanning...</span>
+      </div>
+      <div class="moving-bar" id="movingBar">
+        <span style="font-size:11px;color:var(--text3);align-self:center">Scanning watchlist...</span>
       </div>
     </div>
-    <div style="padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;gap:5px;flex-wrap:wrap">
-      <span class="fchip on" onclick="setF('all',this)">All</span>
-      <span class="fchip" onclick="setF('bull',this)">🟢 Bullish</span>
-      <span class="fchip" onclick="setF('bear',this)">🔴 Bearish</span>
-      <span class="fchip" onclick="setF('sell',this)">💰 Sell Premium</span>
-      <span class="fchip" onclick="setF('fut',this)">🔷 Futures</span>
-      <span class="fchip" onclick="setF('A',this)">🏆 A-Grade only</span>
-    </div>
-    <div class="trade-cards" id="tradeCards">
-      <div class="loading-state"><div class="ring"></div><span class="scanning">Scanning stocks...</span></div>
+
+    <!-- Stock analysis workspace -->
+    <div class="centre-workspace" id="centreWorkspace">
+
+      <!-- Empty state -->
+      <div class="centre-empty" id="centreEmpty">
+        <div style="font-size:40px">📊</div>
+        <div style="font-size:15px;font-weight:800;color:var(--text)">Select a stock to analyse</div>
+        <div style="font-size:12px;line-height:1.7;color:var(--text3)">
+          Click any stock in the <strong>"What's Moving"</strong> bar above<br>
+          or from the <strong>Pulse signals</strong> on the left<br>
+          or from the <strong>Ranked Trades</strong> on the right
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text3);background:var(--bg3);border-radius:9px;padding:10px 16px;border:1px solid var(--border);text-align:left;max-width:300px">
+          <div style="font-weight:700;color:var(--text);margin-bottom:5px">Workflow:</div>
+          <div>1️⃣ Right panel → see ranked trades by score</div>
+          <div style="margin-top:3px">2️⃣ Click any → full OI chain appears here</div>
+          <div style="margin-top:3px">3️⃣ Left panel → signals update as scan runs</div>
+        </div>
+      </div>
+
+      <!-- Detail content injected here by renderDetail() -->
+      <div id="detailContent" style="display:none"></div>
+
     </div>
   </div>
 
-  <!-- RIGHT DETAIL -->
+  <!-- RIGHT: RANKED TRADES -->
   <div class="right-col" id="rightCol">
-    <div class="detail-empty" id="detailEmpty">
-      <div class="icon">📊</div>
-      <div style="font-size:14px;font-weight:800;color:var(--text)">Select any trade</div>
-      <div style="font-size:12px;line-height:1.6;color:var(--text3)">Click a trade card to see full OI chain,<br>strategy details and butterfly view</div>
+    <div class="rc-head">
+      <div class="rc-title">🏆 Ranked Trades</div>
+      <div class="rc-sub" id="rcSubEl">Scanning...</div>
     </div>
-    <div id="detailContent" style="display:none"></div>
+    <div class="rc-filters">
+      <span class="rfchip on" onclick="setF('all',this)">All</span>
+      <span class="rfchip" onclick="setF('bull',this)">🟢 Bull</span>
+      <span class="rfchip" onclick="setF('bear',this)">🔴 Bear</span>
+      <span class="rfchip" onclick="setF('sell',this)">💰 Sell</span>
+      <span class="rfchip" onclick="setF('fut',this)">🔷 Fut</span>
+      <span class="rfchip" onclick="setF('A',this)">🏆 A</span>
+    </div>
+    <div class="rc-cards" id="tradeCards">
+      <div class="loading-state" style="height:120px"><div class="ring"></div><span class="scanning" style="font-size:11px">Scanning...</span></div>
+    </div>
   </div>
 
 </div>
 
 <!-- WATCHLIST MODAL -->
 <div id="wlOverlay" onclick="if(event.target===this)closeWL()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998;align-items:center;justify-content:center">
-  <div style="background:var(--bg2);border-radius:13px;width:440px;max-width:95vw;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;border:1.5px solid var(--border)">
+  <div style="background:var(--bg2);border-radius:13px;width:460px;max-width:95vw;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;border:1.5px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,0.3)">
     <div style="background:linear-gradient(135deg,#0c1222,#172040);padding:13px 16px;display:flex;align-items:center;justify-content:space-between">
       <span style="font-size:13px;font-weight:800;color:white">📋 Watchlist</span>
       <button onclick="closeWL()" style="font-size:16px;color:rgba(255,255,255,0.5);background:none;border:none;cursor:pointer">✕</button>
@@ -397,12 +456,31 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     <div style="padding:14px 16px;overflow-y:auto;flex:1">
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Current (<span id="wlCnt">0</span>/20)</div>
       <div id="wlChips" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
-      <textarea id="pasteTA" style="width:100%;height:60px;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg3);color:var(--text);resize:none;font-family:'JetBrains Mono';outline:none" placeholder="Paste: RELIANCE, TCS, HDFCBANK..."></textarea>
-      <button onclick="importPaste()" style="width:100%;padding:7px;border-radius:7px;border:1.5px solid var(--blue-bd);background:var(--blue-bg);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;margin-top:5px">📋 Import F&O symbols</button>
-      <div id="pasteRes" style="font-size:11px;margin-top:4px"></div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin:10px 0 6px">Quick Add</div>
-      <div id="quickAdd" style="display:flex;gap:5px;flex-wrap:wrap"></div>
-      <input id="wlSearch" type="text" placeholder="Search symbol..." oninput="onWLSearch(this.value)" style="width:100%;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none;margin-top:10px"/>
+
+      <!-- Import options -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <!-- Paste symbols -->
+        <div style="border:1.5px solid var(--border);border-radius:9px;padding:10px;background:var(--bg3)">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:6px">📋 Paste Symbols</div>
+          <textarea id="pasteTA" style="width:100%;height:55px;padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:11px;background:var(--bg2);color:var(--text);resize:none;font-family:'JetBrains Mono';outline:none" placeholder="RELIANCE, TCS, HDFCBANK..."></textarea>
+          <button onclick="importPaste()" style="width:100%;padding:5px;border-radius:6px;border:1.5px solid var(--blue-bd);background:var(--blue-bg);color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;margin-top:5px">Import Symbols</button>
+        </div>
+        <!-- CSV upload -->
+        <div style="border:1.5px solid var(--border);border-radius:9px;padding:10px;background:var(--bg3)">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:6px">📂 Upload CSV File</div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">Upload any CSV — symbols auto-detected from any column. Chartink, NSE, Excel all work.</div>
+          <label style="display:block;width:100%;padding:5px;border-radius:6px;border:1.5px solid var(--green-bd);background:var(--green-bg);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;text-align:center">
+            📂 Choose CSV File
+            <input type="file" accept=".csv,.txt,.tsv" onchange="importCSV(this)" style="display:none"/>
+          </label>
+        </div>
+      </div>
+
+      <div id="pasteRes" style="font-size:11px;margin-bottom:8px;min-height:14px"></div>
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:6px">Quick Add</div>
+      <div id="quickAdd" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"></div>
+      <input id="wlSearch" type="text" placeholder="Search symbol or company name..." oninput="onWLSearch(this.value)" style="width:100%;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none"/>
       <div id="wlSearchRes" style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap"></div>
       <button onclick="saveWL()" style="width:100%;padding:10px;border-radius:9px;border:none;background:var(--blue);color:white;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px">✅ Save & Scan</button>
     </div>
@@ -446,7 +524,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button onclick="closeAIPanel()" style="font-size:18px;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer">✕</button>
     </div>
     <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:6px;flex-wrap:wrap">
-      <button id="snapshotBtn" onclick="captureAndAsk()" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:7px;border:1.5px solid rgba(52,211,153,0.5);background:rgba(52,211,153,0.15);color:#6ee7b7;cursor:pointer;white-space:nowrap;transition:all 0.15s">📸 Snapshot</button>
+      <button id="snapshotBtn" onclick="captureAndAsk()" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:7px;border:1.5px solid rgba(52,211,153,0.5);background:rgba(52,211,153,0.15);color:#6ee7b7;cursor:pointer;white-space:nowrap">📸 Snapshot</button>
       <button onclick="aiStockQuick('brief')" class="ai-quick-btn">📋 Stock Brief</button>
       <button onclick="aiStockQuick('top')" class="ai-quick-btn">🏆 Best trade?</button>
       <button onclick="aiStockQuick('squeeze')" class="ai-quick-btn">⚡ Squeeze?</button>
@@ -457,11 +535,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">
         <div style="font-size:28px;margin-bottom:8px">🤖</div>
         <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:6px">Ask about your scanned stocks</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6">I can see all OI data, scores and signals.<br>Click a button above or type your question.</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6">I can see all OI data, scores and signals.<br>Click 📸 Snapshot for visual analysis.</div>
       </div>
     </div>
     <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:8px;background:#0c1220">
-      <input id="aiInput" type="text" placeholder="Ask a question, or paste a screenshot (Ctrl+V)..."
+      <input id="aiInput" type="text" placeholder="Ask a question, or paste screenshot (Ctrl+V)..."
         style="flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(139,92,246,0.4);background:rgba(255,255,255,0.07);color:white;font-size:13px;outline:none"
         onkeydown="if(event.key==='Enter')sendAIMessage()"/>
       <button onclick="sendAIMessage()" id="aiSendBtn" style="padding:9px 14px;border-radius:9px;border:none;background:linear-gradient(135deg,#7c3aed,#1d4ed8);color:white;font-size:13px;font-weight:700;cursor:pointer">Send</button>
@@ -470,6 +548,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 </div>
 
 <script>
+
 // BUTTERFLY OPTION CHAIN — Professional NSE layout
 // CALL side | STRIKE | PUT side
 // ══════════════════════════════════════════════════════════
@@ -1021,13 +1100,17 @@ async function startScan() {
     }
     renderTrades()
     renderPulse()
+    renderMovingBar()
     await sleep(600)
   }
   isScanning=false
   if(btn) btn.classList.remove('spinning')
   if(prog) prog.style.display='none'
   if(luEl) luEl.textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
-  renderTrades(); renderPulse(); renderTicker(); resetCD()
+  renderTrades(); renderPulse(); renderTicker(); renderMovingBar()
+  const mb=document.getElementById('movingBarSub')
+  if(mb) mb.textContent=Object.keys(scanResults).length+' stocks scanned'
+  resetCD()
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function buildSnap(d){const o={};d.nearStrikes.forEach(r=>o[r.strike]={ce:r.ce?.openInterest||0,pe:r.pe?.openInterest||0});return o}
@@ -1063,11 +1146,12 @@ function updatePulse(sym,d,s){
 // ═══════════════════════════════════════════════════════════════
 function setF(f,el){
   activeFilter=f
-  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'))
+  document.querySelectorAll('.rfchip,.fchip').forEach(c=>c.classList.remove('on'))
   el.classList.add('on')
   renderTrades()
 }
 
+// ─── Render compact ranked cards in RIGHT panel ───
 function renderTrades(){
   const el=document.getElementById('tradeCards')
   if(!el) return
@@ -1081,7 +1165,7 @@ function renderTrades(){
   const top=trades.slice(0,15)
   if(!top.length){el.innerHTML='<div class="loading-state"><span style="font-size:12px;color:var(--text3)">No trades match filter — try "All"</span></div>';return}
   const total=allTrades.filter(t=>!t.isFut).length
-  const cEl=document.getElementById('centreSubEl')
+  const cEl=document.getElementById('rcSubEl')
   if(cEl) cEl.textContent=`${top.length} of ${total} stocks · sorted by score · click to view chain`
   el.innerHTML=top.map((t,i)=>{
     const{sym,d,s,strat,isDemo}=t
@@ -1094,39 +1178,30 @@ function renderTrades(){
     const bColor=rBg
     const dirI=s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':strat.cat==='sell'?'💰':'🔷'
     const isSel=selectedSym===sym
-    return `<div class="trade-card${isSel?' selected':''}" onclick="selectTrade('${sym}')">
-      <div class="tc-head">
-        <div class="tc-rank" style="background:${rBg};color:white">${i+1}</div>
-        <div>
-          <div class="tc-sym">${sym}${isDemo?'<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:var(--yel-bg);color:var(--yellow);border:1px solid var(--yel-bd);margin-left:5px">DEMO</span>':''}</div>
-          <div class="tc-sector">${d.info.sec} · Lot ${d.info.lot} · ₹${(d.spot*(d.info.lot||500)/100000).toFixed(1)}L</div>
-        </div>
-        <div style="flex:1"></div>
-        <div style="text-align:right;margin-right:10px">
-          <div style="font-size:12px;font-weight:700;color:${s.dir==='bull'?'var(--green)':s.dir==='bear'?'var(--red)':'var(--purple)'}">
-            ${dirI} ${strat.name}
-            ${s.isWhaleAlert?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;margin-left:4px">🐋</span>':''}
-            ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;margin-left:4px">⚡</span>':''}
+    // COMPACT right-panel card
+    return `<div class="rc-card${isSel?' selected':''}" onclick="selectTrade('${sym}')">
+      <div style="display:flex;align-items:center;gap:7px">
+        <div style="width:22px;height:22px;border-radius:50%;background:${rBg};color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--text)">${sym}</span>
+            ${s.isWhaleAlert?'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:#fef3c7;color:#92400e">🐋</span>':''}
+            ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:#f0fdf4;color:#15803d">⚡</span>':''}
+            ${isDemo?'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:var(--yel-bg);color:var(--yellow)">DEMO</span>':''}
           </div>
-          <div style="font-size:10px;color:var(--text3)">${strat.type}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">${dirI} ${strat.name}</div>
         </div>
-        <div style="text-align:right">
-          <div class="tc-score" style="color:${gColor}">${score}</div>
-          <div class="tc-grade" style="background:${gBg};color:${gColor};border:1px solid ${gBd}">${grade==='A'?'🏆 A':grade==='B'?'✅ B':grade==='C'?'⚠️ C':'❌ D'}</div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:15px;font-weight:800;color:${gColor};line-height:1">${score}</div>
+          <div style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;background:${gBg};color:${gColor};border:1px solid ${gBd};margin-top:2px">${grade==='A'?'🏆A':grade==='B'?'✅B':grade==='C'?'⚠️C':'❌D'}</div>
         </div>
       </div>
-      <div class="tc-body">
-        <div class="tc-score-bar"><div class="tc-score-fill" style="width:${score}%;background:${bColor}"></div></div>
-        <div class="tc-legs">${(strat.legs||[]).map(l=>`<span class="tc-leg ${l.a.toLowerCase()}">${l.a} ${l.d} @ ₹${l.p}</span>`).join('')}</div>
-        <div class="tc-stats">
-          <div class="tc-stat"><div class="tc-stat-label">Risk</div><div class="tc-stat-val" style="color:var(--red)">₹${(strat.risk||0).toLocaleString('en-IN')}</div></div>
-          <div class="tc-stat"><div class="tc-stat-label">Reward</div><div class="tc-stat-val" style="color:var(--green)">₹${(strat.rew||0).toLocaleString('en-IN')}</div></div>
-          <div class="tc-stat"><div class="tc-stat-label">R:R</div><div class="tc-stat-val" style="color:var(--blue)">${strat.rr||'—'}</div></div>
-        </div>
-        <div class="tc-why">${s.reasons.slice(0,3).map(r=>`<div style="margin-bottom:2px">• ${r}</div>`).join('')}</div>
-        <div class="tc-actions">
-          <a class="tc-action-btn chart" href="https://www.tradingview.com/chart/?symbol=NSE:${sym}" target="_blank">📊 Chart</a>
-          <button class="tc-action-btn detail" onclick="event.stopPropagation();selectTrade('${sym}')">🔍 Full Chain →</button>
+      <div style="margin-top:5px">
+        <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;width:${score}%;background:${bColor};border-radius:2px"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:3px">
+          <span>Risk ₹${((strat.risk||0)/1000).toFixed(0)}K</span>
+          <span>Rew ₹${((strat.rew||0)/1000).toFixed(0)}K</span>
+          <span>${strat.rr||'—'}</span>
         </div>
       </div>
     </div>`
@@ -1187,15 +1262,22 @@ function renderPulse(){
 // SELECT TRADE + RENDER DETAIL
 // ═══════════════════════════════════════════════════════════════
 function selectTrade(sym){
-  selectedSym=sym; renderTrades()
+  selectedSym=sym
+  renderTrades()
+  renderMovingBar()
   const r=scanResults[sym]; if(!r) return
+  // Show in CENTRE workspace
+  const empty=document.getElementById('centreEmpty')
+  const workspace=document.getElementById('centreWorkspace')
+  if(empty) empty.style.display='none'
+  if(workspace) workspace.scrollTop=0
   renderDetail(r.d,r.s,r.isDemo)
-  document.getElementById('rightCol')?.scrollTo(0,0)
 }
 
 function renderDetail(d,s,isDemo){
-  document.getElementById('detailEmpty').style.display='none'
+  // Render into centre workspace
   const dc=document.getElementById('detailContent')
+  if(!dc){console.warn('detailContent missing');return}
   dc.style.display='block'
   const{spot,atm,maxPain,pcr,ceWall,peWall,totCe,totPe}=d
   const lot=d.info.lot
@@ -1319,6 +1401,29 @@ function toggleExp(id){
 // ═══════════════════════════════════════════════════════════════
 // TICKER
 // ═══════════════════════════════════════════════════════════════
+// ─── What's Moving bar (centre top) ───
+function renderMovingBar(){
+  const el=document.getElementById('movingBar')
+  if(!el) return
+  const sorted=Object.values(scanResults).sort((a,b)=>(b.s?.score||0)-(a.s?.score||0))
+  if(!sorted.length){el.innerHTML='<span style="font-size:11px;color:var(--text3);padding:6px">Scanning...</span>';return}
+  el.innerHTML=sorted.slice(0,12).map(({d,s,isDemo})=>{
+    const sym=d.sym
+    const gColor=s.grade==='A'?'#92400e':s.grade==='B'?'#065f46':s.grade==='C'?'#5b21b6':'#6b7280'
+    const gBg=s.grade==='A'?'#fef3c7':s.grade==='B'?'#d1fae5':s.grade==='C'?'#ede9fe':'#f3f4f6'
+    const dirI=s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':s.pri?.cat==='sell'?'💰':'⚪'
+    const isSel=selectedSym===sym
+    return `<div onclick="selectTrade('${sym}')" style="flex-shrink:0;padding:6px 12px;border-radius:9px;border:1.5px solid ${isSel?'var(--blue)':s.grade==='A'?'#fde68a':s.grade==='B'?'#6ee7b7':'var(--border)'};background:${isSel?'var(--blue-bg)':s.grade==='A'?'#fffbeb':s.grade==='B'?'#f0fdf4':'var(--bg2)'};cursor:pointer;transition:all 0.15s;min-width:110px" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='${isSel?'var(--blue)':s.grade==='A'?'#fde68a':s.grade==='B'?'#6ee7b7':'var(--border)'}'">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--text)">${sym}</div>
+      <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
+        <span style="font-size:10px">${dirI}</span>
+        <span style="font-size:10px;color:var(--text3)">${s.pri?.name?.split(' ').slice(-1)[0]||'—'}</span>
+        <span style="font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;background:${gBg};color:${gColor}">${s.score}</span>
+      </div>
+    </div>`
+  }).join('')
+}
+
 function renderTicker(){
   const el=document.getElementById('tickerEl'); if(!el) return
   const chips=[]
@@ -1405,6 +1510,38 @@ function onWLSearch(val){
   const m=fnoMaster.filter(f=>f.s.includes(q)||f.n.toUpperCase().includes(q)).slice(0,6)
   document.getElementById('wlSearchRes').innerHTML=m.map(f=>`<span onclick="addWL('${f.s}')" style="display:inline-flex;padding:3px 9px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:11px;font-weight:600">+ ${f.s}</span>`).join('')
 }
+// ─── CSV file import ───
+function importCSV(input){
+  const file=input.files?.[0]; if(!file) return
+  const reader=new FileReader()
+  reader.onload=(e)=>{
+    const text=e.target.result
+    // Support CSV, TSV, multi-column — try to find stock symbols in any column
+    const lines=text.split(/\n|\r/).filter(l=>l.trim())
+    const allTokens=[]
+    lines.forEach(line=>{
+      // Split on comma, tab, pipe, semicolon
+      const cols=line.split(/[,	|;]+/)
+      cols.forEach(col=>{
+        const t=col.trim().replace(/["']/g,'').toUpperCase()
+        if(t.length>=2&&t.length<=20&&/^[A-Z][A-Z0-9-]*$/.test(t)) allTokens.push(t)
+      })
+    })
+    const matched=allTokens.filter(t=>fnoMaster.find(f=>f.s===t))
+    const unique=[...new Set(matched)]
+    let added=0;unique.forEach(s=>{if(!watchlist.includes(s)&&watchlist.length<20){watchlist.push(s);added++}})
+    const res=document.getElementById('pasteRes')
+    if(unique.length>0){
+      res.innerHTML=`<span style="color:var(--green);font-weight:700">✅ CSV: Added ${added} stocks: ${unique.slice(0,8).join(', ')}${unique.length>8?'...':''}</span>`
+      renderWLChips()
+    } else {
+      res.innerHTML='<span style="color:var(--red)">No F&O stocks found in CSV file</span>'
+    }
+  }
+  reader.readAsText(file)
+  input.value=''  // reset so same file can be re-imported
+}
+
 function importPaste(){
   const raw=document.getElementById('pasteTA')?.value||''
   const tokens=raw.replace(/[\n\r\t|;,]+/g,' ').split(' ').map(t=>t.trim().toUpperCase()).filter(t=>t.length>=2&&t.length<=20&&/[A-Z]/.test(t))
@@ -1787,6 +1924,7 @@ function sendAIMessage() {
     _origSendAIMsg()
   }
 }
+
 
 </script>
 </body>

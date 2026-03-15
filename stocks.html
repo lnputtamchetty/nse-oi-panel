@@ -904,8 +904,11 @@ async function fetchChain(sym) {
 function parseChain(raw, sym) {
   const rec = raw?.records || raw
   const data = rec?.data || [], spot = rec?.underlyingValue || 0
-  const allExp = rec?.expiryDates || [], expiry = allExp[0] || ''
+  const allExp = rec?.expiryDates || []
   const info = fnoMaster.find(f=>f.s===sym) || {s:sym,n:sym,lot:500,sec:'—'}
+  // Find expiry with MOST rows — avoids 0 strikes when allExp[0] is stale/expired
+  const _ec = {}; for (const row of data) _ec[row.expiryDate] = (_ec[row.expiryDate]||0)+1
+  const expiry = Object.keys(_ec).sort((a,b)=>_ec[b]-_ec[a])[0] || allExp[0] || ''
   const strikes = {}
   for (const row of data) {
     if (row.expiryDate !== expiry) continue
@@ -2679,7 +2682,7 @@ loadWL()
 renderCentre()
 startScan()
 resetCD()
-setInterval(()=>{if(!isScanning)startScan()},2*60*1000)
+setInterval(()=>{if(!isScanning)startScan()},5*60*1000)
 
 
 

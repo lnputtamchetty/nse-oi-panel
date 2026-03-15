@@ -871,15 +871,30 @@ function saveAS() {
 // ═══════════════════════════════════════════════════════════════
 async function fetchChain(sym) {
   const enc = encodeURIComponent(sym)
+
+  // Race both endpoints — whichever responds first wins
+  // This cuts worst-case from 7s sequential → 2.5s parallel
+  async function tryUrl(url, ms) {
+    try {
+      const r = await fetch(url, {signal: AbortSignal.timeout(ms)})
+      if (r.ok) { const j = await r.json(); if (j?.records) return j }
+    } catch(e) {}
+    return null
+  }
+
+  const local  = tryUrl(`http://localhost:3001/chain?symbol=${enc}&type=equity`, 2500)
+  const remote = tryUrl(`/api/chain?symbol=${enc}&type=equity`, 2500)
+
+  // Use Promise.any — resolves as soon as ONE succeeds
   try {
-    const r = await fetch(`http://localhost:3001/chain?symbol=${enc}&type=equity`,{signal:AbortSignal.timeout(2000)})
-    if (r.ok) { const j=await r.json(); if(j?.records) return j }
-  } catch(e){}
-  try {
-    const r = await fetch(`/api/chain?symbol=${enc}&type=equity`,{signal:AbortSignal.timeout(5000)})
-    if (r.ok) { const j=await r.json(); if(j?.records) return j }
-  } catch(e){}
-  return null
+    const result = await Promise.any([
+      local.then(r => r || Promise.reject()),
+      remote.then(r => r || Promise.reject()),
+    ])
+    return result
+  } catch(e) {
+    return null  // both failed — will use demo data
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1259,7 +1274,7 @@ async function startScan() {
   if(tEl) tEl.innerHTML = '<div class="loading-state"><div class="ring"></div><span class="scanning">Building your trade list...</span></div>'
 
   const syms = [...watchlist]
-  const BATCH = 4  // fetch 4 stocks in parallel
+  const BATCH = 5  // fetch 5 stocks in parallel (fast since endpoints race)
   let completed = 0
 
   async function scanOne(sym) {
@@ -1286,9 +1301,10 @@ async function startScan() {
     const fill = document.getElementById('progFill')
     if (fill) fill.style.width = `${Math.round((completed/syms.length)*100)}%`
     renderRightPanel()
-    renderCentre()
     renderPulse()
     renderMovingBar()
+    // Only update centre if showing market overview (not mid-analysis of a stock)
+    if (!selectedSym) renderCentre()
   }
 
   for (let i = 0; i < syms.length; i += BATCH) {
@@ -1514,12 +1530,21 @@ function renderStockQuickRead(d, s) {
 }
 function toggleBflySection(triggerOrId){
   let id = typeof triggerOrId === 'string' ? triggerOrId : triggerOrId.dataset?.target || 'bfly_ctr'
-  const el=document.getElementById(id)
-  const chev=document.getElementById('bfly_chevron_'+id.replace('bfly_',''))
-  if(!el) return
-  const open=el.style.display==='none'
-  el.style.display=open?'block':'none'
-  if(chev) chev.textContent=open?'▼ Hide':'▶ Show'
+  const el = document.getElementById(id)
+  const chev = document.getElementById('bfly_chevron_' + id.replace('bfly_',''))
+  if (!el) return
+  const open = el.style.display === 'none'
+  el.style.display = open ? 'block' : 'none'
+  if (chev) chev.textContent = open ? '▼ Hide' : '▶ Show'
+  // Lazy-render butterfly on first open
+  if (open && el.dataset.loaded === 'false') {
+    const sym = el.dataset.sym || selectedSym
+    const r = sym && scanResults[sym]
+    if (r) {
+      el.innerHTML = renderButterflyChain(r.d, r.s, r.d.info?.lot || 500)
+      el.dataset.loaded = 'true'
+    }
+  }
 }
 // ─── COMMAND CARDS — main trade list with inline expansion ───
 
@@ -1593,9 +1618,7 @@ function renderStockAnalysis(el, sym) {
         <span>📋 Option Chain — Butterfly View</span>
         <span style="margin-left:auto" id="bfly_chevron_ctr">▶ Show</span>
       </div>
-      <div id="bfly_ctr" style="display:none;margin-top:4px">
-        ${renderButterflyChain(d,s,d.info?.lot||500)}
-      </div>
+      <div id="bfly_ctr" style="display:none;margin-top:4px" data-sym="${d.sym}" data-loaded="false"></div>
     </div>`
 
   wrap.appendChild(hdr)
@@ -2056,6 +2079,9 @@ function renderMovingBar(){
   if(!el) return
   const sorted=Object.values(scanResults).sort((a,b)=>(b.s?.score||0)-(a.s?.score||0))
   if(!sorted.length){el.innerHTML='<span style="font-size:11px;color:var(--text3);padding:6px">Scanning...</span>';return}
+  const _sig=sorted.map(r=>r.d.sym+r.s.grade).join(',')
+  if(el.dataset.sig===_sig) return
+  el.dataset.sig=_sig
   el.innerHTML=sorted.slice(0,12).map(({d,s,isDemo})=>{
     const sym=d.sym
     const gColor=s.grade==='A'?'#92400e':s.grade==='B'?'#065f46':s.grade==='C'?'#5b21b6':'#6b7280'

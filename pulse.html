@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LNP KAMAKSHIVA · OI Pulse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f2f5;--bg2:#f7f8fa;--bg3:#e8eaee;--border:#dde1e8;
+  --text:#1e2330;--text2:#52607a;--text3:#8f9bb8;
+  --red:#c93535;--red-bg:#fdf1f1;--red-bd:#f5c6c6;
+  --green:#177a56;--green-bg:#f1faf6;--green-bd:#b8e8d4;
+  --blue:#1d55d4;--blue-bg:#eef3fd;--blue-bd:#b8ccf8;
+  --yellow:#c26b00;--yel-bg:#fdf6e8;--yel-bd:#f5d99a;
+  --purple:#6530c7;--pur-bg:#f3f0fd;--pur-bd:#d4c8f5;
+  --teal:#0891b2;--teal-bg:#ecfeff;--teal-bd:#a5f3fc;
+  --orange:#d44f0a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d55d4 100%);border-bottom:1px solid #1d3461;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(15,23,42,0.35)}
+.logo{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:5px 12px;border-radius:7px;letter-spacing:3px;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-title-main{font-size:15px;font-weight:800;color:white}
+.header-title-main .kamak{color:#f59e0b}
+.header-title-main .dot{color:rgba(255,255,255,0.3);margin:0 5px}
+.header-title-main .pulse{color:#34d399}
+.header-title-sub{font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.header-right{display:flex;align-items:center;gap:7px}
+.nav-btn{font-size:12px;font-weight:600;padding:5px 11px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);cursor:pointer;text-decoration:none;transition:all 0.15s;white-space:nowrap}
+.nav-btn:hover{background:rgba(255,255,255,0.15);color:white}
+.nav-btn.active{background:white;color:#1d55d4;font-weight:800;border-color:white}
+.refresh-btn{font-size:12px;font-weight:600;padding:5px 11px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;transition:all 0.15s}
+.refresh-btn:hover{border-color:white;color:white}
+.refresh-btn.spinning{animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.last-update{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.4)}
+.countdown{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:3px 8px;border-radius:6px;min-width:42px;text-align:center;transition:all 0.3s}
+.countdown.urgent{color:#f59e0b;border-color:#f59e0b;background:rgba(245,158,11,0.15)}
+/* ── ALERT TICKER ── */
+.alert-bar{background:#060c1a;border-bottom:1px solid #1a2a40;padding:5px 16px;display:flex;align-items:center;gap:10px;min-height:30px;overflow:hidden;position:sticky;top:52px;z-index:99}
+.alert-bar-label{font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.4);flex-shrink:0;text-transform:uppercase}
+.ticker-inner{display:flex;gap:20px;white-space:nowrap;animation:ticker 25s linear infinite}
+.ticker-inner:hover{animation-play-state:paused}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:9px;font-size:11px;font-weight:600}
+.chip.spike{background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3)}
+.chip.bull{background:rgba(23,122,86,0.2);color:#86efac;border:1px solid rgba(23,122,86,0.3)}
+.chip.bear{background:rgba(201,53,53,0.2);color:#fca5a5;border:1px solid rgba(201,53,53,0.3)}
+.chip.info{background:rgba(29,85,212,0.15);color:#93c5fd;border:1px solid rgba(29,85,212,0.25)}
+.chip.warn{background:rgba(245,158,11,0.15);color:#fde68a;border:1px solid rgba(245,158,11,0.25)}
+/* ── STATUS BAR ── */
+.status-bar{background:var(--bg2);border-bottom:2px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:82px;z-index:98}
+.status-pill{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.status-pill:hover{border-color:var(--blue);color:var(--blue)}
+.status-pill.live{background:var(--green-bg);border-color:var(--green-bd);color:var(--green)}
+.status-pill.demo{background:var(--yel-bg);border-color:var(--yel-bd);color:var(--yellow)}
+.status-pill.banned{background:var(--red-bg);border-color:var(--red-bd);color:var(--red)}
+.data-freshness{font-size:11px;color:var(--text3);margin-left:auto}
+/* ── MAIN GRID — 5 panels ── */
+.pulse-grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:12px;padding:12px 16px;min-height:calc(100vh - 140px)}
+.panel{background:var(--bg2);border-radius:13px;border:1px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
+.panel.full-width{grid-column:1/-1}
+.panel.two-col{grid-column:span 2}
+.panel-head{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-title{font-size:12px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:0.5px}
+.panel-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.panel-sub{font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0}
+.panel-body{flex:1;overflow-y:auto;max-height:300px}
+/* ── STOCK ROW ── */
+.stock-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.stock-row:hover{background:var(--blue-bg)}
+.stock-row:last-child{border-bottom:none}
+.stock-row.selected{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.sr-rank{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--text3);width:16px;flex-shrink:0;text-align:center}
+.sr-sym{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--text);min-width:90px}
+.sr-name{font-size:10px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;min-width:60px;text-align:right}
+.sr-change{font-size:11px;font-weight:700;min-width:52px;text-align:right}
+.sr-bar{width:50px;height:5px;background:var(--border);border-radius:3px;overflow:hidden;flex-shrink:0}
+.sr-bar-fill{height:100%;border-radius:3px}
+.badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;white-space:nowrap}
+.badge.bull{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
+.badge.bear{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.badge.warn{background:var(--yel-bg);color:var(--yellow);border:1px solid var(--yel-bd)}
+.badge.ban{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+.badge.neutral{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+/* ── LOADING / EMPTY ── */
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:150px;gap:10px;color:var(--text3)}
+.loading-ring{width:28px;height:28px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--blue);animation:spin 0.8s linear infinite}
+.empty-state{text-align:center;padding:30px;color:var(--text3);font-size:12px}
+.scanning-pulse{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--blue);animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+/* ── FNO LIST TABLE ── */
+.fno-table{width:100%;border-collapse:collapse;font-size:12px}
+.fno-table th{background:var(--bg3);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);padding:7px 10px;border-bottom:2px solid var(--border);text-align:left;position:sticky;top:0}
+.fno-table td{padding:7px 10px;border-bottom:1px solid var(--border)}
+.fno-table tr:hover td{background:var(--blue-bg);cursor:pointer}
+.fno-search{width:100%;padding:8px 12px;border:none;border-bottom:2px solid var(--border);font-size:13px;background:var(--bg3);color:var(--text);outline:none}
+.fno-search:focus{background:var(--blue-bg);border-color:var(--blue)}
+/* ── BAN LIST ── */
+.ban-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
+/* ── DETAIL SIDEBAR ── */
+.detail-sidebar{position:fixed;right:0;top:0;bottom:0;width:380px;background:var(--bg2);border-left:2px solid var(--border);z-index:200;transform:translateX(100%);transition:transform 0.3s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.1);overflow-y:auto}
+.detail-sidebar.open{transform:translateX(0)}
+.sidebar-close{position:sticky;top:0;background:var(--bg2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;z-index:1}
+.close-btn{font-size:18px;color:var(--text3);cursor:pointer;background:none;border:none;padding:0}
+/* ── TOAST ── */
+.toast-wrap{position:fixed;top:65px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:7px;max-width:320px;pointer-events:none}
+.toast{background:#0f172a;border:2px solid var(--tc,#ef4444);border-radius:11px;padding:12px 14px;pointer-events:all;animation:slideIn 0.3s ease-out;position:relative}
+.toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--tc,#ef4444);border-radius:3px 0 0 3px}
+@keyframes slideIn{from{transform:translateX(110%)}to{transform:translateX(0)}}
+@keyframes slideOut{from{opacity:1}to{transform:translateX(110%);opacity:0}}
+.toast-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--tc,#ef4444);margin-bottom:3px}
+.toast-msg{font-size:12px;font-weight:700;color:white;line-height:1.4}
+.toast-dismiss{position:absolute;top:7px;right:9px;font-size:13px;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">LNP</div>
+    <div>
+      <div class="header-title-main">
+        <span class="kamak">KAMAKSHIVA</span><span class="dot">·</span><span class="pulse">OI PULSE</span>
+      </div>
+      <div class="header-title-sub">F&O Market Intelligence · Live from NSE</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a class="nav-btn" href="index.html">📊 Indexes</a>
+    <a class="nav-btn" href="stocks.html">📈 Stocks</a>
+    <a class="nav-btn active" href="pulse.html">⚡ Pulse</a>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">↻ Refresh</button>
+    <div style="position:relative">
+      <button class="alert-settings-btn" id="alertBtn" onclick="openAM()" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.12);color:#fca5a5;cursor:pointer;transition:all 0.15s;white-space:nowrap">🔔 Alerts</button>
+      <div id="alertBadge" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:white;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</div>
+    </div>
+    <span class="last-update" id="lastUpdate">—</span>
+    <span class="countdown" id="countdownEl">2:00</span>
+  </div>
+</div>
+
+<!-- TICKER -->
+<div class="alert-bar">
+  <span class="alert-bar-label">⚡ Pulse</span>
+  <div style="flex:1;overflow:hidden;height:18px;position:relative">
+    <div class="ticker-inner" id="tickerInner">
+      <span class="chip info">Loading market intelligence from NSE...</span>
+      <span class="chip info">Loading market intelligence from NSE...</span>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span class="status-pill" id="srcPill">⚪ Demo</span>
+  <span class="status-pill" id="marketPill">—</span>
+  <span class="status-pill banned" id="banPill" style="display:none">🚫 <span id="banCount">0</span> Stocks Banned</span>
+  <span class="data-freshness" id="freshnessEl">Last refresh: —</span>
+</div>
+
+<!-- MAIN PULSE GRID -->
+<div class="pulse-grid">
+
+  <!-- 1. OI SPURTERS — biggest OI buildup -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="panel-icon" style="background:var(--pur-bg);border:1.5px solid var(--pur-bd)">⚡</div>
+        OI Spurters
+        <span class="panel-sub">— Institutions entering</span>
+      </div>
+      <span style="font-size:10px;color:var(--text3)" id="spurterTime">—</span>
+    </div>
+    <div class="panel-body" id="spurterBody">
+      <div class="loading-state"><div class="loading-ring"></div><span class="scanning-pulse">Fetching from NSE...</span></div>
+    </div>
+  </div>
+
+  <!-- 2. OI REDUCERS — OI unwinding -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="panel-icon" style="background:var(--yel-bg);border:1.5px solid var(--yel-bd)">📉</div>
+        OI Reducers
+        <span class="panel-sub">— Positions exiting</span>
+      </div>
+      <span style="font-size:10px;color:var(--text3)" id="reducerTime">—</span>
+    </div>
+    <div class="panel-body" id="reducerBody">
+      <div class="loading-state"><div class="loading-ring"></div><span class="scanning-pulse">Fetching from NSE...</span></div>
+    </div>
+  </div>
+
+  <!-- 3. PRICE + OI BUILDUP — trend confirmation -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="panel-icon" style="background:var(--green-bg);border:1.5px solid var(--green-bd)">📈</div>
+        Price + OI Build
+        <span class="panel-sub">— Trend confirmation</span>
+      </div>
+      <span style="font-size:10px;color:var(--text3)" id="priceOiTime">—</span>
+    </div>
+    <div class="panel-body" id="priceOiBody">
+      <div class="loading-state"><div class="loading-ring"></div><span class="scanning-pulse">Fetching from NSE...</span></div>
+    </div>
+  </div>
+
+  <!-- 4. TOP GAINERS + LOSERS — price movers -->
+  <div class="panel two-col">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="panel-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">🏆</div>
+        Top Gainers &amp; Losers
+        <span class="panel-sub">— F&O price movers today</span>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="setGL('gainers',this)" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;border:1.5px solid var(--green-bd);background:var(--green-bg);color:var(--green);cursor:pointer" class="gl-btn active-gl">📈 Gainers</button>
+        <button onclick="setGL('losers',this)" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer" class="gl-btn">📉 Losers</button>
+      </div>
+    </div>
+    <div class="panel-body" id="glBody">
+      <div class="loading-state"><div class="loading-ring"></div><span class="scanning-pulse">Fetching from NSE...</span></div>
+    </div>
+  </div>
+
+  <!-- 5. F&O LIVE STOCK LIST — always current, searchable -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">
+        <div class="panel-icon" style="background:var(--teal-bg);border:1.5px solid var(--teal-bd)">📋</div>
+        F&O Stock Universe
+        <span class="panel-sub" id="fnoCountLabel">— Loading...</span>
+      </div>
+    </div>
+    <input class="fno-search" id="fnoSearch" type="text" placeholder="Search F&O stocks — type symbol or name..." oninput="filterFNO(this.value)"/>
+    <div class="panel-body" id="fnoBody" style="max-height:240px">
+      <div class="loading-state"><div class="loading-ring"></div><span class="scanning-pulse">Loading live F&O list from NSE...</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ LEARNING SECTION ══ -->
+<div style="padding:0 16px 40px">
+
+  <!-- Header -->
+  <div style="margin:16px 0 12px;display:flex;align-items:center;gap:10px">
+    <div style="width:28px;height:28px;border-radius:8px;background:var(--blue-bg);border:1.5px solid var(--blue-bd);display:flex;align-items:center;justify-content:center;font-size:14px">📖</div>
+    <div>
+      <div style="font-size:14px;font-weight:800;color:var(--text)">How to Read the Pulse — Plain English Guide</div>
+      <div style="font-size:11px;color:var(--text3)">What each panel means and exactly what to do with it</div>
+    </div>
+  </div>
+
+  <!-- 4 learn cards in 2x2 grid -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+
+    <!-- OI SPURTERS -->
+    <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--pur-bd);overflow:hidden">
+      <div style="background:var(--pur-bg);padding:10px 14px;border-bottom:1px solid var(--pur-bd);display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">⚡</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--purple)">OI SPURTERS — What does it mean?</div>
+          <div style="font-size:10px;color:var(--text3)">Open Interest suddenly building up</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7">
+        <p><strong style="color:var(--text)">What happened:</strong> Institutions just bought or sold a large number of new contracts at this stock. OI is the total number of open positions — when it spikes, new money is entering.</p>
+        <p style="margin-top:8px"><strong style="color:var(--text)">Who did this:</strong> Mutual funds, FIIs, HNIs — the big players. They don't trade small. A 20%+ OI spike in 1 session = significant institutional activity.</p>
+        <p style="margin-top:8px"><strong style="color:var(--green)">✅ Bullish OI spike:</strong> Price rising + OI rising = fresh longs. Institutions are BUYING. Trend likely continues.</p>
+        <p style="margin-top:6px"><strong style="color:var(--red)">⚠️ Bearish OI spike:</strong> Price falling + OI rising = fresh shorts. Institutions are SELLING. Downtrend likely continues.</p>
+        <div style="margin-top:10px;padding:8px 10px;background:var(--blue-bg);border-radius:7px;border:1px solid var(--blue-bd)">
+          <strong style="font-size:11px;color:var(--blue)">💡 What to do:</strong>
+          <div style="margin-top:4px;font-size:11px;color:var(--text2)">Check if price is also moving in the same direction as OI. If yes — consider following the institutional direction. If price is flat but OI is building — a big move is coming, direction TBD.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OI REDUCERS -->
+    <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--yel-bd);overflow:hidden">
+      <div style="background:var(--yel-bg);padding:10px 14px;border-bottom:1px solid var(--yel-bd);display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">📉</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--yellow)">OI REDUCERS — What does it mean?</div>
+          <div style="font-size:10px;color:var(--text3)">Open Interest suddenly dropping</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7">
+        <p><strong style="color:var(--text)">What happened:</strong> Existing positions are being closed out. Traders who were long are selling, or traders who were short are buying back. Either way — someone is EXITING.</p>
+        <p style="margin-top:8px"><strong style="color:var(--text)">Two very different scenarios:</strong></p>
+        <p style="margin-top:6px"><strong style="color:var(--green)">Short Covering:</strong> Price rising + OI falling = shorts buying back at a loss. This creates a quick sharp spike up but is NOT a real trend — it exhausts itself fast.</p>
+        <p style="margin-top:6px"><strong style="color:var(--red)">Long Unwinding:</strong> Price falling + OI falling = longs cutting losses and exiting. This can signal the end of an uptrend — the bulls are giving up.</p>
+        <div style="margin-top:10px;padding:8px 10px;background:var(--yel-bg);border-radius:7px;border:1px solid var(--yel-bd)">
+          <strong style="font-size:11px;color:var(--yellow)">💡 What to do:</strong>
+          <div style="margin-top:4px;font-size:11px;color:var(--text2)">If you're holding a position in this stock — be cautious. The smart money is exiting. Don't add fresh positions based on OI reducers alone. Wait for clarity.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRICE + OI BUILD -->
+    <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--green-bd);overflow:hidden">
+      <div style="background:var(--green-bg);padding:10px 14px;border-bottom:1px solid var(--green-bd);display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">📈</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--green)">PRICE + OI BUILD — What does it mean?</div>
+          <div style="font-size:10px;color:var(--text3)">The strongest possible signal</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7">
+        <p><strong style="color:var(--text)">What happened:</strong> Price went up AND new contracts were added simultaneously. This is the gold standard confirmation — the move has real institutional money behind it.</p>
+        <p style="margin-top:8px"><strong style="color:var(--text)">The 4 OI combinations — memorise these:</strong></p>
+        <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div style="padding:7px 9px;border-radius:7px;background:var(--green-bg);border:1px solid var(--green-bd)">
+            <div style="font-size:10px;font-weight:800;color:var(--green)">Price↑ + OI↑</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">Long buildup — strong bull. Follow it.</div>
+          </div>
+          <div style="padding:7px 9px;border-radius:7px;background:var(--red-bg);border:1px solid var(--red-bd)">
+            <div style="font-size:10px;font-weight:800;color:var(--red)">Price↓ + OI↑</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">Short buildup — strong bear. Follow it.</div>
+          </div>
+          <div style="padding:7px 9px;border-radius:7px;background:var(--yel-bg);border:1px solid var(--yel-bd)">
+            <div style="font-size:10px;font-weight:800;color:var(--yellow)">Price↑ + OI↓</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">Short covering — weak move. Don't chase.</div>
+          </div>
+          <div style="padding:7px 9px;border-radius:7px;background:var(--bg3);border:1px solid var(--border)">
+            <div style="font-size:10px;font-weight:800;color:var(--text3)">Price↓ + OI↓</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">Long unwinding — trend ending. Exit longs.</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:8px 10px;background:var(--green-bg);border-radius:7px;border:1px solid var(--green-bd)">
+          <strong style="font-size:11px;color:var(--green)">💡 What to do:</strong>
+          <div style="margin-top:4px;font-size:11px;color:var(--text2)">Price↑ + OI↑ stocks from this panel are your highest quality setups of the day. Open their full chain in the Stocks page to find the entry level and OI walls.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- F&O BAN -->
+    <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--red-bd);overflow:hidden">
+      <div style="background:var(--red-bg);padding:10px 14px;border-bottom:1px solid var(--red-bd);display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">🚫</span>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--red)">F&O BAN LIST — Critical to know</div>
+          <div style="font-size:10px;color:var(--text3)">Why some stocks get banned and what it means for you</div>
+        </div>
+      </div>
+      <div style="padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7">
+        <p><strong style="color:var(--text)">What is an F&O ban?</strong> NSE bans a stock from new F&O positions when its total OI crosses 95% of the Market-Wide Position Limit (MWPL). This is a safety mechanism to prevent excessive speculation.</p>
+        <p style="margin-top:8px"><strong style="color:var(--red)">⚠️ During a ban:</strong> You CANNOT open new positions. You can only square off (close) existing ones. If you open a new position in a banned stock, NSE charges a heavy penalty.</p>
+        <p style="margin-top:8px"><strong style="color:var(--text)">When does the ban lift?</strong> When total OI drops below 80% of MWPL — usually takes 1-3 days as people exit.</p>
+        <div style="margin-top:10px;padding:8px 10px;background:var(--red-bg);border-radius:7px;border:1px solid var(--red-bd)">
+          <strong style="font-size:11px;color:var(--red)">💡 What to do:</strong>
+          <div style="margin-top:4px;font-size:11px;color:var(--text2)">Check this page every morning before trading. Any stock showing 🚫 BAN — skip it completely for new trades that day. The Stocks page also flags banned stocks in red.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MORNING CHECKLIST -->
+  <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--green-bd);overflow:hidden;margin-bottom:12px">
+    <div style="background:var(--green-bg);padding:10px 14px;border-bottom:1px solid var(--green-bd);display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">✅</span>
+      <div>
+        <div style="font-size:12px;font-weight:800;color:var(--green)">Morning Checklist — Before You Trade Anything</div>
+        <div style="font-size:10px;color:var(--text3)">Natenberg: "Preparation is 80% of trading"</div>
+      </div>
+    </div>
+    <div style="padding:12px 16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div style="background:white;border-radius:8px;padding:9px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--red);margin-bottom:5px">🚫 Check Ban List</div>
+          <div style="font-size:11px;color:var(--text2)">Any banned stock — skip completely. No exceptions. NSE charges heavy penalty for new positions in banned stocks.</div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:9px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--purple);margin-bottom:5px">🌡️ Check India VIX</div>
+          <div style="font-size:11px;color:var(--text2)">VIX &gt;20 = high fear = sell spreads. VIX &lt;12 = calm = buy directional. <a href="https://www.tradingview.com/chart/?symbol=NSE:INDIAVIX" target="_blank" style="color:var(--blue);font-weight:700">Open VIX ↗</a></div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:9px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--blue);margin-bottom:5px">📅 Events Today?</div>
+          <div style="font-size:11px;color:var(--text2)">RBI meeting, Budget, Q results → IV will spike before and crash after. Never hold uncovered positions through events.</div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:9px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--yellow);margin-bottom:5px">📊 Gift Nifty / SGX</div>
+          <div style="font-size:11px;color:var(--text2)">Check Gift Nifty at 9 AM — tells you expected gap up/down. Big gap = wait 15 min after open before trading.</div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:9px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--purple);margin-bottom:5px">🏦 FII Data</div>
+          <div style="font-size:11px;color:var(--text2)">FII buying index futures = bullish day likely. FII selling = bearish. Check <a href="https://www.nseindia.com/market-data/fii-dii-trading-activity" target="_blank" style="color:var(--blue);font-weight:700">NSE FII data ↗</a></div>
+        </div>
+        <div style="background:white;border-radius:8px;padding:9px;border:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:800;color:var(--teal);margin-bottom:5px">🕐 Expiry This Week?</div>
+          <div style="font-size:11px;color:var(--text2)">Nifty expires Thu, BankNifty Wed, Finnifty Tue. Expiry day = sell premium only. Exit all buys by 2:30 PM.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO USE THIS PAGE — workflow guide -->
+  <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--blue-bd);overflow:hidden">
+    <div style="background:var(--blue-bg);padding:10px 14px;border-bottom:1px solid var(--blue-bd);display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">🎯</span>
+      <div>
+        <div style="font-size:12px;font-weight:800;color:var(--blue)">Your Daily Workflow — How to use Pulse every morning</div>
+        <div style="font-size:10px;color:var(--text3)">Step by step from 9:15 AM to trade entry</div>
+      </div>
+    </div>
+    <div style="padding:14px 16px">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+        <div style="text-align:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--blue);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 7px">1</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">9:20 AM</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5">Open Pulse page. Check Ban List — skip those stocks today.</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--purple);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 7px">2</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">OI Spurters</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5">Note top 3 stocks. These have the freshest institutional activity.</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--green);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 7px">3</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Price + OI</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5">Cross-check — if a Spurter also appears here, it's your A-grade setup.</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--blue);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 7px">4</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Click Stock</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5">Click the stock row → sidebar shows CE/PE walls and PCR instantly.</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 7px">5</div>
+          <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">Full Analysis</div>
+          <div style="font-size:10px;color:var(--text3);line-height:1.5">Click "Open in Stocks →" for full OI chain, strategy cards and lot-size risk.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:10px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:800;color:var(--text);margin-bottom:6px">🏆 A-Grade Setup Checklist — all 3 must be true:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;color:var(--text2)">
+          <div style="padding:7px 9px;border-radius:6px;background:var(--pur-bg);border:1px solid var(--pur-bd)">⚡ Stock appears in <strong>OI Spurters</strong> (fresh institutional entry)</div>
+          <div style="padding:7px 9px;border-radius:6px;background:var(--green-bg);border:1px solid var(--green-bd)">📈 Also in <strong>Price + OI Build</strong> (price confirming direction)</div>
+          <div style="padding:7px 9px;border-radius:6px;background:var(--blue-bg);border:1px solid var(--blue-bd)">📊 OI walls support the direction (check in Stocks page)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NATENBERG STRATEGIES — expanded from index.html -->
+  <div style="background:var(--bg2);border-radius:12px;border:1.5px solid var(--pur-bd);overflow:hidden;margin-top:12px">
+    <div style="background:var(--pur-bg);padding:10px 14px;border-bottom:1px solid var(--pur-bd);display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">📘</span>
+      <div>
+        <div style="font-size:12px;font-weight:800;color:var(--purple)">Advanced Strategies — Natenberg Framework</div>
+        <div style="font-size:10px;color:var(--text3)">When to use each strategy based on IV + OI + DTE</div>
+      </div>
+    </div>
+    <div style="padding:14px 16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:var(--green-bg);border:1px solid var(--green-bd);border-radius:9px;padding:10px">
+          <div style="font-size:11px;font-weight:800;color:var(--green);margin-bottom:5px">🟢 Low IV Environment (&lt;14%)</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.65">Options are cheap like discounted movie tickets. Buy before the show starts.<br><br>
+          <strong>Best strategies:</strong><br>
+          • Buy ATM CE or PE (directional)<br>
+          • Long Straddle before events<br>
+          • Debit Spreads (buy higher, sell lower strike)<br>
+          • Calendar Spread (buy far expiry, sell near)<br><br>
+          <strong>Logic:</strong> When IV is low, vega is your friend. If IV expands, your option gains value even if price doesn't move.
+          </div>
+        </div>
+        <div style="background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:9px;padding:10px">
+          <div style="font-size:11px;font-weight:800;color:var(--yellow);margin-bottom:5px">🟡 Normal IV (14-20%)</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.65">Fair value environment. Direction matters more than volatility.<br><br>
+          <strong>Best strategies:</strong><br>
+          • Bull/Bear Call or Put Spreads<br>
+          • Iron Condor (stable markets)<br>
+          • Covered Call (if holding stock)<br>
+          • Synthetic Long/Short (high conviction)<br><br>
+          <strong>Logic:</strong> Defined-risk spreads work best here — capped loss, decent reward, theta working for you on spreads.
+          </div>
+        </div>
+        <div style="background:var(--red-bg);border:1px solid var(--red-bd);border-radius:9px;padding:10px">
+          <div style="font-size:11px;font-weight:800;color:var(--red);margin-bottom:5px">🔴 High IV (&gt;20%)</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.65">Options are expensive like peak season flights. Sell before prices fall.<br><br>
+          <strong>Best strategies:</strong><br>
+          • Straddle/Strangle Sell (collect premium)<br>
+          • Iron Condor (wider wings)<br>
+          • Credit Spreads (sell the expensive strike)<br>
+          • Cash-secured Put (if want to buy stock cheap)<br><br>
+          <strong>Logic:</strong> When IV is high, vega works against buyers. Sellers collect elevated premiums and wait for IV to fall.
+          </div>
+        </div>
+      </div>
+      <!-- IV Crush warning -->
+      <div style="background:white;border:1.5px solid var(--red-bd);border-radius:9px;padding:10px 12px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:800;color:var(--red);margin-bottom:4px">⚡ IV Crush — The Most Common Beginner Mistake</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.65">You buy a Nifty CE before RBI policy. RBI announces rate cut — Nifty goes up 200pts. But your CE option LOSES money. How?<br><br>
+        Before the event: IV was 28% (high fear, expensive options). After the event: IV crashes to 14% (mystery solved, no more fear). Your option's vega exposure makes it lose ₹500 per lot from IV crush — more than it gained from the 200pt move.<br><br>
+        <strong>Natenberg's lesson:</strong> Before events, buy options early when IV is still low. Or sell premium — let IV crush work FOR you, not against you.</div>
+      </div>
+      <!-- Key quick-reference table -->
+      <div style="background:var(--bg3);border-radius:9px;padding:10px 12px">
+        <div style="font-size:11px;font-weight:800;color:var(--text);margin-bottom:8px">📋 Quick Reference — OI + IV + DTE Combined Decision</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:var(--bg2)">
+              <th style="padding:7px 10px;text-align:left;font-weight:700;color:var(--text3);border-bottom:2px solid var(--border)">Situation</th>
+              <th style="padding:7px 10px;text-align:left;font-weight:700;color:var(--text3);border-bottom:2px solid var(--border)">IV</th>
+              <th style="padding:7px 10px;text-align:left;font-weight:700;color:var(--text3);border-bottom:2px solid var(--border)">DTE</th>
+              <th style="padding:7px 10px;text-align:left;font-weight:700;color:var(--text3);border-bottom:2px solid var(--border)">Best Strategy</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px;font-weight:600">OI Spurter + Price↑</td><td style="padding:7px 10px;color:var(--green)">Low</td><td style="padding:7px 10px">5+ days</td><td style="padding:7px 10px;color:var(--green);font-weight:600">Buy ATM CE — vega cheap, trend confirmed</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:var(--bg3)"><td style="padding:7px 10px;font-weight:600">OI Spurter + Price↑</td><td style="padding:7px 10px;color:var(--red)">High</td><td style="padding:7px 10px">5+ days</td><td style="padding:7px 10px;color:var(--blue);font-weight:600">Bull Call Spread — defined risk, less vega exposure</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px;font-weight:600">Both walls intact, range</td><td style="padding:7px 10px;color:var(--red)">High</td><td style="padding:7px 10px">5+ days</td><td style="padding:7px 10px;color:var(--purple);font-weight:600">Iron Condor — sell both walls, collect premium</td></tr>
+            <tr style="border-bottom:1px solid var(--border);background:var(--bg3)"><td style="padding:7px 10px;font-weight:600">Expiry day, near max pain</td><td style="padding:7px 10px;color:var(--red)">Any</td><td style="padding:7px 10px;color:var(--red)">0 days</td><td style="padding:7px 10px;color:var(--orange);font-weight:600">Straddle/Strangle Sell only — exit by 2:30 PM</td></tr>
+            <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px;font-weight:600">Before RBI/Budget</td><td style="padding:7px 10px;color:var(--green)">Low</td><td style="padding:7px 10px">2+ days</td><td style="padding:7px 10px;color:var(--green);font-weight:600">Long Straddle — buy cheap, profit from IV expansion</td></tr>
+            <tr style="background:var(--bg3)"><td style="padding:7px 10px;font-weight:600">High conviction bull/bear</td><td style="padding:7px 10px;color:var(--yellow)">Normal</td><td style="padding:7px 10px">3+ days</td><td style="padding:7px 10px;color:var(--teal);font-weight:600">Synthetic Long/Short — unlimited upside, futures-like</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL SIDEBAR -->
+<div class="detail-sidebar" id="detailSidebar">
+  <div class="sidebar-close">
+    <div style="font-size:13px;font-weight:800;color:var(--text)" id="sidebarTitle">Stock Detail</div>
+    <button class="close-btn" onclick="closeSidebar()">✕</button>
+  </div>
+  <div id="sidebarContent">
+    <div class="empty-state">Select a stock to view full OI chain</div>
+  </div>
+</div>
+<div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:199" onclick="closeSidebar()"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════
+const TG_TOKEN = 'lnp_tg_token'
+const TG_CHAT  = 'lnp_tg_chatid'
+let fnoLiveList = []       // [{symbol, name, lot, series}] from NSE live
+let fnoFiltered = []
+let glMode      = 'gainers'
+let spurterData = []
+let reducerData = []
+let priceOiData = []
+let gainersData = []
+let losersData  = []
+let banList     = []
+let dataSource  = 'demo'
+let countdownSec = 120
+let countdownInt = null
+
+// ═══════════════════════════════════════════════════════════════════
+// FETCH via proxy → CORS proxy → demo fallback
+// ═══════════════════════════════════════════════════════════════════
+async function fetchPulse(type) {
+  // 1. Local proxy
+  try {
+    const r = await fetch(`http://localhost:3001/pulse?type=${type}`, {signal:AbortSignal.timeout(4000)})
+    if (r.ok) { const j=await r.json(); if(j&&!j.error){dataSource='local';return j} }
+  } catch(e){}
+  // 2. Vercel proxy
+  try {
+    const r = await fetch(`/api/pulse?type=${type}`, {signal:AbortSignal.timeout(10000)})
+    if (r.ok) { const j=await r.json(); if(j&&!j.error){dataSource='vercel';return j} }
+  } catch(e){}
+  // 3. CORS proxy
+  const endpoints = {
+    'oi-spurters': 'https://www.nseindia.com/api/live-analysis-oi-spurters-contracts',
+    'oi-reducers': 'https://www.nseindia.com/api/live-analysis-oi-reducers-contracts',
+    'price-oi':    'https://www.nseindia.com/api/live-analysis-price-vol-oi-change',
+    'gainers':     'https://www.nseindia.com/api/live-analysis-gainers-n-loosers?index=gainers',
+    'losers':      'https://www.nseindia.com/api/live-analysis-gainers-n-loosers?index=loosers',
+    'active':      'https://www.nseindia.com/api/live-analysis-volume-gainers',
+    'ban-list':    'https://www.nseindia.com/api/fo-ban-list',
+  }
+  const url = endpoints[type]
+  if (url) {
+    try {
+      const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, {signal:AbortSignal.timeout(8000)})
+      if (r.ok) { const j=await r.json(); if(j){dataSource='cors';return j} }
+    } catch(e){}
+  }
+  dataSource = 'demo'
+  return null
+}
+
+async function fetchFNOList() {
+  // Try to get live F&O list from NSE
+  try {
+    const r = await fetch('http://localhost:3001/fnolist', {signal:AbortSignal.timeout(4000)})
+    if (r.ok) { const j=await r.json(); if(j?.data){return j.data} }
+  } catch(e){}
+  try {
+    const r = await fetch('http://localhost:3001/pulse?type=fno-lots', {signal:AbortSignal.timeout(4000)})
+    if (r.ok) { const j=await r.json(); if(j){return parseFNOLots(j)} }
+  } catch(e){}
+  return null
+}
+
+function parseFNOLots(data) {
+  // NSE lot size response — symbol: lot mapping
+  if (Array.isArray(data)) return data.map(d=>({symbol:d.symbol||d.Symbol,lot:d.lotSize||d.lot||500,name:d.companyName||d.symbol||'—',series:'EQ'}))
+  if (data.data) return parseFNOLots(data.data)
+  return null
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LOAD ALL
+// ═══════════════════════════════════════════════════════════════════
+async function loadAll() {
+  const btn = document.getElementById('refreshBtn')
+  btn.classList.add('spinning')
+  document.getElementById('lastUpdate').textContent = 'Loading...'
+
+  // Parallel fetch all 5 endpoints
+  const [sp, re, po, gn, ls, bn, fno] = await Promise.allSettled([
+    fetchPulse('oi-spurters'),
+    fetchPulse('oi-reducers'),
+    fetchPulse('price-oi'),
+    fetchPulse('gainers'),
+    fetchPulse('losers'),
+    fetchPulse('ban-list'),
+    fetchFNOList(),
+  ])
+
+  // Parse + render each
+  spurterData = parseOISpurters(sp.value)
+  reducerData = parseOIReducers(re.value)
+  priceOiData = parsePriceOI(po.value)
+  gainersData = parseMover(gn.value, 'bull')
+  losersData  = parseMover(ls.value, 'bear')
+  banList     = parseBanList(bn.value)
+
+  renderSpurters()
+  renderReducers()
+  renderPriceOI()
+  renderGL()
+  renderBanPill()
+  
+  // F&O live list
+  if (fno.value) {
+    fnoLiveList = fno.value
+    fnoFiltered = [...fnoLiveList]
+  } else {
+    fnoLiveList = getBuiltinFNO()
+    fnoFiltered = [...fnoLiveList]
+  }
+  renderFNOList()
+
+  // Update UI
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  const srcLabel = dataSource==='local'?'🟢 Live (Proxy)':dataSource==='vercel'?'🟡 Live (Vercel)':dataSource==='cors'?'🟠 Live (CORS)':'⚪ Demo'
+  document.getElementById('srcPill').textContent = srcLabel
+  document.getElementById('srcPill').className = 'status-pill ' + (dataSource==='demo'?'demo':'live')
+  document.getElementById('lastUpdate').textContent = now
+  document.getElementById('freshnessEl').textContent = `Last refresh: ${now}`
+  document.getElementById('spurterTime').textContent = now
+  document.getElementById('reducerTime').textContent = now
+  document.getElementById('priceOiTime').textContent = now
+
+  updateTicker()
+  checkPulseAlerts()   // fire alerts on changes
+  btn.classList.remove('spinning')
+  startCountdown()
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PARSERS — handle different NSE response structures
+// ═══════════════════════════════════════════════════════════════════
+function parseOISpurters(raw) {
+  if (!raw) return getDemoSpurters()
+  const arr = raw.data || raw.spurters || raw.NIFTY?.data || []
+  return arr.slice(0,15).map(r => ({
+    symbol:   r.symbol || r.Symbol || r.scrpNm || '—',
+    name:     r.companyName || r.name || r.symbol || '—',
+    oi:       r.openInterest || r.oi || 0,
+    oiChg:    r.changeInOI || r.oiChange || r.pctChange || 0,
+    oiChgPct: r.changePct || r.oiChangePct || 0,
+    price:    r.lastPrice || r.price || 0,
+    expiry:   r.expiryDate || r.expiry || '—',
+    signal:   'spike'
+  }))
+}
+
+function parseOIReducers(raw) {
+  if (!raw) return getDemoReducers()
+  const arr = raw.data || raw.reducers || raw.NIFTY?.data || []
+  return arr.slice(0,15).map(r => ({
+    symbol:   r.symbol || r.Symbol || r.scrpNm || '—',
+    name:     r.companyName || r.name || r.symbol || '—',
+    oi:       r.openInterest || r.oi || 0,
+    oiChg:    r.changeInOI || r.oiChange || 0,
+    oiChgPct: r.changePct || r.oiChangePct || 0,
+    price:    r.lastPrice || r.price || 0,
+    expiry:   r.expiryDate || r.expiry || '—',
+    signal:   'bear'
+  }))
+}
+
+function parsePriceOI(raw) {
+  if (!raw) return getDemoPriceOI()
+  // NSE returns multiple categories — get price+OI gainers
+  const arr = raw.data || raw.gainers || raw.NIFTY?.data || []
+  return arr.slice(0,15).map(r => ({
+    symbol:   r.symbol || r.Symbol || '—',
+    name:     r.companyName || r.symbol || '—',
+    price:    r.lastPrice || r.price || 0,
+    pChg:     r.pChange || r.priceChange || 0,
+    oi:       r.openInterest || r.oi || 0,
+    oiChgPct: r.changePct || r.oiChangePct || 0,
+    volume:   r.totalTradedVolume || r.volume || 0,
+    signal:   (r.pChange||0) > 0 ? 'bull' : 'bear'
+  }))
+}
+
+function parseMover(raw, dir) {
+  if (!raw) return getDemoMovers(dir)
+  const arr = raw.data || raw.NIFTY?.data || raw.gainers || raw.loosers || []
+  return arr.slice(0,20).map(r => ({
+    symbol: r.symbol || r.Symbol || '—',
+    name:   r.companyName || r.symbol || '—',
+    price:  r.lastPrice || r.ltp || 0,
+    pChg:   r.pChange || r.perChange || 0,
+    vol:    r.totalTradedVolume || r.volume || 0,
+    signal: dir
+  }))
+}
+
+function parseBanList(raw) {
+  if (!raw) return []
+  const arr = raw.data || raw.securities || []
+  if (Array.isArray(arr)) return arr.map(r => r.symbol || r.Symbol || r)
+  if (typeof raw === 'string') return raw.split('\n').filter(s=>s.trim()).slice(1)
+  return []
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RENDERERS
+// ═══════════════════════════════════════════════════════════════════
+function renderSpurters() {
+  const el = document.getElementById('spurterBody')
+  if (!spurterData.length) { el.innerHTML=`<div class="empty-state">No data — market may be closed</div>`; return }
+  const max = Math.max(...spurterData.map(d=>Math.abs(d.oiChgPct||d.oiChg||0)), 1)
+  el.innerHTML = spurterData.map((d,i) => `
+    <div class="stock-row" onclick="openSidebar('${d.symbol}')">
+      <span class="sr-rank">${i+1}</span>
+      <span class="sr-sym">${d.symbol}</span>
+      <span class="sr-bar"><div class="sr-bar-fill" style="width:${Math.round(Math.abs(d.oiChgPct||d.oiChg||0)/max*100)}%;background:var(--purple)"></div></span>
+      <span class="sr-val" style="color:var(--purple)">${formatOI(d.oi)}</span>
+      <span class="sr-change" style="color:var(--purple)">+${(d.oiChgPct||0).toFixed(1)}%</span>
+    </div>`).join('')
+}
+
+function renderReducers() {
+  const el = document.getElementById('reducerBody')
+  if (!reducerData.length) { el.innerHTML=`<div class="empty-state">No data</div>`; return }
+  const max = Math.max(...reducerData.map(d=>Math.abs(d.oiChgPct||0)), 1)
+  el.innerHTML = reducerData.map((d,i) => `
+    <div class="stock-row" onclick="openSidebar('${d.symbol}')">
+      <span class="sr-rank">${i+1}</span>
+      <span class="sr-sym">${d.symbol}</span>
+      <span class="sr-bar"><div class="sr-bar-fill" style="width:${Math.round(Math.abs(d.oiChgPct||0)/max*100)}%;background:var(--yellow)"></div></span>
+      <span class="sr-val" style="color:var(--text2)">${formatOI(d.oi)}</span>
+      <span class="sr-change" style="color:var(--yellow)">${(d.oiChgPct||0).toFixed(1)}%</span>
+    </div>`).join('')
+}
+
+function renderPriceOI() {
+  const el = document.getElementById('priceOiBody')
+  if (!priceOiData.length) { el.innerHTML=`<div class="empty-state">No data</div>`; return }
+  el.innerHTML = priceOiData.map((d,i) => {
+    const c = d.pChg>0?'var(--green)':d.pChg<0?'var(--red)':'var(--text3)'
+    return `<div class="stock-row" onclick="openSidebar('${d.symbol}')">
+      <span class="sr-rank">${i+1}</span>
+      <span class="sr-sym">${d.symbol}</span>
+      <span class="sr-name">${d.name.slice(0,18)}</span>
+      <span class="sr-change" style="color:${c}">${d.pChg>0?'+':''}${(d.pChg||0).toFixed(1)}%</span>
+      <span class="badge ${d.oiChgPct>0?'bull':'bear'}">${d.oiChgPct>0?'OI↑':'OI↓'} ${Math.abs(d.oiChgPct||0).toFixed(0)}%</span>
+    </div>`
+  }).join('')
+}
+
+function setGL(mode, btn) {
+  glMode = mode
+  document.querySelectorAll('.gl-btn').forEach(b => {
+    b.style.background = 'var(--bg3)'; b.style.color = 'var(--text3)'; b.style.borderColor = 'var(--border)'
+  })
+  if (mode === 'gainers') { btn.style.background='var(--green-bg)'; btn.style.color='var(--green)'; btn.style.borderColor='var(--green-bd)' }
+  else { btn.style.background='var(--red-bg)'; btn.style.color='var(--red)'; btn.style.borderColor='var(--red-bd)' }
+  renderGL()
+}
+
+function renderGL() {
+  const el   = document.getElementById('glBody')
+  const data = glMode === 'gainers' ? gainersData : losersData
+  if (!data.length) { el.innerHTML=`<div class="empty-state">No data</div>`; return }
+  const isGn = glMode === 'gainers'
+  el.innerHTML = data.map((d,i) => `
+    <div class="stock-row" onclick="openSidebar('${d.symbol}')">
+      <span class="sr-rank">${i+1}</span>
+      <span class="sr-sym">${d.symbol}</span>
+      <span class="sr-name">${(d.name||'').slice(0,20)}</span>
+      <span class="sr-val">₹${(d.price||0).toLocaleString('en-IN',{maximumFractionDigits:0})}</span>
+      <span class="sr-change" style="color:${isGn?'var(--green)':'var(--red)'}">${isGn?'+':''}${(d.pChg||0).toFixed(1)}%</span>
+    </div>`).join('')
+}
+
+function renderBanPill() {
+  const pill = document.getElementById('banPill')
+  const cnt  = document.getElementById('banCount')
+  if (banList.length > 0) {
+    pill.style.display = 'inline-flex'
+    cnt.textContent = banList.length
+    pill.title = 'F&O Ban: ' + banList.slice(0,10).join(', ') + (banList.length>10?'...':'')
+  } else {
+    pill.style.display = 'none'
+  }
+}
+
+function renderFNOList(filter='') {
+  const el = document.getElementById('fnoBody')
+  const list = filter
+    ? fnoLiveList.filter(s => (s.symbol||s.s||'').toUpperCase().includes(filter.toUpperCase()) || (s.name||s.n||'').toUpperCase().includes(filter.toUpperCase()))
+    : fnoLiveList
+  document.getElementById('fnoCountLabel').textContent = `— ${list.length} stocks`
+  if (!list.length) { el.innerHTML=`<div class="empty-state">No stocks found</div>`; return }
+  el.innerHTML = `<table class="fno-table">
+    <thead><tr><th>Symbol</th><th>Name</th><th>Lot</th><th>Ban?</th></tr></thead>
+    <tbody>${list.slice(0,200).map(s => {
+      const sym = s.symbol||s.s||'—'
+      const nm  = (s.name||s.n||'—').slice(0,22)
+      const lot = s.lot||s.lotSize||'—'
+      const isBan = banList.includes(sym)
+      return `<tr onclick="openSidebar('${sym}')">
+        <td style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:12px">${sym}</td>
+        <td style="font-size:11px;color:var(--text2)">${nm}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${lot}</td>
+        <td>${isBan?'<span class="badge ban">BAN</span>':'—'}</td>
+      </tr>`
+    }).join('')}</tbody>
+  </table>`
+}
+
+function filterFNO(val) { renderFNOList(val) }
+
+// ═══════════════════════════════════════════════════════════════════
+// TICKER
+// ═══════════════════════════════════════════════════════════════════
+function updateTicker() {
+  const chips = []
+  spurterData.slice(0,3).forEach(d => chips.push({type:'spike', msg:`⚡ ${d.symbol} OI +${(d.oiChgPct||0).toFixed(0)}% — institutions building positions`}))
+  reducerData.slice(0,2).forEach(d => chips.push({type:'warn', msg:`📉 ${d.symbol} OI ${(d.oiChgPct||0).toFixed(0)}% — positions unwinding`}))
+  gainersData.slice(0,3).forEach(d => chips.push({type:'bull', msg:`📈 ${d.symbol} +${(d.pChg||0).toFixed(1)}% — top gainer`}))
+  losersData.slice(0,2).forEach(d => chips.push({type:'bear', msg:`📉 ${d.symbol} ${(d.pChg||0).toFixed(1)}% — top loser`}))
+  if (banList.length>0) chips.push({type:'warn', msg:`🚫 F&O Ban: ${banList.slice(0,4).join(', ')}${banList.length>4?' +more':''}`})
+  chips.push({type:'info', msg:`📖 OI Spurters = institutions taking fresh positions — watch for trend continuation`})
+  chips.push({type:'info', msg:`📖 OI Reducers = positions being covered/exited — watch for reversal`})
+  chips.push({type:'info', msg:`📖 Price↑ + OI↑ = strong trend. Price↑ + OI↓ = short covering — less reliable.`})
+  if (!chips.length) return
+  const el = document.getElementById('tickerInner')
+  const html = chips.map(c=>`<span class="chip ${c.type}">${c.msg}</span>`).join('')
+  el.innerHTML = html + html
+  const dur = Math.max(20, chips.reduce((s,c)=>s+c.msg.length,0)*0.2)
+  el.style.animation = `ticker ${dur}s linear infinite`
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SIDEBAR — opens full OI chain for a stock
+// ═══════════════════════════════════════════════════════════════════
+async function openSidebar(sym) {
+  document.getElementById('sidebarTitle').textContent = sym
+  document.getElementById('sidebarContent').innerHTML = `<div class="loading-state" style="height:200px"><div class="loading-ring"></div><span class="scanning-pulse">Loading ${sym} chain...</span></div>`
+  document.getElementById('detailSidebar').classList.add('open')
+  document.getElementById('sidebarOverlay').style.display = 'block'
+
+  try {
+    let raw = null
+    // Try local proxy
+    try {
+      const r = await fetch(`http://localhost:3001/chain?symbol=${encodeURIComponent(sym)}&type=equity`, {signal:AbortSignal.timeout(4000)})
+      if (r.ok) raw = await r.json()
+    } catch(e) {}
+    // Try Vercel
+    if (!raw) {
+      try {
+        const r = await fetch(`/api/chain?symbol=${encodeURIComponent(sym)}&type=equity`, {signal:AbortSignal.timeout(10000)})
+        if (r.ok) raw = await r.json()
+      } catch(e) {}
+    }
+
+    if (raw?.records) {
+      renderSidebarChain(sym, raw)
+    } else {
+      renderSidebarDemo(sym)
+    }
+  } catch(e) {
+    renderSidebarDemo(sym)
+  }
+}
+
+function renderSidebarChain(sym, raw) {
+  const records = raw.records
+  const spot    = records.underlyingValue || 0
+  const allExp  = records.expiryDates || []
+  const expiry  = allExp[0] || '—'
+  const data    = (records.data||[]).filter(r=>r.expiryDate===expiry)
+  const strikes = {}
+  for (const row of data) {
+    const k = row.strikePrice
+    if (!strikes[k]) strikes[k]={strike:k,ce:{},pe:{}}
+    if (row.CE) strikes[k].ce = row.CE
+    if (row.PE) strikes[k].pe = row.PE
+  }
+  const list   = Object.values(strikes).sort((a,b)=>a.strike-b.strike)
+  const atmRow = list.reduce((b,s)=>Math.abs(s.strike-spot)<Math.abs(b.strike-spot)?s:b, list[0])
+  const ceWall = list.reduce((b,s)=>(s.ce.openInterest||0)>(b.ce.openInterest||0)?s:b, list[0])
+  const peWall = list.reduce((b,s)=>(s.pe.openInterest||0)>(b.pe.openInterest||0)?s:b, list[0])
+  const totCe  = list.reduce((s,r)=>s+(r.ce.openInterest||0), 0)
+  const totPe  = list.reduce((s,r)=>s+(r.pe.openInterest||0), 0)
+  const pcr    = totCe>0?totPe/totCe:1
+  const lot    = fnoLiveList.find(f=>(f.symbol||f.s)===sym)?.lot || 500
+  const isBan  = banList.includes(sym)
+  const atmIdx = list.indexOf(atmRow)
+  const near   = list.slice(Math.max(0,atmIdx-4), atmIdx+5)
+
+  document.getElementById('sidebarContent').innerHTML = `
+    <div style="padding:14px 16px;background:#2a3148;color:white;border-bottom:1px solid rgba(255,255,255,0.1)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.5)">${sym}</span>
+        <span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(245,158,11,0.25);color:#fde68a;font-weight:700">Lot: ${lot}</span>
+        ${isBan?`<span style="font-size:10px;padding:2px 7px;border-radius:5px;background:rgba(239,68,68,0.3);color:#fca5a5;font-weight:700">🚫 BANNED</span>`:''}
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:800;color:white">₹${spot.toLocaleString('en-IN',{maximumFractionDigits:2})}</div>
+      <div style="margin-top:6px;font-size:11px;color:rgba(255,255,255,0.5)">Expiry: <strong style="color:rgba(255,255,255,0.8)">${expiry}</strong> · ATM: <strong style="color:rgba(255,255,255,0.8)">₹${atmRow.strike}</strong></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid var(--border)">
+      <div style="padding:10px 12px;border-right:1px solid var(--border)"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">PCR</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:${pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)'}">${pcr.toFixed(2)}</div></div>
+      <div style="padding:10px 12px;border-right:1px solid var(--border)"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">CE Wall</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--red)">₹${ceWall.strike}</div></div>
+      <div style="padding:10px 12px;border-right:1px solid var(--border)"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">PE Wall</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--green)">₹${peWall.strike}</div></div>
+      <div style="padding:10px 12px"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px">CE OI</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--text)">${(totCe/100000).toFixed(1)}L</div></div>
+    </div>
+
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="background:var(--bg3)">
+          <th style="padding:5px 7px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3)">Strike</th>
+          <th style="padding:5px 7px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red)">CE OI</th>
+          <th style="padding:5px 7px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--red)">CE ₹</th>
+          <th style="padding:5px 7px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green)">PE OI</th>
+          <th style="padding:5px 7px;text-align:right;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green)">PE ₹</th>
+        </tr></thead>
+        <tbody>${near.map(row=>{
+          const isAtm=row.strike===atmRow.strike, isCeW=row.strike===ceWall.strike, isPeW=row.strike===peWall.strike
+          const bg=isCeW?'var(--red-bg)':isPeW?'var(--green-bg)':isAtm?'var(--yel-bg)':'transparent'
+          return `<tr style="background:${bg};border-bottom:1px solid var(--border)">
+            <td style="padding:5px 7px;font-family:'JetBrains Mono',monospace;font-weight:${isAtm?800:600}">₹${row.strike}${isCeW?' 🔴':isPeW?' 🟢':isAtm?' ◆':''}</td>
+            <td style="padding:5px 7px;text-align:right;font-family:'JetBrains Mono',monospace">${((row.ce?.openInterest||0)/100000).toFixed(1)}L</td>
+            <td style="padding:5px 7px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--yellow)">₹${(row.ce?.lastPrice||0).toFixed(1)}</td>
+            <td style="padding:5px 7px;text-align:right;font-family:'JetBrains Mono',monospace">${((row.pe?.openInterest||0)/100000).toFixed(1)}L</td>
+            <td style="padding:5px 7px;text-align:right;font-family:'JetBrains Mono',monospace;color:var(--yellow)">₹${(row.pe?.lastPrice||0).toFixed(1)}</td>
+          </tr>`
+        }).join('')}</tbody>
+      </table>
+    </div>
+    <div style="padding:12px 14px">
+      <a href="stocks.html" onclick="sessionStorage.setItem('openStock','${sym}')" style="display:block;width:100%;padding:10px;border-radius:9px;background:var(--blue);color:white;font-size:13px;font-weight:700;text-align:center;text-decoration:none;transition:all 0.15s">📊 Open Full OI Chain in Stocks →</a>
+    </div>`
+}
+
+function renderSidebarDemo(sym) {
+  document.getElementById('sidebarContent').innerHTML = `
+    <div style="padding:20px;text-align:center;color:var(--text3)">
+      <div style="font-size:24px;margin-bottom:12px">⚪</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px">Live data unavailable</div>
+      <div style="font-size:12px;line-height:1.6;margin-bottom:16px">NSE is closed or proxy is not running.<br>Start nse-proxy.js at market open for live data.</div>
+      <a href="stocks.html" style="display:inline-block;padding:9px 20px;border-radius:9px;background:var(--blue);color:white;font-size:12px;font-weight:700;text-decoration:none">Open ${sym} in Stocks page →</a>
+    </div>`
+}
+
+function closeSidebar() {
+  document.getElementById('detailSidebar').classList.remove('open')
+  document.getElementById('sidebarOverlay').style.display = 'none'
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DEMO DATA — when NSE is unreachable
+// ═══════════════════════════════════════════════════════════════════
+function getDemoSpurters() {
+  return [
+    {symbol:'TATAMOTORS',name:'Tata Motors',oi:2850000,oiChgPct:24.5,price:995},
+    {symbol:'ADANIENT',name:'Adani Enterprises',oi:1200000,oiChgPct:19.2,price:2850},
+    {symbol:'JSWENERGY',name:'JSW Energy',oi:980000,oiChgPct:17.8,price:680},
+    {symbol:'SBIN',name:'SBI',oi:4200000,oiChgPct:15.1,price:845},
+    {symbol:'HDFCBANK',name:'HDFC Bank',oi:3100000,oiChgPct:14.6,price:1720},
+    {symbol:'INFY',name:'Infosys',oi:2750000,oiChgPct:13.2,price:1890},
+    {symbol:'RVNL',name:'RVNL',oi:1850000,oiChgPct:12.4,price:480},
+    {symbol:'HAL',name:'HAL',oi:920000,oiChgPct:11.9,price:4200},
+  ]
+}
+
+function getDemoReducers() {
+  return [
+    {symbol:'ZOMATO',name:'Zomato',oi:5200000,oiChgPct:-18.4,price:245},
+    {symbol:'PAYTM',name:'Paytm',oi:2100000,oiChgPct:-16.2,price:385},
+    {symbol:'NYKAA',name:'Nykaa',oi:1400000,oiChgPct:-14.8,price:195},
+    {symbol:'INDIGO',name:'IndiGo',oi:890000,oiChgPct:-12.5,price:4850},
+    {symbol:'DMART',name:'D-Mart',oi:750000,oiChgPct:-11.1,price:4200},
+    {symbol:'ITC',name:'ITC',oi:3800000,oiChgPct:-9.8,price:465},
+  ]
+}
+
+function getDemoPriceOI() {
+  return [
+    {symbol:'HAL',name:'Hindustan Aeronautics',price:4200,pChg:3.8,oiChgPct:18.2},
+    {symbol:'BEL',name:'Bharat Electronics',price:295,pChg:2.9,oiChgPct:14.5},
+    {symbol:'RVNL',name:'Rail Vikas Nigam',price:480,pChg:2.4,oiChgPct:12.8},
+    {symbol:'NTPC',name:'NTPC',price:375,pChg:1.8,oiChgPct:9.2},
+    {symbol:'ADANIPORTS',name:'Adani Ports',price:1380,pChg:1.5,oiChgPct:8.4},
+    {symbol:'SBIN',name:'SBI',price:845,pChg:1.2,oiChgPct:7.6},
+    {symbol:'HDFCBANK',name:'HDFC Bank',price:1720,pChg:0.9,oiChgPct:6.2},
+  ]
+}
+
+function getDemoMovers(dir) {
+  return dir==='bull' ? [
+    {symbol:'HAL',name:'HAL',price:4200,pChg:3.8},{symbol:'BEL',name:'BEL',price:295,pChg:2.9},
+    {symbol:'TATAMOTORS',name:'Tata Motors',price:995,pChg:2.5},{symbol:'ADANIENT',name:'Adani Ent.',price:2850,pChg:2.1},
+    {symbol:'HDFCBANK',name:'HDFC Bank',price:1720,pChg:1.8},{symbol:'SBIN',name:'SBI',price:845,pChg:1.5},
+    {symbol:'BHARTIARTL',name:'Airtel',price:1850,pChg:1.2},{symbol:'RELIANCE',name:'Reliance',price:2980,pChg:0.9},
+  ] : [
+    {symbol:'ZOMATO',name:'Zomato',price:245,pChg:-3.2},{symbol:'PAYTM',name:'Paytm',price:385,pChg:-2.8},
+    {symbol:'ITC',name:'ITC',price:465,pChg:-2.1},{symbol:'DMART',name:'D-Mart',price:4200,pChg:-1.9},
+    {symbol:'INDIGO',name:'IndiGo',price:4850,pChg:-1.5},{symbol:'NYKAA',name:'Nykaa',price:195,pChg:-1.2},
+  ]
+}
+
+function getBuiltinFNO() {
+  return [
+    {symbol:'RELIANCE',name:'Reliance Industries',lot:250},
+    {symbol:'TCS',name:'Tata Consultancy',lot:150},
+    {symbol:'HDFCBANK',name:'HDFC Bank',lot:550},
+    {symbol:'INFY',name:'Infosys',lot:400},
+    {symbol:'ICICIBANK',name:'ICICI Bank',lot:700},
+    {symbol:'SBIN',name:'State Bank of India',lot:1500},
+    {symbol:'AXISBANK',name:'Axis Bank',lot:1200},
+    {symbol:'BAJFINANCE',name:'Bajaj Finance',lot:125},
+    {symbol:'WIPRO',name:'Wipro',lot:1500},
+    {symbol:'HCLTECH',name:'HCL Technologies',lot:700},
+    {symbol:'TATAMOTORS',name:'Tata Motors',lot:1400},
+    {symbol:'SUNPHARMA',name:'Sun Pharma',lot:700},
+    {symbol:'ADANIENT',name:'Adani Enterprises',lot:500},
+    {symbol:'JSWENERGY',name:'JSW Energy',lot:1500},
+    {symbol:'HAL',name:'HAL',lot:300},
+    {symbol:'BEL',name:'BEL',lot:4500},
+    {symbol:'RVNL',name:'RVNL',lot:4000},
+    {symbol:'NTPC',name:'NTPC',lot:3000},
+    {symbol:'LT',name:'L&T',lot:450},
+    {symbol:'ZOMATO',name:'Zomato',lot:4500},
+    // This list is the fallback only — live list comes from NSE /fnolist
+  ]
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function formatOI(oi) {
+  if (!oi) return '—'
+  if (oi >= 10000000) return (oi/10000000).toFixed(1)+'Cr'
+  if (oi >= 100000)   return (oi/100000).toFixed(1)+'L'
+  if (oi >= 1000)     return (oi/1000).toFixed(0)+'K'
+  return oi.toString()
+}
+
+function startCountdown() {
+  if (countdownInt) clearInterval(countdownInt)
+  countdownSec = 120
+  updateCD()
+  countdownInt = setInterval(() => { countdownSec--; if(countdownSec<=0)countdownSec=0; updateCD() }, 1000)
+}
+function updateCD() {
+  const el=document.getElementById('countdownEl'); if(!el) return
+  const m=Math.floor(countdownSec/60), s=countdownSec%60
+  el.textContent = m+':'+String(s).padStart(2,'0')
+  el.classList.toggle('urgent', countdownSec<=20)
+}
+
+// Detect market hours for status pill
+// ════════════════════════════════════════════════════════════
+// PULSE ALERT ENGINE
+// ════════════════════════════════════════════════════════════
+const PAS_KEY = 'lnp_pulse_alerts'
+let pulseAlertHistory = []
+let pulseUnseen = 0
+let prevSpurters = []   // track changes between refreshes
+let prevGainers  = []
+let prevBanList  = []
+let _pTid = 0
+
+const DEFAULT_PAS = {snd:true,pop:true,tg:false,spurt:true,gain:true,ban:true,thresh:15}
+
+function getPAS() {
+  try { return {...DEFAULT_PAS,...JSON.parse(localStorage.getItem(PAS_KEY)||'{}')} }
+  catch(e){ return {...DEFAULT_PAS} }
+}
+
+function savePAS() {
+  const s = {
+    snd:    document.getElementById('pSnd')?.checked,
+    pop:    document.getElementById('pPop')?.checked,
+    tg:     document.getElementById('pTg')?.checked,
+    spurt:  document.getElementById('pSpurt')?.checked,
+    gain:   document.getElementById('pGain')?.checked,
+    ban:    document.getElementById('pBan')?.checked,
+    thresh: parseInt(document.getElementById('pThresh')?.value)||15,
+  }
+  localStorage.setItem(PAS_KEY, JSON.stringify(s))
+}
+
+function loadPASIntoModal() {
+  const s = getPAS()
+  const set = (id,v) => { const el=document.getElementById(id); if(el) el.checked=v }
+  set('pSnd',s.snd); set('pPop',s.pop); set('pTg',s.tg)
+  set('pSpurt',s.spurt); set('pGain',s.gain); set('pBan',s.ban)
+  const th=document.getElementById('pThresh'); if(th) th.value=s.thresh
+}
+
+function openAM() {
+  loadPASIntoModal()
+  renderPAH()
+  pulseUnseen=0; updatePulseBadge()
+  document.getElementById('alertModal').style.display='flex'
+}
+function closeAM() { document.getElementById('alertModal').style.display='none' }
+function closeAMEv(e) { if(e.target===document.getElementById('alertModal')) closeAM() }
+
+function updatePulseBadge() {
+  const b=document.getElementById('alertBadge'), btn=document.getElementById('alertBtn')
+  if(pulseUnseen>0){
+    b.textContent=pulseUnseen>9?'9+':pulseUnseen
+    b.style.display='flex'; btn.style.borderColor='#fca5a5'; btn.style.background='rgba(239,68,68,0.3)'
+  } else {
+    b.style.display='none'; btn.style.borderColor='rgba(239,68,68,0.4)'; btn.style.background='rgba(239,68,68,0.12)'
+  }
+}
+
+function firePulseAlert(al) {
+  const s = getPAS()
+  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  pulseAlertHistory.unshift({...al, time:now})
+  if(pulseAlertHistory.length>20) pulseAlertHistory.pop()
+  pulseUnseen++
+  updatePulseBadge()
+  if(s.snd) playPulseSound(al.severity||'medium')
+  if(s.pop) showPulseToast(al)
+  if(s.tg)  sendPulseTG(al)
+  if(document.getElementById('alertModal').style.display!=='none') renderPAH()
+}
+
+function playPulseSound(sev='medium') {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)()
+    const pats = {high:[[880,0.15],[660,0.1],[880,0.2]],medium:[[660,0.15],[440,0.15]],low:[[440,0.1]]}
+    const notes = pats[sev]||pats.medium
+    let t = ctx.currentTime
+    notes.forEach(([f,d])=>{
+      const o=ctx.createOscillator(), g=ctx.createGain()
+      o.connect(g); g.connect(ctx.destination)
+      o.frequency.value=f; o.type='sine'
+      g.gain.setValueAtTime(0.4,t); g.gain.exponentialRampToValueAtTime(0.001,t+d)
+      o.start(t); o.stop(t+d+0.02); t+=d+0.05
+    })
+  } catch(e){}
+}
+
+function showPulseToast(al) {
+  const id='pt'+(_pTid++)
+  const colors={spike:'#ef4444',bull:'#22c55e',bear:'#ef4444',warn:'#f59e0b',ban:'#8b5cf6',info:'#3b82f6'}
+  const c=colors[al.type]||'#ef4444'
+  const el=document.createElement('div')
+  el.id=id; el.className='toast'
+  el.style.cssText=`--tc:${c}`
+  el.innerHTML=`<button class="toast-dismiss" onclick="document.getElementById('${id}').remove()" style="position:absolute;top:7px;right:9px;font-size:13px;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none">✕</button>
+    <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:${c};margin-bottom:3px">${(al.type||'ALERT').toUpperCase()} · PULSE · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+    <div style="font-size:12px;font-weight:700;color:white;margin-bottom:4px;line-height:1.4">${al.title||al.msg?.slice(0,60)||''}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.65);line-height:1.5;margin-bottom:7px">${al.detail||''}</div>
+    <div style="display:flex;gap:5px">
+      <button onclick="document.getElementById('${id}').remove()" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:white;cursor:pointer">Dismiss</button>
+      <button onclick="sendPulseTG(${JSON.stringify(al).replace(/"/g,'&quot;')});document.getElementById('${id}').remove()" style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;border:1px solid ${c};background:${c};color:white;cursor:pointer">✈️ Telegram</button>
+    </div>`
+  document.getElementById('toastWrap').appendChild(el)
+  setTimeout(()=>{if(document.getElementById(id)){el.style.animation='slideOut 0.3s forwards';setTimeout(()=>el.remove(),300)}},10000)
+}
+
+async function sendPulseTG(al) {
+  const tok=localStorage.getItem('lnp_tg_token'), chat=localStorage.getItem('lnp_tg_chatid')
+  if(!tok||!chat) return
+  const text=`⚡ *LNP PULSE ALERT*
+${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}
+─────────
+${al.msg||''}
+${al.detail||''}
+_LNP KAMAKSHIVA OI Pulse_`
+  try{ await fetch(`https://api.telegram.org/bot${tok}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chat,text,parse_mode:'Markdown'})}) }catch(e){}
+}
+
+function renderPAH() {
+  const el=document.getElementById('pAlertHistory'); if(!el) return
+  const colors={spike:'#ef4444',bull:'#22c55e',bear:'#ef4444',warn:'#f59e0b',ban:'#8b5cf6',info:'#3b82f6'}
+  el.innerHTML = pulseAlertHistory.length===0
+    ? '<div style="color:var(--text3);padding:6px 0">No alerts yet</div>'
+    : pulseAlertHistory.slice(0,15).map(a=>`
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <div style="width:7px;height:7px;border-radius:50%;background:${colors[a.type]||'#999'};flex-shrink:0;margin-top:3px"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);flex-shrink:0;width:38px">${a.time||'—'}</div>
+        <div style="font-size:11px;color:var(--text2);flex:1;line-height:1.5">${a.msg||''}</div>
+      </div>`).join('')
+}
+
+// ── CHECK ALERTS after each loadAll() ─────────────────────
+function checkPulseAlerts() {
+  const s = getPAS()
+
+  // OI Spurters — alert on NEW stocks entering list
+  if (s.spurt && prevSpurters.length > 0 && spurterData.length > 0) {
+    spurterData.forEach(d => {
+      const wasIn = prevSpurters.some(p => p.symbol === d.symbol)
+      const pct   = Math.abs(d.oiChgPct||0)
+      if (!wasIn && pct >= s.thresh) {
+        firePulseAlert({
+          type:'spike', severity:'high',
+          msg:`⚡ ${d.symbol} entered OI Spurters — OI +${pct.toFixed(0)}%`,
+          title:`NEW: ${d.symbol} OI Spurter`,
+          detail:`${d.symbol} just appeared in OI Spurters with +${pct.toFixed(0)}% OI change. Institutions are entering fresh positions.`,
+        })
+      }
+    })
+  }
+  // Update previous for next comparison
+  prevSpurters = [...spurterData]
+
+  // Gainers — alert on NEW top 5 entrants
+  if (s.gain && prevGainers.length > 0 && gainersData.length > 0) {
+    gainersData.slice(0,5).forEach(d => {
+      const wasIn = prevGainers.some(p => p.symbol === d.symbol)
+      if (!wasIn && Math.abs(d.pChg||0) >= 2) {
+        firePulseAlert({
+          type:'bull', severity:'medium',
+          msg:`📈 ${d.symbol} entered Top Gainers — +${(d.pChg||0).toFixed(1)}%`,
+          title:`${d.symbol} Top Gainer`,
+          detail:`${d.symbol} is up ${(d.pChg||0).toFixed(1)}% at ₹${(d.price||0).toLocaleString('en-IN',{maximumFractionDigits:0})}`,
+        })
+      }
+    })
+  }
+  prevGainers = [...(gainersData||[])]
+
+  // Ban list changes — new additions
+  if (s.ban && prevBanList.length > 0) {
+    banList.forEach(sym => {
+      if (!prevBanList.includes(sym)) {
+        firePulseAlert({
+          type:'ban', severity:'high',
+          msg:`🚫 ${sym} added to F&O Ban List — no new positions allowed today`,
+          title:`F&O Ban: ${sym}`,
+          detail:`${sym} has been banned by NSE. You cannot open new F&O positions. Only closing existing trades is allowed.`,
+        })
+      }
+    })
+    prevBanList.forEach(sym => {
+      if (!banList.includes(sym)) {
+        firePulseAlert({
+          type:'info', severity:'low',
+          msg:`✅ ${sym} removed from F&O Ban List — trading restrictions lifted`,
+          title:`Ban Lifted: ${sym}`,
+          detail:`${sym} is no longer on the F&O ban list. Normal trading can resume.`,
+        })
+      }
+    })
+  }
+  prevBanList = [...banList]
+}
+
+function testPulseAlert() {
+  firePulseAlert({
+    type:'spike', severity:'high',
+    msg:'⚡ TEST: TATAMOTORS entered OI Spurters — OI +24%',
+    title:'TEST ALERT — Pulse',
+    detail:'This is a test. If you see this popup and hear a sound — alerts are working correctly.',
+  })
+  const el=document.getElementById('pTestStatus')
+  if(el){el.textContent='✅ Test fired!';el.style.color='var(--green)';setTimeout(()=>el.textContent='',3000)}
+}
+
+function detectMarketStatus() {
+  const now = new Date()
+  const h = now.getHours(), m = now.getMinutes()
+  const mins = h*60+m
+  const isWeekday = now.getDay() >= 1 && now.getDay() <= 5
+  const marketPill = document.getElementById('marketPill')
+  if (!isWeekday) { marketPill.textContent = '📅 Weekend — Market Closed'; marketPill.className='status-pill demo'; return }
+  if (mins >= 9*60+15 && mins <= 15*60+30) { marketPill.textContent = '🟢 Market Open'; marketPill.className='status-pill live' }
+  else if (mins < 9*60+15) { marketPill.textContent = `⏰ Opens in ${9*60+15-mins}min`; marketPill.className='status-pill' }
+  else { marketPill.textContent = '🔴 Market Closed'; marketPill.className='status-pill demo' }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+detectMarketStatus()
+loadAll()
+setInterval(() => { if(countdownSec<=0) loadAll() }, 2*60*1000)
+setInterval(detectMarketStatus, 30000)
+</script>
+<!-- ══ ALERT MODAL ══ -->
+<div id="alertModal" onclick="closeAMEv(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:flex-start;justify-content:flex-end;padding:60px 16px 0">
+  <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;width:360px;max-width:95vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+    <div style="background:linear-gradient(135deg,#1a0a0a,#3a0f0f);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-radius:14px 14px 0 0;position:sticky;top:0">
+      <div style="font-size:13px;font-weight:800;color:white">🔔 Pulse Alert Settings</div>
+      <button onclick="closeAM()" style="font-size:16px;color:rgba(255,255,255,0.5);cursor:pointer;background:none;border:none">✕</button>
+    </div>
+    <div style="padding:14px 16px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px">Alert Channels</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">🔊 Sound</div><div style="font-size:11px;color:var(--text3)">Beep when OI spike detected</div></div>
+        <label style="position:relative;width:38px;height:21px;flex-shrink:0"><input type="checkbox" id="pSnd" checked onchange="savePAS()" style="opacity:0;width:0;height:0"><span onclick="this.previousSibling.click()" style="position:absolute;inset:0;background:var(--border);border-radius:21px;cursor:pointer;transition:0.3s"></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">📱 Popup Toast</div><div style="font-size:11px;color:var(--text3)">On-screen notification</div></div>
+        <label style="position:relative;width:38px;height:21px;flex-shrink:0"><input type="checkbox" id="pPop" checked onchange="savePAS()" style="opacity:0;width:0;height:0"><span onclick="this.previousSibling.click()" style="position:absolute;inset:0;background:var(--border);border-radius:21px;cursor:pointer;transition:0.3s"></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">✈️ Telegram</div><div style="font-size:11px;color:var(--text3)">Auto-send to bot (uses same token as Indexes page)</div></div>
+        <label style="position:relative;width:38px;height:21px;flex-shrink:0"><input type="checkbox" id="pTg" onchange="savePAS()" style="opacity:0;width:0;height:0"><span onclick="this.previousSibling.click()" style="position:absolute;inset:0;background:var(--border);border-radius:21px;cursor:pointer;transition:0.3s"></span></label>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin:12px 0 8px">Alert On</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">⚡ OI Spurters</div><div style="font-size:11px;color:var(--text3)">New stock appears in spurters list</div></div>
+        <label style="position:relative;width:38px;height:21px;flex-shrink:0"><input type="checkbox" id="pSpurt" checked onchange="savePAS()" style="opacity:0;width:0;height:0"><span onclick="this.previousSibling.click()" style="position:absolute;inset:0;background:var(--border);border-radius:21px;cursor:pointer;transition:0.3s"></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">📈 New Top Gainer</div><div style="font-size:11px;color:var(--text3)">Stock enters top 5 gainers</div></div>
+        <label style="position:relative;width:38px;height:21px;flex-shrink:0"><input type="checkbox" id="pGain" checked onchange="savePAS()" style="opacity:0;width:0;height:0"><span onclick="this.previousSibling.click()" style="position:absolute;inset:0;background:var(--border);border-radius:21px;cursor:pointer;transition:0.3s"></span></label>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">🚫 F&O Ban Change</div><div style="font-size:11px;color:var(--text3)">Stock gets added to or removed from ban list</div></div>
+        <label style="position:relative;width:38px;height:21px;flex-shrink:0"><input type="checkbox" id="pBan" checked onchange="savePAS()" style="opacity:0;width:0;height:0"><span onclick="this.previousSibling.click()" style="position:absolute;inset:0;background:var(--border);border-radius:21px;cursor:pointer;transition:0.3s"></span></label>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin:12px 0 8px">OI Spike Threshold</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+        <span style="font-size:12px;font-weight:600;color:var(--text2);flex:1">Alert when OI change %</span>
+        <input type="number" id="pThresh" value="15" min="5" max="50" oninput="savePAS()" style="width:65px;padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:12px;background:var(--bg3);color:var(--text);font-family:'JetBrains Mono',monospace;text-align:center"/>
+      </div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin:12px 0 8px">Alert History (last 20)</div>
+      <div id="pAlertHistory" style="max-height:180px;overflow-y:auto;font-size:12px;color:var(--text3)">No alerts yet</div>
+      <button onclick="testPulseAlert()" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;margin-top:10px;transition:all 0.15s">🔊 Test Sound + Popup</button>
+      <div id="pTestStatus" style="font-size:11px;color:var(--text3);text-align:center;margin-top:5px;min-height:14px"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

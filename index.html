@@ -532,6 +532,18 @@ function parseChain(raw){
     strikeList,atmRow:atm,timestamp:new Date()}
 }
 function computeStrategy(d){
+  // ── IV ANALYSIS (Natenberg core) ──
+  const atmIV    = d.atmIV || 15
+  const ivNormal = currentIndex==='BANKNIFTY'?20:14
+  const ivHigh   = ivNormal * 1.5
+  const ivLow    = ivNormal * 0.7
+  const ivState  = atmIV > ivHigh ? 'HIGH' : atmIV < ivLow ? 'LOW' : 'NORMAL'
+  const ivAction = ivState==='HIGH'
+    ? `IV ${atmIV.toFixed(1)}% is ELEVATED — premium expensive. Favour selling (Iron Condor, Straddle Sell).`
+    : ivState==='LOW'
+    ? `IV ${atmIV.toFixed(1)}% is LOW — premium cheap. Favour buying (Buy CE/PE, Debit Spread).`
+    : `IV ${atmIV.toFixed(1)}% is normal — both buying and selling valid. Follow OI direction.`
+  const ivPct    = Math.min(100, Math.round((atmIV / ivHigh) * 100))
   const{spot,ceWall,peWall,maxPainStrike,pcr}=d
   const ceWallStr=ceWall.strike,peWallStr=peWall.strike
   const distToCe=ceWallStr-spot,distToPe=spot-peWallStr
@@ -839,7 +851,7 @@ function computeStrategy(d){
   else if (totalSig >= 1) confidence = 2
   else confidence = 1
 
-  return{dir,zone,bias,strategy,strategy2,futStrat,allStrategies,reasons,bullSignals,bearSignals,confidence,dte,dteLabel}
+  return{dir,zone,bias,strategy,strategy2,futStrat,allStrategies,reasons,bullSignals,bearSignals,confidence,dte,dteLabel,atmIV,ivState,ivAction,ivPct}
 }
 // OI history — store last 5 snapshots for sparkline
 let oiHistory = []  // [{time, ceWallOI, peWallOI, ceWallStrike, peWallStrike}]
@@ -1296,6 +1308,14 @@ function renderWarRoom(d,s){
           <span style="font-size:12px;color:var(--text2);line-height:1.6">${sp.tip}</span>
         </div>
       </div>
+      <!-- IV STATE PILL in Quick Read -->
+      <div style="margin-top:8px;padding:9px 12px;background:${s.ivState==='HIGH'?'rgba(201,53,53,0.15)':s.ivState==='LOW'?'rgba(23,122,86,0.15)':'rgba(29,85,212,0.1)'};border-radius:8px;border:1px solid ${s.ivState==='HIGH'?'var(--red-bd)':s.ivState==='LOW'?'var(--green-bd)':'var(--blue-bd)'}">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:800;color:${s.ivState==='HIGH'?'var(--red)':s.ivState==='LOW'?'var(--green)':'var(--blue)'}">🌡️ IV ${s.ivState||'—'} · ATM IV: ${(s.atmIV||d.atmIV||0).toFixed(1)}%</span>
+          <div style="flex:1;height:5px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="height:100%;width:${s.ivPct||0}%;background:${s.ivState==='HIGH'?'var(--red)':s.ivState==='LOW'?'var(--green)':'var(--blue)'};border-radius:3px"></div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">${s.ivAction||'—'}</div>
+      </div>
     </div>
   </div>
 
@@ -1657,8 +1677,39 @@ function renderWarRoom(d,s){
     </div>
   </div>
   <div class="wr-section">
-    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📖</div>Learning Corner — Options Basics</div><span class="wr-chevron">▶</span></div>
+    <div class="wr-header" onclick="toggleSection(this)"><div class="wr-title"><div class="wr-icon" style="background:var(--blue-bg);border:1.5px solid var(--blue-bd)">📖</div>Learning Corner — Options Mastery (Natenberg + NSE)</div><span class="wr-chevron">▶</span></div>
     <div class="wr-body">
+
+      <!-- RISK MANAGEMENT FIRST — Natenberg's #1 lesson -->
+      <div style="background:var(--red-bg);border:1.5px solid var(--red-bd);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:800;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🛡️ Risk Management — The Most Important Section</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7">
+          <p><strong>Natenberg's Rule #1:</strong> Position sizing matters more than entry price. A good trade with wrong sizing can destroy your account.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <div style="background:white;border-radius:7px;padding:8px 10px;border:1px solid var(--border)">
+              <div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:3px">⚠️ NEVER DO THIS</div>
+              <ul style="font-size:11px;margin-left:14px;color:var(--text2)">
+                <li>Average a losing options position</li>
+                <li>Hold options through expiry hoping for recovery</li>
+                <li>Risk more than 2% of capital on one trade</li>
+                <li>Trade banned F&O stocks (NSE penalty)</li>
+                <li>Buy OTM options 1 day before expiry</li>
+              </ul>
+            </div>
+            <div style="background:white;border-radius:7px;padding:8px 10px;border:1px solid var(--border)">
+              <div style="font-size:10px;font-weight:700;color:var(--green);margin-bottom:3px">✅ ALWAYS DO THIS</div>
+              <ul style="font-size:11px;margin-left:14px;color:var(--text2)">
+                <li>Define max loss BEFORE entry</li>
+                <li>Exit at 50% of premium on buying trades</li>
+                <li>Exit at 50% profit on selling trades</li>
+                <li>Check India VIX before choosing strategy type</li>
+                <li>Check F&O ban list every morning</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="explain-box">
         <p><strong>OI vs Volume</strong> — Volume = contracts traded today (resets every morning). OI = contracts still open (builds over time). Think: Volume = cars that entered the parking lot today. OI = cars still parked. High OI at a strike = real institutional interest = that level matters.</p>
         <p style="margin-top:8px"><strong>Why CE Wall = ceiling.</strong> When an institution sells 80L call contracts at 24,600 they collect premium. If Nifty closes above 24,600 they lose money. So they sell Nifty futures near 24,600 to protect themselves (called <em>delta hedging</em>). This is automatic, predictable, and creates the mechanical ceiling you see in OI data.</p>

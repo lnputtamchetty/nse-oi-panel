@@ -869,11 +869,11 @@ function saveAS() {
 // ═══════════════════════════════════════════════════════════════
 // FETCH
 // ═══════════════════════════════════════════════════════════════
+let _proxyAlive = false  // set by startScan health check
+
 async function fetchChain(sym) {
   const enc = encodeURIComponent(sym)
 
-  // Race both endpoints — whichever responds first wins
-  // This cuts worst-case from 7s sequential → 2.5s parallel
   async function tryUrl(url, ms) {
     try {
       const r = await fetch(url, {signal: AbortSignal.timeout(ms)})
@@ -882,18 +882,19 @@ async function fetchChain(sym) {
     return null
   }
 
-  const local  = tryUrl(`http://localhost:3001/chain?symbol=${enc}&type=equity`, 2500)
-  const remote = tryUrl(`/api/chain?symbol=${enc}&type=equity`, 2500)
-
-  // Use Promise.any — resolves as soon as ONE succeeds
-  try {
-    const result = await Promise.any([
-      local.then(r => r || Promise.reject()),
-      remote.then(r => r || Promise.reject()),
-    ])
-    return result
-  } catch(e) {
-    return null  // both failed — will use demo data
+  if (_proxyAlive) {
+    // Proxy is alive — local is fast, race with Vercel as backup
+    const local  = tryUrl(`http://localhost:3001/chain?symbol=${enc}&type=equity`, 1500)
+    const remote = tryUrl(`/api/chain?symbol=${enc}&type=equity`, 3000)
+    try {
+      return await Promise.any([
+        local.then(r => r || Promise.reject()),
+        remote.then(r => r || Promise.reject()),
+      ])
+    } catch(e) { return null }
+  } else {
+    // Proxy dead — only try Vercel, short timeout
+    return await tryUrl(`/api/chain?symbol=${enc}&type=equity`, 3000)
   }
 }
 
@@ -1273,9 +1274,54 @@ async function startScan() {
   const tEl = document.getElementById('rightCards')
   if(tEl) tEl.innerHTML = '<div class="loading-state"><div class="ring"></div><span class="scanning">Building your trade list...</span></div>'
 
+  // ── Quick proxy health check (200ms max) ──
+  // If proxy is offline, skip ALL network waits and run in instant demo mode
+  let proxyAlive = false
+  try {
+    const hc = await fetch('http://localhost:3001/health', {signal: AbortSignal.timeout(200)})
+    proxyAlive = hc.ok
+  } catch(e) { proxyAlive = false }
+
+  // Set global proxy flag for fetchChain to use
+  _proxyAlive = proxyAlive
+
   const syms = [...watchlist]
-  const BATCH = 5  // fetch 5 stocks in parallel (fast since endpoints race)
+  const BATCH = 5
   let completed = 0
+
+  // ── INSTANT DEMO MODE: if market closed and proxy offline ──
+  // Build all demo data synchronously, render once at end — < 300ms total
+  const isMarketHours = (() => {
+    const now = new Date()
+    const ist = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}))
+    const h = ist.getHours(), m = ist.getMinutes()
+    const mins = h*60 + m
+    return mins >= 555 && mins <= 930  // 9:15 AM to 3:30 PM IST
+  })()
+
+  if (!proxyAlive && !isMarketHours) {
+    // Pure demo mode — instant
+    const lbl = document.getElementById('scanLbl')
+    if(lbl) lbl.textContent = 'Demo mode — market closed'
+    const fill = document.getElementById('progFill')
+    for (const sym of syms) {
+      const d = buildDemo(sym), sv = computeStrategy(d)
+      scanResults[sym] = {d, s:sv, isDemo:true, ts:Date.now()}
+      allTrades.push({sym, d, s:sv, strat:sv.pri, isDemo:true})
+      if (sv.score >= 60) allTrades.push({sym, d, s:sv, strat:sv.fut, isFut:true, isDemo:true})
+      updatePulse(sym, d, sv)
+      prevSnaps[sym] = buildSnap(d)
+    }
+    if (fill) fill.style.width = '100%'
+    // Single render at end
+    renderRightPanel(); renderCentre(); renderPulse(); renderMovingBar()
+    isScanning = false
+    if(btn) btn.classList.remove('spinning')
+    if(prog) prog.style.display = 'none'
+    if(luEl) luEl.textContent = 'Demo data · Start proxy for live'
+    resetCD()
+    return
+  }
 
   async function scanOne(sym) {
     try {
@@ -1569,7 +1615,7 @@ function renderStockAnalysis(el, sym) {
 
   const wrap = document.createElement('div')
 
-  // Sticky header
+  // ── STICKY HEADER BAR ──
   const hdr = document.createElement('div')
   hdr.style.cssText = 'background:#1e2d4a;color:white;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:5'
   hdr.innerHTML = `
@@ -1584,41 +1630,93 @@ function renderStockAnalysis(el, sym) {
         <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px">${d.info.n}</div>
       </div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:800;color:white">₹${d.spot.toLocaleString('en-IN',{maximumFractionDigits:2})}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.5)">
-        Expiry <strong style="color:rgba(255,255,255,0.8)">${d.expiry}</strong>
-        · <strong style="color:${dteColor}">${s.dte}D</strong> left
-      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.5)">Expiry <strong style="color:rgba(255,255,255,0.8)">${d.expiry}</strong> · <strong style="color:${dteColor}">${s.dte}D</strong></div>
     </div>
     <div style="display:flex;align-items:center;gap:7px">
-      <span style="padding:4px 11px;border-radius:20px;font-size:11px;font-weight:800;background:${gradeBg};color:${gradeColor}">
-        ${s.grade==='A'?'🏆 A-Grade':s.grade==='B'?'✅ B-Grade':s.grade==='C'?'⚠️ C-Grade':'❌ D'} · ${s.score}
-      </span>
+      <span style="padding:4px 11px;border-radius:20px;font-size:11px;font-weight:800;background:${gradeBg};color:${gradeColor}">${s.grade==='A'?'🏆 A-Grade':s.grade==='B'?'✅ B-Grade':s.grade==='C'?'⚠️ C-Grade':'❌ D'} · ${s.score}</span>
       <a href="https://www.tradingview.com/chart/?symbol=NSE:${d.sym}" target="_blank"
          style="padding:5px 11px;border-radius:7px;background:var(--blue);color:white;font-size:11px;font-weight:700;text-decoration:none">📊 Chart ↗</a>
       <button onclick="selectedSym=null;renderCentre();renderRightPanel()"
               style="padding:5px 9px;border-radius:7px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:11px;border:1px solid rgba(255,255,255,0.2);cursor:pointer">✕ Back</button>
     </div>`
 
-  // Content area
+  // ── TABBED BODY ──
   const body = document.createElement('div')
-  body.style.cssText = 'padding:13px;display:flex;flex-direction:column;gap:11px'
-  body.innerHTML =
-    renderStockQuickRead(d, s) +
-    renderOIChart(d) +
-    renderMetricsStrip(d, s) +
-    `<div>
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px">⚡ Trade Strategies</div>
+  body.innerHTML = `
+    <!-- TABS -->
+    <div style="display:flex;border-bottom:2px solid var(--border);background:var(--bg2);position:sticky;top:57px;z-index:4">
+      <button class="stock-tab active" onclick="switchStockTab(this,'tab-oi','${d.sym}')"
+        style="padding:9px 16px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--blue);border-bottom:2px solid var(--blue);margin-bottom:-2px">
+        📊 OI Analysis
+      </button>
+      <button class="stock-tab" onclick="switchStockTab(this,'tab-strategy','${d.sym}')"
+        style="padding:9px 16px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">
+        ⚡ Strategies
+      </button>
+      <button class="stock-tab" onclick="switchStockTab(this,'tab-ai','${d.sym}')"
+        style="padding:9px 16px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">
+        🤖 AI Insights
+      </button>
+      <button class="stock-tab" onclick="switchStockTab(this,'tab-chain','${d.sym}')"
+        style="padding:9px 16px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--text3)">
+        📋 Chain
+      </button>
+    </div>
+
+    <!-- TAB: OI ANALYSIS -->
+    <div id="tab-oi-${d.sym}" style="padding:13px;display:flex;flex-direction:column;gap:12px">
+      ${renderStockQuickRead(d, s)}
+      ${renderOIChart(d)}
+      ${renderMetricsStrip(d, s)}
+    </div>
+
+    <!-- TAB: STRATEGIES -->
+    <div id="tab-strategy-${d.sym}" style="padding:13px;display:none">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px">
+        ⚡ Best 2 Strategies + Futures — scored from 11 candidates
+      </div>
       ${renderSCard(s.pri,'pri')}
       ${renderSCard(s.alt,'alt')}
       ${renderFCard(s.fut)}
     </div>
-    <div>
-      <div onclick="toggleBflySection('bfly_ctr')"
-           style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:7px;padding:8px 10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
-        <span>📋 Option Chain — Butterfly View</span>
-        <span style="margin-left:auto" id="bfly_chevron_ctr">▶ Show</span>
+
+    <!-- TAB: AI INSIGHTS (news + fundamentals + projection) -->
+    <div id="tab-ai-${d.sym}" style="padding:13px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--text)">🤖 AI Market Intelligence</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">News · Fundamentals · Price Projection · Risk Factors</div>
+        </div>
+        <button onclick="loadStockAIDetail('${d.sym}',scanResults['${d.sym}']?.d,scanResults['${d.sym}']?.s,true)"
+          style="padding:7px 14px;border-radius:8px;border:1.5px solid var(--pur-bd);background:var(--pur-bg);color:var(--purple);font-size:11px;font-weight:700;cursor:pointer">
+          🔄 Refresh
+        </button>
       </div>
-      <div id="bfly_ctr" style="display:none;margin-top:4px" data-sym="${d.sym}" data-loaded="false"></div>
+      <div id="aiDetailBox_${d.sym}">
+        <div style="text-align:center;padding:30px;color:var(--text3)">
+          <div style="font-size:32px;margin-bottom:10px">🤖</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">AI Analysis Ready</div>
+          <div style="font-size:11px;line-height:1.7;margin-bottom:14px">Click below to fetch:<br>
+            📰 Latest news with sentiment<br>
+            🎯 Bull/Bear/Base price projection<br>
+            📊 52W levels, trend, institutional activity<br>
+            ⚠️ Key risk factors for this trade
+          </div>
+          <button onclick="loadStockAIDetail('${d.sym}',scanResults['${d.sym}']?.d,scanResults['${d.sym}']?.s,false)"
+            style="padding:10px 24px;border-radius:9px;border:none;background:linear-gradient(135deg,#7c3aed,#1d4ed8);color:white;font-size:13px;font-weight:700;cursor:pointer">
+            🤖 Analyse ${d.sym} Now
+          </button>
+          <div style="font-size:10px;color:var(--text3);margin-top:8px">Uses Claude AI with live web search · ~5 seconds</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: BUTTERFLY CHAIN -->
+    <div id="tab-chain-${d.sym}" style="display:none">
+      <div style="padding:8px 13px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:10px;color:var(--text3)">
+        Professional option chain · CE (red) ← strike → PE (green) · Click any row for analysis
+      </div>
+      <div id="bfly_ctr" data-sym="${d.sym}" data-loaded="false"></div>
     </div>`
 
   wrap.appendChild(hdr)
@@ -1626,6 +1724,56 @@ function renderStockAnalysis(el, sym) {
   el.innerHTML = ''
   el.appendChild(wrap)
 }
+
+// ── Tab switcher ──
+function switchStockTab(btn, tabPrefix, sym) {
+  // Deactivate all tabs
+  btn.closest('div').querySelectorAll('.stock-tab').forEach(t => {
+    t.style.color = 'var(--text3)'
+    t.style.borderBottom = 'none'
+    t.classList.remove('active')
+  })
+  // Activate clicked tab
+  btn.style.color = 'var(--blue)'
+  btn.style.borderBottom = '2px solid var(--blue)'
+  btn.classList.add('active')
+
+  // Hide all tab content in this stock view
+  const tabIds = ['tab-oi','tab-strategy','tab-ai','tab-chain']
+  tabIds.forEach(id => {
+    const el = document.getElementById(id + '-' + sym)
+    if (el) el.style.display = 'none'
+    // Also handle chain tab which has different id
+    const chainEl = document.getElementById('bfly_ctr')
+    if (id === 'tab-chain' && chainEl) chainEl.parentElement.style.display = 'none'
+  })
+
+  // Show selected tab
+  const target = document.getElementById(tabPrefix + '-' + sym)
+  if (target) target.style.display = (tabPrefix === 'tab-chain') ? 'block' : 'flex'
+
+  // Handle chain tab specially
+  if (tabPrefix === 'tab-chain') {
+    const chainEl = document.getElementById('bfly_ctr')
+    if (chainEl) {
+      chainEl.parentElement.style.display = 'block'
+      if (chainEl.dataset.loaded === 'false') {
+        const r = scanResults[sym]
+        if (r) {
+          chainEl.innerHTML = renderButterflyChain(r.d, r.s, r.d.info?.lot||500)
+          chainEl.dataset.loaded = 'true'
+        }
+      }
+    }
+  }
+
+  // Handle AI tab — show the content div
+  if (tabPrefix === 'tab-ai') {
+    const aiEl = document.getElementById('tab-ai-' + sym)
+    if (aiEl) aiEl.style.display = 'block'
+  }
+}
+
 
 function renderMarketOverview(el) {
   const sorted   = Object.values(scanResults).sort((a,b)=>(b.s?.score||0)-(a.s?.score||0))
@@ -2351,13 +2499,13 @@ function updCD(){const el=document.getElementById('cdEl');if(!el)return;const m=
 const aiDetailCache = {}  // sym → {html, ts}
 const AI_CACHE_TTL  = 30 * 60 * 1000  // 30 minutes
 
-async function loadStockAIDetail(sym, d, s) {
+async function loadStockAIDetail(sym, d, s, force=false) {
   const container = document.getElementById('aiDetailBox_' + sym)
   if (!container) return
 
-  // Check cache
+  // Check cache (skip if force refresh)
   const cached = aiDetailCache[sym]
-  if (cached && Date.now() - cached.ts < AI_CACHE_TTL) {
+  if (!force && cached && Date.now() - cached.ts < AI_CACHE_TTL) {
     container.innerHTML = cached.html
     return
   }

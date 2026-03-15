@@ -803,6 +803,32 @@ function computeStrategy(d){
   const strategy = allStrategies[0]
   const strategy2 = allStrategies[1] || null
   if (strategy) { strategy.dteLabel = dteLabel; strategy.dte = dte }
+
+  // ── FUTURES STRATEGY — always shown as 3rd card ──
+  const atmCeF = d.atmRow.ce?.lastPrice||0, atmPeF = d.atmRow.pe?.lastPrice||0
+  const futLot = currentIndex==='BANKNIFTY'?15:currentIndex==='SENSEX'?10:25
+  let futStrat = {}
+  if (dir==='bull'||(!inRange&&spot>=ceWallStr)) {
+    futStrat = {
+      name:'SYNTHETIC LONG (Futures Equiv.)',type:'Futures / High Conviction',tag:'🔷 FUTURES',tagColor:'#0891b2',
+      rationale:`Buy ATM CE + Sell ATM PE = acts exactly like buying ${currentIndex} futures but at lower capital. Each 1pt up = ₹${futLot} profit. SL below PE wall at ${peWallStr}.`,
+      legs:[{action:'BUY',desc:`${d.atm} CE (ATM)`,price:atmCeF.toFixed(1)},{action:'SELL',desc:`${d.atm} PE (ATM)`,price:atmPeF.toFixed(1)}],
+      risk:Math.round(Math.abs(atmCeF-atmPeF)*futLot),reward:Math.round(step*futLot*2),rr:'Unlimited upside',
+      exit:`Exit if ${currentIndex} falls below ${peWallStr} OR CE reaches 2x premium`,
+      when:`Confirmed bullish + DTE ≥ 2 days + CE wall broken or PCR < 0.9`,
+      avoid:`Never on expiry day. Never without a defined SL. Results day = huge gap risk.`
+    }
+  } else {
+    futStrat = {
+      name:'SYNTHETIC SHORT (Futures Equiv.)',type:'Futures / High Conviction',tag:'🔷 FUTURES',tagColor:'#0891b2',
+      rationale:`Buy ATM PE + Sell ATM CE = acts exactly like shorting ${currentIndex} futures. Each 1pt down = ₹${futLot} profit. Cover at PE wall target ${peWallStr}.`,
+      legs:[{action:'BUY',desc:`${d.atm} PE (ATM)`,price:atmPeF.toFixed(1)},{action:'SELL',desc:`${d.atm} CE (ATM)`,price:atmCeF.toFixed(1)}],
+      risk:Math.round(Math.abs(atmPeF-atmCeF)*futLot),reward:Math.round(step*futLot*2),rr:'Unlimited downside',
+      exit:`Exit if ${currentIndex} rises above ${ceWallStr} OR PE reaches 2x premium`,
+      when:`Confirmed bearish + DTE ≥ 2 days + PE wall broken or PCR > 1.2`,
+      avoid:`Never on expiry day. Never without SL. This is equivalent to a naked futures short.`
+    }
+  }
   // Confidence score 1-5 based on signal alignment
   const totalSig = bullSignals + bearSignals
   const dominance = Math.abs(bullSignals - bearSignals)
@@ -813,7 +839,7 @@ function computeStrategy(d){
   else if (totalSig >= 1) confidence = 2
   else confidence = 1
 
-  return{dir,zone,bias,strategy,strategy2,allStrategies,reasons,bullSignals,bearSignals,confidence,dte,dteLabel}
+  return{dir,zone,bias,strategy,strategy2,futStrat,allStrategies,reasons,bullSignals,bearSignals,confidence,dte,dteLabel}
 }
 // OI history — store last 5 snapshots for sparkline
 let oiHistory = []  // [{time, ceWallOI, peWallOI, ceWallStrike, peWallStrike}]
@@ -845,6 +871,36 @@ function renderConfidence(score) {
 
 // Unique ID counter for strategy card toggles
 let _cardId = 0
+
+function renderFuturesStratCard(f) {
+  if (!f||!f.name) return ''
+  const cardId = 'fut_' + Date.now()
+  return `<div class="strategy-card" style="margin-bottom:0;border-color:#0891b2;border-width:1.5px">
+    <div style="background:linear-gradient(135deg,#0891b2,#0e7490);padding:9px 14px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:1px;text-transform:uppercase">🔷 FUTURES STRATEGY</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.7)">${f.type}</span>
+    </div>
+    <div style="padding:12px 14px;background:linear-gradient(135deg,#ecfeff,#f0fdfa)">
+      <div style="font-size:16px;font-weight:800;color:#0891b2;margin-bottom:10px">${f.name}</div>
+      <div>${(f.legs||[]).map(l=>`<div class="leg" style="border-color:rgba(8,145,178,0.3)"><span class="leg-badge ${l.action.toLowerCase()}">${l.action}</span><span class="leg-desc">${l.desc}</span><span class="leg-price">₹${l.price}</span></div>`).join('')}</div>
+      <div class="strategy-stats">
+        <div class="stat"><div class="stat-label">Margin ~</div><div class="stat-val rr" style="color:#0891b2">₹${(f.risk||0).toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">Max Reward</div><div class="stat-val reward">₹${(f.reward||0).toLocaleString('en-IN')}</div></div>
+        <div class="stat"><div class="stat-label">R:R</div><div class="stat-val rr">${f.rr||'—'}</div></div>
+      </div>
+      <div onclick="toggleStratDetail('${cardId}')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 2px;cursor:pointer;margin-top:8px;border-top:1px solid rgba(8,145,178,0.3)">
+        <span style="font-size:12px;font-weight:700;color:#0891b2">▼ Rationale, entry, SL & target</span>
+        <span id="${cardId}_chev" style="font-size:11px;color:var(--text3);transition:transform 0.2s;display:inline-block">▶</span>
+      </div>
+      <div id="${cardId}" style="display:none;font-size:12px;color:var(--text2);line-height:1.65;padding-bottom:4px">
+        <p style="margin-bottom:6px;font-style:italic;color:var(--text3)">${f.rationale||''}</p>
+        <div style="margin-bottom:4px"><strong style="color:var(--green)">✅ When:</strong> ${f.when||'—'}</div>
+        <div style="margin-bottom:4px"><strong style="color:var(--red)">⚠️ Avoid:</strong> ${f.avoid||'—'}</div>
+        <div><strong style="color:var(--yellow)">🚪 Exit:</strong> ${f.exit||'—'}</div>
+      </div>
+    </div>
+  </div>`
+}
 
 function renderStrategyCard(strat, isPrimary) {
   const cardId = 'sc_' + (++_cardId)

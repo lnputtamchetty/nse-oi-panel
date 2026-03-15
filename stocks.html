@@ -19,17 +19,17 @@
   --teal:#0e7490;--teal-bg:#ecfeff;--teal-bd:#a5f3fc;
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden;height:100vh}
-/* HEADER */
 .header{background:linear-gradient(135deg,#0c1222 0%,#172040 50%,#1a3a9e 100%);position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.4)}
 .hrow1{padding:0 16px;height:46px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.07)}
 .hrow2{padding:3px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:28px}
 .logo{background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;padding:5px 10px;border-radius:7px;letter-spacing:2px;flex-shrink:0}
-.htitle-main{font-size:14px;font-weight:800;color:white}.htitle-main .k{color:#f59e0b}.htitle-main .d{color:rgba(255,255,255,0.3);margin:0 5px}.htitle-main .o{color:#60a5fa}
+.htitle-main{font-size:14px;font-weight:800;color:white}
+.htitle-main .k{color:#f59e0b}.htitle-main .d{color:rgba(255,255,255,0.3);margin:0 5px}.htitle-main .o{color:#60a5fa}
 .htitle-sub{font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:2px}
 .nav-links{display:flex;align-items:center;gap:4px}
 .nav-link{font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);cursor:pointer;text-decoration:none;transition:all 0.15s}
 .nav-link:hover,.nav-link.active{background:rgba(255,255,255,0.18);color:white;border-color:rgba(255,255,255,0.4)}
-.hbtn{font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.15s}
+.hbtn{font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.15s;white-space:nowrap}
 .hbtn:hover{background:rgba(255,255,255,0.18);color:white}
 .scan-btn{background:linear-gradient(135deg,#1d4ed8,#4f46e5);border-color:transparent;color:white;padding:5px 14px}
 .scan-btn.spinning{animation:spin 0.8s linear infinite}
@@ -43,7 +43,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .prog-fill{height:100%;background:linear-gradient(90deg,#60a5fa,#a78bfa);border-radius:3px;transition:width 0.3s}
 .abadge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:white;font-size:9px;font-weight:800;width:15px;height:15px;border-radius:50%;display:none;align-items:center;justify-content:center}
 .abadge.show{display:flex}
-/* TICKER */
 .ticker-bar{background:#070d1c;border-bottom:1px solid #1a2540;padding:3px 16px;display:flex;align-items:center;gap:10px;height:26px;overflow:hidden}
 .ticker-label{font-size:9px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,0.35);text-transform:uppercase;flex-shrink:0}
 .ticker-inner{display:flex;gap:20px;white-space:nowrap;animation:tick 30s linear infinite}
@@ -55,56 +54,52 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .chip.bear{background:rgba(192,57,43,0.2);color:#fca5a5;border:1px solid rgba(192,57,43,0.3)}
 .chip.info{background:rgba(29,85,212,0.15);color:#93c5fd;border:1px solid rgba(29,85,212,0.25)}
 .chip.warn{background:rgba(245,158,11,0.15);color:#fde68a;border:1px solid rgba(245,158,11,0.25)}
-/* MAIN 3-COL LAYOUT — full height */
 .main3{display:grid;grid-template-columns:240px 1fr 300px;height:calc(100vh - 100px)}
-/* LEFT */
 .left-col{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;height:100%}
 .ps{border-bottom:1px solid var(--border)}
-.ps-head{padding:7px 11px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.ps-head{padding:7px 11px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;transition:background 0.1s}
 .ps-head:hover{background:var(--bg3)}
 .ps-icon{width:17px;height:17px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
 .ps-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;flex:1}
 .ps-cnt{font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px}
-.ps-body{overflow:hidden;max-height:0;transition:max-height 0.2s ease}
+.ps-body{overflow:hidden;max-height:0;transition:max-height 0.25s ease}
 .ps-body.open{max-height:350px}
 .pi{display:flex;align-items:center;gap:6px;padding:5px 11px;border-bottom:1px solid rgba(0,0,0,0.04);cursor:pointer;transition:background 0.1s}
 .pi:hover{background:var(--bg3)}
 .pi-sym{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;min-width:72px;color:var(--text)}
 .pi-val{font-size:10px;color:var(--text3);flex:1}
 .pi-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--text2)}
-/* CENTRE */
 .centre-col{overflow-y:auto;height:100%;background:var(--bg);display:flex;flex-direction:column}
-/* RIGHT */
 .right-col{background:var(--bg2);border-left:1px solid var(--border);overflow-y:auto;height:100%;display:flex;flex-direction:column}
-.rp-head{padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:5}
+.rp-head{padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:5;flex-shrink:0}
 .rp-title{font-size:12px;font-weight:800;color:var(--text)}
 .rp-sub{font-size:10px;color:var(--text3);margin-top:1px}
-.rp-filters{display:flex;gap:4px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.rp-filters{display:flex;gap:4px;flex-wrap:wrap;padding:6px 10px;border-bottom:1px solid var(--border);background:var(--bg3);flex-shrink:0}
 .rf-btn{font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all 0.12s;white-space:nowrap}
 .rf-btn:hover{border-color:var(--blue);color:var(--blue)}
 .rf-btn.on{background:var(--blue);border-color:var(--blue);color:white}
-.rp-cards{padding:8px;flex:1}
-/* Right panel card */
+.rp-cards{padding:8px;flex:1;overflow-y:auto}
 .rp-card{border-radius:9px;border:1.5px solid var(--border);background:var(--bg2);padding:9px 11px;cursor:pointer;transition:all 0.15s;margin-bottom:6px}
 .rp-card:hover{border-color:var(--blue);box-shadow:0 2px 10px rgba(29,78,216,0.1)}
 .rp-card.selected{border-color:var(--blue);background:var(--blue-bg)}
-/* Strat cards */
+.cmd-card{border-radius:12px;border:1.5px solid var(--border);background:var(--bg2);cursor:pointer;transition:all 0.2s;overflow:hidden;margin-bottom:8px}
+.cmd-card.expanded{border-color:var(--blue);box-shadow:0 4px 20px rgba(29,78,216,0.15)}
 .strat-card{border-radius:10px;border:1.5px solid var(--blue-bd);overflow:hidden;margin-bottom:8px}
 .sc-head{padding:7px 11px;display:flex;justify-content:space-between;align-items:center}
 .sc-head.pri{background:var(--blue)}.sc-head.alt{background:var(--bg3)}.sc-head.fut{background:linear-gradient(135deg,#0e7490,#0891b2)}
 .sc-label{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase}
-.sc-head.pri .sc-label,.sc-head.fut .sc-label{color:rgba(255,255,255,0.85)}
+.sc-head.pri .sc-label,.sc-head.fut .sc-label{color:rgba(255,255,255,0.9)}
 .sc-head.alt .sc-label{color:var(--text3)}
 .sc-body{padding:9px 11px}
 .sc-body.pri{background:var(--blue-bg)}.sc-body.alt{background:var(--bg3)}.sc-body.fut{background:var(--teal-bg)}
 .sc-name{font-size:13px;font-weight:800;margin-bottom:6px}
 .sc-body.pri .sc-name{color:var(--blue)}.sc-body.alt .sc-name{color:var(--text)}.sc-body.fut .sc-name{color:var(--teal)}
-.leg{display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.leg{display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,0.06);flex-wrap:wrap}
 .leg:last-child{border-bottom:none}
-.lbadge{font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px}
+.lbadge{font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px;flex-shrink:0}
 .lbadge.buy{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bd)}
 .lbadge.sell{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bd)}
-.ldesc{font-size:11px;font-weight:600;color:var(--text);flex:1}
+.ldesc{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--text);flex:1}
 .lprice{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--yellow)}
 .sc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:7px}
 .ss{background:white;border-radius:5px;padding:4px 6px;text-align:center;border:1px solid var(--border)}
@@ -113,7 +108,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .sc-exp-toggle{margin-top:7px;border-top:1px solid var(--blue-bd);padding-top:6px;font-size:10px;font-weight:700;color:var(--blue);cursor:pointer;display:flex;align-items:center;justify-content:space-between}
 .sc-exp-body{display:none;font-size:10px;color:var(--text2);line-height:1.65;padding-top:5px}
 .sc-exp-body.open{display:block}
-/* Butterfly */
 .bfly-wrap{overflow-x:auto}
 .bfly-top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--border)}
 .bfly-card{background:white;border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
@@ -136,34 +130,32 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .bfly-tbl tr.row-pewall td{background:rgba(26,122,80,0.05)}
 .bfly-tbl tr.row-pewall td:last-child{border-right:3px solid var(--green)}
 .bfly-tbl tr.row-pin td{background:rgba(180,83,9,0.07)}
-.bfly-tbl tr.row-squeeze td{background:rgba(234,179,8,0.1)}
+.bfly-tbl tr.row-squeeze td{background:rgba(234,179,8,0.1);animation:sqGlow 2s ease-in-out infinite}
+@keyframes sqGlow{0%,100%{background:rgba(234,179,8,0.1)}50%{background:rgba(234,179,8,0.22)}}
 .bfly-tbl tr:hover td{background:rgba(29,85,212,0.05)!important;cursor:pointer}
 .oi-bar-ce{display:flex;align-items:center;justify-content:flex-end;gap:3px}
 .oi-bar-pe{display:flex;align-items:center;justify-content:flex-start;gap:3px}
 .bar-fill-ce{height:6px;border-radius:3px 0 0 3px;background:var(--red);flex-shrink:0;min-width:1px}
 .bar-fill-pe{height:6px;border-radius:0 3px 3px 0;background:var(--green);flex-shrink:0;min-width:1px}
 .oi-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:34px}
-.oi-num.ce{color:var(--red);text-align:right}
-.oi-num.pe{color:var(--green)}
+.oi-num.ce{color:var(--red);text-align:right}.oi-num.pe{color:var(--green)}
 .bdup{font-size:10px;font-weight:800;padding:2px 4px;border-radius:4px;white-space:nowrap;cursor:pointer}
 .bdup.long-build{background:#dcfce7;color:#15803d;border:1px solid #86efac}
 .bdup.short-build{background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5}
-.bdup.squeeze{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.bdup.squeeze{background:#fef9c3;color:#854d0e;border:1px solid #fde047;animation:sqGlow 1.5s ease-in-out infinite}
 .bdup.unwind{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 .bdup.neutral{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
 .delta-num{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700}
 .ltp-up{color:var(--green);font-weight:700}.ltp-dn{color:var(--red);font-weight:700}
-/* Butterfly tooltip */
-.bfly-tooltip{position:fixed;background:#0f172a;color:white;border-radius:12px;padding:13px 15px;font-size:12px;line-height:1.65;width:295px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.5);pointer-events:all;border:1.5px solid rgba(99,102,241,0.5);display:none}
+.bfly-tooltip{position:fixed;background:#0f172a;color:white;border-radius:12px;padding:13px 15px;font-size:12px;line-height:1.65;width:295px;z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,0.5);pointer-events:all;border:1.5px solid rgba(99,102,241,0.5);display:none;animation:ttFade 0.15s ease-out}
+@keyframes ttFade{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
 .bfly-tooltip.show{display:block}
 .bfly-tooltip .tt-title{font-size:11px;font-weight:800;color:#818cf8;margin-bottom:7px;letter-spacing:1.5px;display:flex;align-items:center;justify-content:space-between}
 .bfly-tooltip .tt-close{font-size:14px;color:rgba(255,255,255,0.4);cursor:pointer;background:none;border:none;padding:0}
-/* Loading */
 .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;gap:8px;color:var(--text3)}
 .ring{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--border);border-top-color:var(--blue);animation:spin 0.8s linear infinite}
 .scanning{animation:blink 1.5s ease-in-out infinite;color:var(--blue);font-size:11px;font-weight:700}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
-/* AI panel */
 .ai-quick-btn{font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px;border:1.5px solid rgba(139,92,246,0.35);background:rgba(139,92,246,0.15);color:#c4b5fd;cursor:pointer;white-space:nowrap}
 .ai-quick-btn:hover{background:rgba(139,92,246,0.3);color:white}
 .ai-msg-user{display:flex;justify-content:flex-end}
@@ -175,21 +167,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .ai-dot{width:5px;height:5px;border-radius:50%;background:rgba(139,92,246,0.6);animation:aiDot 1.4s ease-in-out infinite}
 .ai-dot:nth-child(2){animation-delay:0.2s}.ai-dot:nth-child(3){animation-delay:0.4s}
 @keyframes aiDot{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-4px);opacity:1}}
-/* Toast */
 @keyframes tIn{from{transform:translateX(110%)}to{transform:translateX(0)}}
+.tg-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;align-items:center;justify-content:center}.tg-modal-overlay.open{display:flex}.tg-modal{background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2);overflow:hidden}.tg-modal-head{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}.tg-modal-title{font-size:14px;font-weight:800;color:white}.tg-modal-close{font-size:18px;color:rgba(255,255,255,0.5);cursor:pointer;background:none;border:none}.tg-modal-close:hover{color:white}.tg-modal-body{padding:18px 20px}.tg-setup{background:var(--yel-bg);border:1px solid var(--yel-bd);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--yellow);display:none}.tg-setup.show{display:block}.tg-input-row{margin-bottom:12px}.tg-input-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:5px}.tg-input{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none;font-family:'JetBrains Mono',monospace}.tg-input:focus{border-color:var(--blue)}.tg-divider{height:1px;background:var(--border);margin:14px 0}.tg-check-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:8px}.tg-checks{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}.tg-check-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:var(--bg3)}.tg-check-item.checked{border-color:var(--blue);background:var(--blue-bg)}.tg-check-box{width:16px;height:16px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px}.tg-check-item.checked .tg-check-box{background:var(--blue);border-color:var(--blue);color:white}.tg-check-text{font-size:12px;font-weight:600;color:var(--text)}.tg-check-sub{font-size:11px;color:var(--text3);margin-top:1px}.tg-send-btn{width:100%;padding:11px;border-radius:10px;border:none;background:var(--blue);color:white;font-size:14px;font-weight:700;cursor:pointer}.tg-send-btn:hover{background:#1d4ed8}.tg-send-btn:disabled{opacity:0.5;cursor:not-allowed}.tg-status{margin-top:10px;font-size:12px;font-weight:600;text-align:center;min-height:18px}.tg-status.ok{color:var(--green)}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
-
-<!-- BUTTERFLY TOOLTIP -->
 <div class="bfly-tooltip" id="bflyTooltip"><div class="tt-title" id="ttTitle">—</div><div id="ttBody">—</div></div>
-
-<!-- TOAST — fixed top right -->
 <div id="toastWrap" style="position:fixed;top:14px;right:14px;z-index:99999;display:flex;flex-direction:column;gap:6px;width:300px;pointer-events:none"></div>
 
-<!-- HEADER -->
 <div class="header">
   <div class="hrow1">
     <div style="display:flex;align-items:center;gap:10px">
@@ -208,14 +195,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <div style="width:1px;height:18px;background:rgba(255,255,255,0.12)"></div>
       <button class="hbtn scan-btn" id="scanBtn" onclick="startScan()">↻ Scan</button>
       <button class="hbtn" onclick="openTgModal()" style="font-size:13px;padding:4px 9px">✈️</button>
-      <div style="position:relative"><button class="hbtn" onclick="openAlertModal()">🔔 Alerts</button><div class="abadge" id="aBadge">0</div></div>
+      <div style="position:relative">
+        <button class="hbtn" onclick="openAlertModal()">🔔 Alerts</button>
+        <div class="abadge" id="aBadge">0</div>
+      </div>
       <button class="hbtn ai-btn" onclick="openAIPanel()">🤖 Ask AI</button>
       <span class="cd" id="cdEl">2:00</span>
     </div>
   </div>
   <div class="hrow2">
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-      <div class="scan-prog" id="scanProg"><span id="scanLbl" style="font-size:11px;color:rgba(255,255,255,0.6)">Scanning...</span><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+      <div class="scan-prog" id="scanProg">
+        <span id="scanLbl" style="font-size:11px;color:rgba(255,255,255,0.6)">Scanning...</span>
+        <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+      </div>
       <span class="lu" id="luEl">—</span>
       <span style="font-size:9px;color:rgba(255,255,255,0.25);font-weight:700;text-transform:uppercase;letter-spacing:2px">Charts</span>
       <a href="https://www.tradingview.com/chart/?symbol=NSE:NIFTY" target="_blank" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:rgba(29,85,212,0.2);color:#93c5fd;border:1px solid rgba(29,85,212,0.3);text-decoration:none">NIFTY</a>
@@ -231,15 +224,17 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
   </div>
 </div>
 
-<!-- TICKER -->
 <div class="ticker-bar">
   <span class="ticker-label">⚡</span>
-  <div style="flex:1;overflow:hidden;height:18px"><div class="ticker-inner" id="tickerEl"><span class="chip info">Scanning...</span><span class="chip info">Scanning...</span></div></div>
+  <div style="flex:1;overflow:hidden;height:18px">
+    <div class="ticker-inner" id="tickerEl">
+      <span class="chip info">Scanning stocks...</span>
+      <span class="chip info">Scanning stocks...</span>
+    </div>
+  </div>
 </div>
 
-<!-- 3-COL LAYOUT -->
 <div class="main3">
-
   <!-- LEFT: PULSE SIGNALS -->
   <div class="left-col">
     <div class="ps">
@@ -297,9 +292,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
     </div>
   </div>
 
-  <!-- CENTRE: MARKET OVERVIEW ↔ STOCK ANALYSIS -->
-  <div class="centre-col" id="centreCol">
-    <!-- Populated by renderCentre() -->
+  <!-- CENTRE: MARKET OVERVIEW / STOCK ANALYSIS -->
+  <div class="centre-col">
+    <!-- What's Moving strip -->
+    <div style="background:var(--bg2);border-bottom:1.5px solid var(--border);padding:8px 14px;flex-shrink:0">
+      <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+        <span>📊 What's Moving — click to analyse</span>
+        <span id="movingBarSub" style="font-weight:400;color:var(--text3)">Scanning...</span>
+      </div>
+      <div id="movingBar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch">
+        <span style="font-size:11px;color:var(--text3);align-self:center;padding:4px 0">Scanning watchlist...</span>
+      </div>
+    </div>
+    <!-- Main content — populated by renderCentre() -->
+    <div id="centreCol" style="flex:1;overflow-y:auto"></div>
   </div>
 
   <!-- RIGHT: RANKED TRADES -->
@@ -320,7 +326,6 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <div class="loading-state"><div class="ring"></div><span class="scanning">Scanning...</span></div>
     </div>
   </div>
-
 </div>
 
 <!-- WATCHLIST MODAL -->
@@ -341,7 +346,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
         </div>
         <div style="border:1.5px solid var(--border);border-radius:9px;padding:10px;background:var(--bg3)">
           <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:5px">📂 Upload CSV</div>
-          <div style="font-size:10px;color:var(--text3);margin-bottom:7px;line-height:1.5">Any CSV — Chartink, NSE, Excel. Symbols auto-detected.</div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:7px;line-height:1.5">Any CSV — Chartink, NSE, Excel. Auto-detected.</div>
           <label style="display:block;width:100%;padding:5px;border-radius:6px;border:1.5px solid var(--green-bd);background:var(--green-bg);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;text-align:center">
             📂 Choose CSV
             <input type="file" accept=".csv,.txt,.tsv" onchange="importCSV(this)" style="display:none"/>
@@ -349,11 +354,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
         </div>
       </div>
       <div id="pasteRes" style="font-size:11px;margin-bottom:8px"></div>
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-bottom:5px">Quick Add</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3)">Quick Add</div>
+        <button id="smartWLBtn" onclick="fetchSmartWatchlist()" style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:7px;border:1.5px solid rgba(16,185,129,0.5);background:rgba(16,185,129,0.1);color:#059669;cursor:pointer" title="Auto-pick from NSE OI spurters, gainers and losers">🎯 Smart Pick from NSE</button>
+      </div>
       <div id="quickAdd" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px"></div>
       <input id="wlSearch" type="text" placeholder="Search symbol..." oninput="onWLSearch(this.value)" style="width:100%;padding:7px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none"/>
       <div id="wlSearchRes" style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap"></div>
-      <button onclick="saveWL()" style="width:100%;padding:10px;border-radius:9px;border:none;background:var(--blue);color:white;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px">✅ Save & Scan</button>
+      <button onclick="saveWL()" style="width:100%;padding:10px;border-radius:9px;border:none;background:var(--blue);color:white;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px">✅ Save &amp; Scan</button>
     </div>
   </div>
 </div>
@@ -366,8 +374,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button onclick="closeAlert()" style="font-size:16px;color:rgba(255,255,255,0.5);background:none;border:none;cursor:pointer">✕</button>
     </div>
     <div style="padding:12px 14px">
-      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:12px;font-weight:700">🔊 Sound</span><input type="checkbox" id="alSnd" checked onchange="saveAS()"/></div>
-      <div style="display:flex;justify-content:space-between;padding:7px 0"><span style="font-size:12px;font-weight:700">📱 Popup</span><input type="checkbox" id="alPop" checked onchange="saveAS()"/></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;font-weight:700">🔊 Sound</span>
+        <input type="checkbox" id="alSnd" checked onchange="saveAS()"/>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0">
+        <span style="font-size:12px;font-weight:700">📱 Popup</span>
+        <input type="checkbox" id="alPop" checked onchange="saveAS()"/>
+      </div>
       <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);margin-top:10px;margin-bottom:5px">History</div>
       <div id="alertHist"><div style="font-size:11px;color:var(--text3)">No alerts yet</div></div>
       <button onclick="testAlert()" style="width:100%;padding:7px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;margin-top:8px">Test Alert</button>
@@ -397,30 +411,51 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <div style="text-align:center;padding:18px;color:rgba(255,255,255,0.4)">
         <div style="font-size:26px;margin-bottom:7px">🤖</div>
         <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.6)">Ask about your scanned stocks</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;line-height:1.6">Click 📸 Snapshot for visual analysis<br>or paste a screenshot (Ctrl+V)</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:4px;line-height:1.6">Click 📸 Snapshot for visual analysis<br>or paste screenshot (Ctrl+V)</div>
       </div>
     </div>
     <div style="padding:11px 13px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:7px;background:#0c1220">
-      <input id="aiInput" type="text" placeholder="Ask a question or paste screenshot (Ctrl+V)..." style="flex:1;padding:8px 11px;border-radius:9px;border:1.5px solid rgba(139,92,246,0.4);background:rgba(255,255,255,0.07);color:white;font-size:12px;outline:none" onkeydown="if(event.key==='Enter')sendAIMessage()"/>
+      <input id="aiInput" type="text" placeholder="Ask or paste screenshot (Ctrl+V)..." style="flex:1;padding:8px 11px;border-radius:9px;border:1.5px solid rgba(139,92,246,0.4);background:rgba(255,255,255,0.07);color:white;font-size:12px;outline:none" onkeydown="if(event.key==='Enter')sendAIMessage()"/>
       <button onclick="sendAIMessage()" id="aiSendBtn" style="padding:8px 13px;border-radius:9px;border:none;background:linear-gradient(135deg,#7c3aed,#1d4ed8);color:white;font-size:12px;font-weight:700;cursor:pointer">Send</button>
     </div>
   </div>
 </div>
 
+<!-- TELEGRAM MODAL -->
+<div class="tg-modal-overlay" id="tgOverlay" onclick="closeTgModal(event)">
+  <div class="tg-modal">
+    <div class="tg-modal-head">
+      <div class="tg-modal-title">✈️ Send to Telegram</div>
+      <button class="tg-modal-close" onclick="closeTgModalDirect()">✕</button>
+    </div>
+    <div class="tg-modal-body">
+      <div class="tg-setup" id="tgSetup">
+        <strong>Setup:</strong> Create bot via @BotFather → get token. Get Chat ID from:
+        <code>api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code>
+      </div>
+      <div class="tg-input-row">
+        <div class="tg-input-label">Bot Token</div>
+        <input class="tg-input" id="tgToken" type="text" placeholder="1234567890:ABC..." oninput="saveTgCreds()"/>
+      </div>
+      <div class="tg-input-row">
+        <div class="tg-input-label">Chat ID</div>
+        <input class="tg-input" id="tgChat" type="text" placeholder="-100..." oninput="saveTgCreds()"/>
+      </div>
+      <button class="tg-send-btn" onclick="sendTgNow()">📤 Send Top Trades to Telegram</button>
+      <div class="tg-status" id="tgStatus"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-
-
-
-
-
-
+// ══════════════════════════════════════════════════════════
 // BUTTERFLY OPTION CHAIN — Professional NSE layout
 // CALL side | STRIKE | PUT side
 // ══════════════════════════════════════════════════════════
 function renderButterflyChain(d, s, lotSize) {
   const lot = lotSize || 25
   const nearStrikes = d.nearStrikes || []
-  const prevSnap    = (typeof prevOISnapshot!=='undefined'?prevOISnapshot:null) || (typeof prevSnaps!=='undefined'&&d?.sym?prevSnaps[d.sym]:null) || {}
+  const prevSnap    = prevOISnapshot || {}
   const maxCeOI     = Math.max(...nearStrikes.map(r => r.ce?.openInterest||0), 1)
   const maxPeOI     = Math.max(...nearStrikes.map(r => r.pe?.openInterest||0), 1)
   const maxOI       = Math.max(maxCeOI, maxPeOI)
@@ -644,7 +679,70 @@ function renderButterflyChain(d, s, lotSize) {
 // Tooltip handlers — CLICK to show, click elsewhere to dismiss
 let _ttOpen = false
 
+function toggleBflyTT(event, dataStr) {
+  event.stopPropagation()
+  const el = document.getElementById('bflyTooltip')
+  if (_ttOpen && el.classList.contains('show')) {
+    hideBflyTT()
+    return
+  }
+  showBflyTT(event, dataStr)
+}
+
+// Close on click anywhere else
 document.addEventListener('click', () => hideBflyTT())
+
+function showBflyTT(event, dataStr) {
+  try {
+    const d = JSON.parse(dataStr.replace(/&quot;/g,'"'))
+    const el = document.getElementById('bflyTooltip')
+    const title = document.getElementById('ttTitle')
+    const body  = document.getElementById('ttBody')
+    if (!el) return
+    title.innerHTML = `<span>₹${d.strike} — ${d.isATM?'ATM (At the Money)':d.isCeWall?'CE Wall (Resistance)':d.isPeWall?'PE Wall (Support)':d.isPin?'Pin Strike':'Regular Strike'}</span><button class='tt-close' onclick='hideBflyTT()'>✕</button>`
+    body.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+        <div>
+          <div style="font-size:10px;font-weight:800;color:#fca5a5;margin-bottom:4px">🔴 CALL (CE) side</div>
+          <div>LTP: <strong style="color:#fca5a5">₹${d.ceLTP?.toFixed(1)||'—'}</strong> (lot value ₹${d.ceValue?.toLocaleString('en-IN')||'—'})</div>
+          <div>OI: ${((d.ceOI||0)/100000).toFixed(1)}L contracts</div>
+          <div>IV: ${d.ceIV?.toFixed(1)||'—'}%</div>
+          ${d.ceDiff?`<div>OI Change: <span style="color:${d.ceDiff>0?'#86efac':'#fca5a5'}">${d.ceDiff>=0?'+':''}${((d.ceDiff||0)/100000).toFixed(2)}L</span></div>`:''}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:800;color:#86efac;margin-bottom:4px">🟢 PUT (PE) side</div>
+          <div>LTP: <strong style="color:#86efac">₹${d.peLTP?.toFixed(1)||'—'}</strong> (lot value ₹${d.peValue?.toLocaleString('en-IN')||'—'})</div>
+          <div>OI: ${((d.peOI||0)/100000).toFixed(1)}L contracts</div>
+          <div>IV: ${d.peIV?.toFixed(1)||'—'}%</div>
+          ${d.peDiff?`<div>OI Change: <span style="color:${d.peDiff>0?'#86efac':'#fca5a5'}">${d.peDiff>=0?'+':''}${((d.peDiff||0)/100000).toFixed(2)}L</span></div>`:''}
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.12);padding-top:7px;font-size:11px;color:rgba(255,255,255,0.75);line-height:1.7">
+        ${d.isCeWall?`<strong style="color:#fca5a5">This is the CE Wall (Resistance).</strong> ${((d.ceOI||0)/100000).toFixed(1)}L contracts written here = institutions defending this ceiling. If spot crosses ₹${d.strike}, all these CE writers must buy back = explosive upward squeeze.`:
+          d.isPeWall?`<strong style="color:#86efac">This is the PE Wall (Support).</strong> ${((d.peOI||0)/100000).toFixed(1)}L contracts written here = institutions defending this floor. If spot breaks below ₹${d.strike}, PE writers must buy back = explosive downward squeeze.`:
+          d.isATM?`<strong style="color:#93c5fd">ATM Strike.</strong> CE premium ₹${d.ceLTP?.toFixed(1)} costs ₹${d.ceValue?.toLocaleString()} per lot. PE premium ₹${d.peLTP?.toFixed(1)} costs ₹${d.peValue?.toLocaleString()} per lot. Highest gamma here = biggest daily move for options.`:
+          d.isPin?`<strong style="color:#fde68a">Pin Strike.</strong> Highest combined OI. Near expiry, market gravitates here like a magnet. Option writers defend this strike to maximize their profit.`:
+          `Regular strike. CE premium ₹${d.ceLTP?.toFixed(1)}, PE premium ₹${d.peLTP?.toFixed(1)}.`}
+      </div>`
+    // Position tooltip near cursor but avoid edges
+    const x = Math.min(event.clientX + 15, window.innerWidth - 310)
+    const y = Math.min(event.clientY - 10, window.innerHeight - 250)
+    el.style.left = x + 'px'
+    el.style.top  = y + 'px'
+    el.classList.add('show')
+    _ttOpen = true
+  } catch(e) {}
+}
+
+function hideBflyTT() {
+  const el = document.getElementById('bflyTooltip')
+  if (el) el.classList.remove('show')
+  _ttOpen = false
+}
+
+
+document.addEventListener('click', () => hideBflyTT())
+
 
 // ═══════════════════════════════════════════════════════════════
 // F&O MASTER LIST — live from NSE on startup, fallback below
@@ -1082,7 +1180,7 @@ async function startScan() {
   if(prog) prog.style.display = 'flex'
   const luEl = document.getElementById('luEl')
   if(luEl) luEl.textContent = 'Scanning...'
-  const tEl = document.getElementById('commandCards')
+  const tEl = document.getElementById('rightCards')
   if(tEl) tEl.innerHTML = '<div class="loading-state"><div class="ring"></div><span class="scanning">Building your trade list...</span></div>'
 
   const syms = [...watchlist]
@@ -1557,62 +1655,39 @@ function renderRightPanel(){
     const dirI=s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':strat.cat==='sell'?'💰':'🔷'
     const isSel=selectedSym===sym
     const gradeBorder = grade==='A'?'border-left:3px solid #f59e0b':grade==='B'?'border-left:3px solid #10b981':'border-left:3px solid transparent'
+    const gradeBg     = isSel ? 'background:var(--blue-bg)' : grade==='A'?'background:#fffbeb':grade==='B'?'background:#f0fdf4':'background:var(--bg2)'
     return `<div class="rp-card${isSel?' selected':''}" style="${gradeBorder}" onclick="selectTrade('${sym}')">
-      <!-- Card header — always visible -->
-      <div style="${gradeTop};padding:12px 14px 10px;border-radius:${isSel?'12px 12px 0 0':'12px'}">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:26px;height:26px;border-radius:50%;background:${rBg};color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-            <div>
-              <div style="display:flex;align-items:center;gap:6px">
-                <span style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;color:var(--text)">${sym}</span>
-                <span style="font-size:10px;color:var(--text3)">${d.info.sec}</span>
-                ${s.isWhaleAlert?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;animation:whalePulse 2s ease-in-out infinite">🐋 WHALE</span>':''}
-                ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;animation:squeezePulse 1.5s ease-in-out infinite">⚡ SQUEEZE</span>':''}
-                ${isDemo?'<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:var(--yel-bg);color:var(--yellow)">DEMO</span>':''}
-              </div>
-              <div style="font-size:11px;color:var(--text2);margin-top:2px">
-                ${dirI} <strong>${strat.name}</strong> &nbsp;·&nbsp; Lot ${d.info.lot} &nbsp;·&nbsp; Spot ₹${d.spot.toLocaleString('en-IN',{maximumFractionDigits:0})}
-              </div>
+      <div style="${gradeBg};padding:9px 11px;border-radius:8px">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <div style="width:22px;height:22px;border-radius:50%;background:${rBg};color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:5px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--text)">${sym}</span>
+              <span style="font-size:9px;color:var(--text3)">${d.info.sec}</span>
+              ${s.isWhaleAlert?'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:#fef3c7;color:#92400e">🐋</span>':''}
+              ${s.ceSqueezing||s.peSqueezing?'<span style="font-size:8px;padding:1px 4px;border-radius:3px;background:#f0fdf4;color:#15803d">⚡</span>':''}
             </div>
+            <div style="font-size:10px;color:var(--text2);margin-top:1px">${dirI} ${strat.name}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:22px;font-weight:800;color:${gColor};line-height:1">${score}</div>
-            <div style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:5px;background:${gBg};color:${gColor};border:1px solid ${gBd};margin-top:3px">${grade==='A'?'🏆 A-Grade':grade==='B'?'✅ B-Grade':grade==='C'?'⚠️ C-Grade':'❌ D-Grade'}</div>
+            <div style="font-size:17px;font-weight:800;color:${gColor};line-height:1">${score}</div>
+            <div style="font-size:8px;font-weight:800;padding:1px 5px;border-radius:4px;background:${gBg};color:${gColor};border:1px solid ${gBd};margin-top:2px">${grade==='A'?'🏆A':grade==='B'?'✅B':grade==='C'?'⚠️C':'❌D'}</div>
           </div>
         </div>
-        <!-- Score bar -->
-        <div style="height:4px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden;margin-bottom:8px">
-          <div style="height:100%;width:${score}%;background:${bColor};border-radius:3px;transition:width 0.6s"></div>
+        <div style="height:3px;background:rgba(0,0,0,0.07);border-radius:2px;overflow:hidden;margin-bottom:5px">
+          <div style="height:100%;width:${score}%;background:${bColor};border-radius:2px"></div>
         </div>
-        <!-- Key stats row -->
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
-          <div style="background:rgba(255,255,255,0.7);border-radius:7px;padding:5px 7px;text-align:center;border:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Risk</div>
-            <div style="font-size:12px;font-weight:700;color:var(--red)">₹${((strat.risk||0)/1000).toFixed(0)}K</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.7);border-radius:7px;padding:5px 7px;text-align:center;border:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Reward</div>
-            <div style="font-size:12px;font-weight:700;color:var(--green)">₹${((strat.rew||0)/1000).toFixed(0)}K</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.7);border-radius:7px;padding:5px 7px;text-align:center;border:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">PCR</div>
-            <div style="font-size:12px;font-weight:700;color:${d.pcr>1.1?'var(--red)':d.pcr<0.9?'var(--green)':'var(--text2)'}">${d.pcr.toFixed(2)}</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.7);border-radius:7px;padding:5px 7px;text-align:center;border:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">IV</div>
-            <div style="font-size:12px;font-weight:700;color:${s.ivState==='HIGH'?'var(--red)':s.ivState==='LOW'?'var(--green)':'var(--blue)'}">${(d.atmIV||0).toFixed(0)}%</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.7);border-radius:7px;padding:5px 7px;text-align:center;border:1px solid rgba(0,0,0,0.06)">
-            <div style="font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">DTE</div>
-            <div style="font-size:12px;font-weight:700;color:${s.dte<=2?'var(--red)':'var(--text)'}">${s.dte}D</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+          <span>Risk <strong style="color:var(--red)">₹${((strat.risk||0)/1000).toFixed(0)}K</strong></span>
+          <span>Rew <strong style="color:var(--green)">₹${((strat.rew||0)/1000).toFixed(0)}K</strong></span>
+          <span style="color:${isSel?'var(--blue)':'var(--text3)'};font-weight:${isSel?700:400}">${isSel?'◀ open':'click →'}</span>
         </div>
-        <div style="margin-top:6px;font-size:10px;color:${isSel?'var(--blue)':'var(--text3)'};font-weight:700;text-align:right">${isSel?'◀ Viewing':'Click to analyse →'}</div>
       </div>
     </div>`
   }).join('')
 }
+
+//
 
 // ═══════════════════════════════════════════════════════════════
 // RENDER PULSE PANELS
@@ -1750,9 +1825,8 @@ function renderDetailInline(d,s,isDemo){
 
 function renderDetail(d,s,isDemo){
   // Render into centre workspace
-  const dc=document.getElementById('detailContent')
-  if(!dc){console.warn('detailContent missing');return}
-  dc.style.display='block'
+  // renderDetail is legacy — use renderCentre() instead
+  const dc=document.getElementById('centreCol'); if(!dc) return
   const{spot,atm,maxPain,pcr,ceWall,peWall,totCe,totPe}=d
   const lot=d.info.lot
   const pcrC=pcr>1.1?'var(--red)':pcr<0.9?'var(--green)':'var(--text2)'
@@ -2092,14 +2166,7 @@ function aiStockQuick(type){
   const full=`You are KAMAKSHIVA, expert Indian F&O analyst specialising in NSE stock options.\n\nScanned Data:\n${ctx}\n\nQuestion: ${prompt}\n\nBe specific, use actual data and numbers. No generic advice.`
   sendToAI(full,prompt.slice(0,50)+'...')
 }
-function sendAIMessage(){
-  const input=document.getElementById('aiInput')
-  const msg=input?.value?.trim();if(!msg) return
-  input.value=''
-  const ctx=buildStocksContext()
-  const full=`You are KAMAKSHIVA, expert Indian F&O analyst.\n\nScanned Data:\n${ctx}\n\nTrader: ${msg}\n\nAnswer specifically using the data above.`
-  sendToAI(full,msg)
-}
+
 async function sendToAI(fullPrompt,displayMsg){
   addAIMsg('user',displayMsg)
   const typId=addAITyping()
@@ -2171,6 +2238,7 @@ function updCD(){const el=document.getElementById('cdEl');if(!el)return;const m=
 // INIT
 // ═══════════════════════════════════════════════════════════════
 loadWL()
+renderCentre()
 startScan()
 resetCD()
 setInterval(()=>{if(!isScanning)startScan()},2*60*1000)
@@ -2431,200 +2499,103 @@ function sendAIMessage() {
 
 
 
+
+// ═══════════════════════════════════════════════════════════════
+// TELEGRAM INTEGRATION — stocks page version
+// ═══════════════════════════════════════════════════════════════
 const TG_TOKEN_KEY  = 'lnp_tg_token'
-const TG_CHATID_KEY = 'lnp_tg_chatid'
+const TG_CHAT_KEY   = 'lnp_tg_chat'
 
 function openTgModal() {
-  // If no data yet — load demo immediately so send always works
-  if (!chainData) loadDemo()
-
-  // Load saved credentials
-  const savedToken  = localStorage.getItem(TG_TOKEN_KEY)  || ''
-  const savedChatId = localStorage.getItem(TG_CHATID_KEY) || ''
-  document.getElementById('tgToken').value  = savedToken
-  document.getElementById('tgChatId').value = savedChatId
-  document.getElementById('tgSetup').classList.toggle('show', !savedToken || !savedChatId)
-
-  // Data is now always available
-  const status = document.getElementById('tgStatus')
-  const btn    = document.getElementById('tgSendBtn')
-  const isDemo = !window._liveDataLoaded
-  status.textContent = isDemo
-    ? `⚪ Demo data — ${currentIndex} @ ${chainData?.spot?.toLocaleString('en-IN')} (live data loads at market open)`
-    : `✅ Live data — ${currentIndex} @ ${chainData?.spot?.toLocaleString('en-IN')}`
-  status.className = isDemo ? 'tg-status' : 'tg-status ok'
-  btn.disabled    = false
-  btn.textContent = '✈️ Send to Telegram'
-
-  document.getElementById('tgOverlay').classList.add('open')
+  const overlay = document.getElementById('tgOverlay')
+  if (!overlay) return
+  overlay.classList.add('open')
+  const savedToken = localStorage.getItem(TG_TOKEN_KEY) || ''
+  const savedChat  = localStorage.getItem(TG_CHAT_KEY)  || ''
+  const tokenEl = document.getElementById('tgToken')
+  const chatEl  = document.getElementById('tgChat')
+  if (tokenEl) tokenEl.value = savedToken
+  if (chatEl)  chatEl.value  = savedChat
+  if (!savedToken || !savedChat) {
+    const setup = document.getElementById('tgSetup')
+    if (setup) setup.classList.add('show')
+  }
 }
 
 function closeTgModal(e) {
-  if (e.target === document.getElementById('tgOverlay')) closeTgModalDirect()
+  if (e && e.target !== document.getElementById('tgOverlay')) return
+  document.getElementById('tgOverlay')?.classList.remove('open')
 }
 function closeTgModalDirect() {
-  document.getElementById('tgOverlay').classList.remove('open')
+  document.getElementById('tgOverlay')?.classList.remove('open')
 }
 
-function toggleCheck(el) {
+function saveTgCreds() {
+  const token = document.getElementById('tgToken')?.value?.trim()
+  const chat  = document.getElementById('tgChat')?.value?.trim()
+  if (token) localStorage.setItem(TG_TOKEN_KEY, token)
+  if (chat)  localStorage.setItem(TG_CHAT_KEY, chat)
+}
+
+function toggleTgCheck(el) {
   el.classList.toggle('checked')
-  el.querySelector('.tg-check-box').textContent = el.classList.contains('checked') ? '✓' : ''
+  const box = el.querySelector('.tg-check-box')
+  if (box) box.textContent = el.classList.contains('checked') ? '✓' : ''
 }
 
-function isChecked(id) {
-  return document.getElementById(id)?.classList.contains('checked')
-}
-
-function buildTelegramMessage() {
-  if (!chainData) return '⚠️ No data loaded yet.'
-  const d = chainData
-  const s = computeStrategy(d)
-  const sp = getStrategyPersistence(s.strategy.name)
-  const qr = buildQuickRead(d, s)
-  const now = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
-
-  let msg = `🇮🇳 *LNP KAMAKSHIVA — ${currentIndex}*
-`
-  msg += `⏰ ${now}  |  Expiry: ${d.expiry}
-`
-  msg += `📊 Spot: *${d.spot.toLocaleString('en-IN')}*  |  ATM: ${d.atm}
-`
-  msg += `─────────────────────
-`
-
-  if (isChecked('chk-quickread')) {
-    msg += `
-📍 *QUICK READ*
-`
-    msg += `${qr.s1}
-`
-    msg += `${qr.s2}
-`
-    msg += `💡 ${qr.s3}
-`
-  }
-
-  if (isChecked('chk-strategy')) {
-    const strat = s.strategy
-    msg += `
-⚡ *STRATEGY: ${strat.name}*
-`
-    msg += `Type: ${strat.type}
-`
-    strat.legs.forEach(l => {
-      msg += `  ${l.action} ${l.desc} @ ₹${l.price}
-`
-    })
-    msg += `Risk: ₹${strat.risk.toLocaleString('en-IN')}  |  Reward: ₹${strat.reward.toLocaleString('en-IN')}  |  R:R ${strat.rr||'—'}
-`
-    msg += `Exit: ${strat.exit}
-`
-  }
-
-  if (isChecked('chk-persistence')) {
-    msg += `
-⏱️ *PERSISTENCE:* ${sp.label}
-`
-    msg += `${sp.tip}
-`
-  }
-
-  if (isChecked('chk-walls')) {
-    const ceOI = ((d.ceWall.ce?.openInterest||0)/100000).toFixed(1)
-    const peOI = ((d.peWall.pe?.openInterest||0)/100000).toFixed(1)
-    msg += `
-🔴 *CE WALL:* ${d.ceWall.strike}  (${ceOI}L OI, ${Math.round(d.ceWall.strike-d.spot)}pts away)
-`
-    msg += `🟢 *PE WALL:* ${d.peWall.strike}  (${peOI}L OI, ${Math.round(d.spot-d.peWall.strike)}pts away)
-`
-  }
-
-  if (isChecked('chk-pcr')) {
-    const pcrLabel = d.pcr>1.3?'STRONG BEAR':d.pcr>1.1?'Mild Bear':d.pcr<0.7?'STRONG BULL':d.pcr<0.9?'Mild Bull':'Neutral'
-    msg += `
-⚖️ *PCR:* ${d.pcr.toFixed(2)} (${pcrLabel})
-`
-    msg += `🎯 *Max Pain:* ${d.maxPainStrike}  (${Math.abs(Math.round(d.spot-d.maxPainStrike))}pts ${d.spot>d.maxPainStrike?'above':'below'} spot)
-`
-  }
-
-  if (isChecked('chk-shortcover') && qr.shortCoverAlert) {
-    msg += `
-⚡ *SHORT COVER ALERT*
-${qr.shortCoverAlert}
-`
-  }
-
-  msg += `─────────────────────
-`
-  msg += `_Sent from LNP KAMAKSHIVA OI Panel_`
-  return msg
-}
-
-async function sendToTelegram() {
-  const token  = document.getElementById('tgToken').value.trim()
-  const chatId = document.getElementById('tgChatId').value.trim()
+async function sendTgNow() {
+  saveTgCreds()
+  const token  = localStorage.getItem(TG_TOKEN_KEY)
+  const chat   = localStorage.getItem(TG_CHAT_KEY)
   const status = document.getElementById('tgStatus')
-  const btn    = document.getElementById('tgSendBtn')
-
-  if (!chainData) loadDemo()  // ensure data exists
-
-  if (!token || !chatId) {
-    status.textContent = '⚠️ Please enter Bot Token and Chat ID'
-    status.className = 'tg-status err'
-    document.getElementById('tgSetup').classList.add('show')
+  if (!token || !chat) {
+    if (status) { status.textContent = '⚠️ Enter Bot Token and Chat ID first'; status.style.color = 'var(--red)' }
     return
   }
 
-  // Check at least one option is checked
-  const anyChecked = ['chk-strategy','chk-quickread','chk-walls','chk-pcr','chk-persistence','chk-shortcover']
-    .some(id => isChecked(id))
-  if (!anyChecked) {
-    status.textContent = '⚠️ Tick at least one thing to send'
-    status.className = 'tg-status err'
-    return
-  }
+  const btn = document.querySelector('.tg-send-btn')
+  if (btn) btn.disabled = true
+  if (status) { status.textContent = 'Sending...'; status.style.color = 'var(--text3)' }
 
-  // Save credentials
-  localStorage.setItem(TG_TOKEN_KEY, token)
-  localStorage.setItem(TG_CHATID_KEY, chatId)
+  // Build message from current scan results
+  const sorted = Object.values(scanResults).sort((a,b)=>(b.s?.score||0)-(a.s?.score||0))
+  const topTrades = sorted.slice(0, 5).map(({d, s}, i) => {
+    const dirI = s.dir==='bull'?'🟢':s.dir==='bear'?'🔴':'💰'
+    return `${i+1}. ${dirI} *${d.sym}* — ${s.pri?.name||'—'} | Score ${s.score} (${s.grade}) | Risk ₹${((s.pri?.risk||0)/1000).toFixed(0)}K→₹${((s.pri?.rew||0)/1000).toFixed(0)}K`
+  }).join('\n')
 
-  btn.disabled = true
-  btn.textContent = 'Sending...'
-  status.textContent = ''
-  status.className = 'tg-status'
+  const whales  = sorted.filter(r=>r.s?.isWhaleAlert).map(r=>r.d.sym).join(', ')
+  const squeeze = sorted.filter(r=>r.s?.ceSqueezing||r.s?.peSqueezing).map(r=>r.d.sym).join(', ')
 
-  const text = buildTelegramMessage()
+  const msg = `🏆 *KAMAKSHIVA — Stock F&O Update*
+⏰ ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})} IST
+
+*Top ${sorted.length>0?Math.min(5,sorted.length):0} Trades Today:*
+${topTrades || 'No scan results yet'}
+
+${whales  ? '🐋 Whale Activity: ' + whales  : ''}
+${squeeze ? '⚡ Squeeze Alert: ' + squeeze : ''}
+
+_Powered by LNP KAMAKSHIVA_`
 
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: text,
-        parse_mode: 'Markdown'
-      })
+      body: JSON.stringify({ chat_id: chat, text: msg, parse_mode: 'Markdown' })
     })
-    const json = await res.json()
-    if (json.ok) {
-      status.textContent = '✅ Sent successfully!'
-      status.className = 'tg-status ok'
-      setTimeout(() => closeTgModalDirect(), 1800)
+    const data = await res.json()
+    if (data.ok) {
+      if (status) { status.textContent = '✅ Sent successfully!'; status.style.color = 'var(--green)' }
+      setTimeout(() => closeTgModalDirect(), 1500)
     } else {
-      status.textContent = '❌ ' + (json.description || 'Send failed')
-      status.className = 'tg-status err'
+      if (status) { status.textContent = '❌ Error: ' + (data.description || 'Unknown'); status.style.color = 'var(--red)' }
     }
   } catch(e) {
-    status.textContent = '❌ Network error — check token and chat ID'
-    status.className = 'tg-status err'
+    if (status) { status.textContent = '❌ Network error: ' + e.message; status.style.color = 'var(--red)' }
   }
-
-  btn.disabled = false
-  btn.textContent = '✈️ Send to Telegram'
+  if (btn) btn.disabled = false
 }
-
-
 
 // ═══════════════════════════════════════════════════════════════
 // SMART WATCHLIST — fetch active stocks from NSE live data
@@ -2704,151 +2675,5 @@ async function fetchSmartWatchlist() {
 }
 
 </script>
-
-<!-- ══ TELEGRAM MODAL ══ -->
-<div class="tg-modal-overlay" id="tgOverlay" onclick="closeTgModal(event)">
-  <div class="tg-modal">
-    <div class="tg-modal-head">
-      <div class="tg-modal-title">✈️ Send to Telegram</div>
-      <button class="tg-modal-close" onclick="closeTgModalDirect()">✕</button>
-    </div>
-    <div class="tg-modal-body">
-
-      <!-- Setup reminder -->
-      <div class="tg-setup" id="tgSetup">
-        <strong>One-time setup needed:</strong><br>
-        1. Create a Telegram bot via @BotFather → copy the Bot Token<br>
-        2. Send any message to your bot → get your Chat ID from<br>
-        &nbsp;&nbsp;&nbsp;<code>api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code><br>
-        3. Paste both below — saved in your browser automatically
-      </div>
-
-      <!-- Bot Token -->
-      <div class="tg-input-row">
-        <div class="tg-input-label">Bot Token</div>
-        <input class="tg-input" id="tgToken" type="password" placeholder="123456:ABC-DEF..." autocomplete="off"/>
-      </div>
-
-      <!-- Chat ID -->
-      <div class="tg-input-row">
-        <div class="tg-input-label">Chat ID</div>
-        <input class="tg-input" id="tgChatId" type="text" placeholder="-100123456789 or your user ID"/>
-      </div>
-
-      <div class="tg-divider"></div>
-
-      <!-- What to send -->
-      <div class="tg-check-label">What to include in message</div>
-      <div class="tg-checks">
-
-        <div class="tg-check-item checked" id="chk-strategy" onclick="toggleCheck(this)">
-          <div class="tg-check-box">✓</div>
-          <div>
-            <div class="tg-check-text">⚡ Strategy</div>
-            <div class="tg-check-sub">Primary strategy name, legs, risk, reward, R:R</div>
-          </div>
-        </div>
-
-        <div class="tg-check-item checked" id="chk-quickread" onclick="toggleCheck(this)">
-          <div class="tg-check-box">✓</div>
-          <div>
-            <div class="tg-check-text">📍 Quick Read Summary</div>
-            <div class="tg-check-sub">Plain English 3-line market story</div>
-          </div>
-        </div>
-
-        <div class="tg-check-item" id="chk-walls" onclick="toggleCheck(this)">
-          <div class="tg-check-box"></div>
-          <div>
-            <div class="tg-check-text">🔴🟢 OI Walls</div>
-            <div class="tg-check-sub">CE Wall, PE Wall, distance from spot</div>
-          </div>
-        </div>
-
-        <div class="tg-check-item" id="chk-pcr" onclick="toggleCheck(this)">
-          <div class="tg-check-box"></div>
-          <div>
-            <div class="tg-check-text">⚖️ PCR + Max Pain</div>
-            <div class="tg-check-sub">Put-call ratio and max pain strike</div>
-          </div>
-        </div>
-
-        <div class="tg-check-item" id="chk-persistence" onclick="toggleCheck(this)">
-          <div class="tg-check-box"></div>
-          <div>
-            <div class="tg-check-text">⏱️ Strategy Persistence</div>
-            <div class="tg-check-sub">How many refreshes same strategy has held</div>
-          </div>
-        </div>
-
-        <div class="tg-check-item" id="chk-shortcover" onclick="toggleCheck(this)">
-          <div class="tg-check-box"></div>
-          <div>
-            <div class="tg-check-text">⚡ Short Cover Alerts</div>
-            <div class="tg-check-sub">Any short covering signals detected</div>
-          </div>
-        </div>
-
-      </div>
-
-      <button class="tg-send-btn" id="tgSendBtn" onclick="sendToTelegram()">
-        ✈️ Send to Telegram
-      </button>
-      <div class="tg-status" id="tgStatus"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ BUTTERFLY TOOLTIP ══ -->
-<div class="bfly-tooltip" id="bflyTooltip">
-  <div class="tt-title" id="ttTitle">—</div>
-  <div id="ttBody">—</div>
-</div>
-
-<!-- ══ AI ANALYTICS PANEL ══ -->
-<div id="aiPanelOverlay" style="display:none;position:fixed;inset:0;z-index:9990;pointer-events:none">
-  <div id="aiPanel" style="position:absolute;right:0;top:0;bottom:0;width:420px;background:#0f172a;border-left:1.5px solid rgba(139,92,246,0.4);display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.3s ease;pointer-events:all;box-shadow:-8px 0 32px rgba(0,0,0,0.4)">
-    <!-- AI Panel Header -->
-    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1a0d2e,#0d1829)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:16px">🤖</div>
-        <div>
-          <div style="font-size:13px;font-weight:800;color:white">KAMAKSHIVA AI</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.45)">Market analyst · Powered by Claude</div>
-        </div>
-      </div>
-      <button onclick="closeAIPanel()" style="font-size:18px;color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;padding:0">✕</button>
-    </div>
-    <!-- Quick Action Buttons -->
-    <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:6px;flex-wrap:wrap">
-      <button id="snapshotBtn" onclick="captureAndAsk()" style="font-size:11px;font-weight:800;padding:5px 11px;border-radius:7px;border:1.5px solid rgba(52,211,153,0.5);background:rgba(52,211,153,0.15);color:#6ee7b7;cursor:pointer;white-space:nowrap;transition:all 0.15s">📸 Snapshot</button>
-      <button onclick="aiQuick('brief')" class="ai-quick-btn">📋 Market Brief</button>
-      <button onclick="aiQuick('strategy')" class="ai-quick-btn">⚡ Why this strategy?</button>
-      <button onclick="aiQuick('risk')" class="ai-quick-btn">🛡️ Risk check</button>
-      <button onclick="aiQuick('squeeze')" class="ai-quick-btn">⚡ Squeeze analysis</button>
-    </div>
-    <!-- Chat Messages -->
-    <div id="snapshotPreview" style="padding:0 14px;background:#0c1220"></div>
-    <div id="aiMessages" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
-      <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4)">
-        <div style="font-size:24px;margin-bottom:8px">🤖</div>
-        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);margin-bottom:6px">Ask me anything about the current market</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.6">I have full context of the current OI data,<br>PCR, walls, IV and strategy suggestions.<br>Click a quick button or type your question.</div>
-      </div>
-    </div>
-    <!-- Input -->
-    <div style="padding:12px 14px;border-top:1px solid rgba(255,255,255,0.1);display:flex;gap:8px;background:#0c1220">
-      <input id="aiInput" type="text" placeholder="Ask a question, or paste a screenshot (Ctrl+V)..." 
-        style="flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(139,92,246,0.4);background:rgba(255,255,255,0.07);color:white;font-size:13px;outline:none;font-family:'Inter',sans-serif"
-        onkeydown="if(event.key==='Enter')sendAIMessage()"
-        onfocus="this.style.borderColor='rgba(139,92,246,0.8)'"
-        onblur="this.style.borderColor='rgba(139,92,246,0.4)'"/>
-      <button onclick="sendAIMessage()" id="aiSendBtn"
-        style="padding:9px 14px;border-radius:9px;border:none;background:linear-gradient(135deg,#7c3aed,#1d4ed8);color:white;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap">Send</button>
-    </div>
-  </div>
-</div>
-
-
 </body>
 </html>

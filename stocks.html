@@ -362,13 +362,35 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
       <button class="wl-close" onclick="closeWlModalDirect()">✕</button>
     </div>
     <div class="wl-body">
-      <div class="wl-section-label">Your Watchlist (<span id="wlCount">0</span> stocks — max 20)</div>
+      <div class="wl-section-label">Your Watchlist (<span id="wlCount">0</span> stocks · max 20)</div>
       <div class="wl-chips" id="wlChips"></div>
+
+      <!-- PASTE IMPORT -->
+      <div class="wl-section-label">📋 Paste from Chartink / CSV / Any List</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.5">Paste stock symbols separated by comma, space, newline or semicolon. Works with Chartink scanner results, CSV exports, or any text list. Only F&O stocks will be added.</div>
+      <textarea id="pasteInput" style="width:100%;height:80px;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg3);color:var(--text);resize:vertical;font-family:'JetBrains Mono',monospace;outline:none" placeholder="RELIANCE, TCS, HDFCBANK&#10;or paste CSV row&#10;or copy-paste from Chartink..."></textarea>
+      <button onclick="importFromPaste()" style="width:100%;padding:8px;border-radius:8px;border:1.5px solid var(--blue-bd);background:var(--blue-bg);color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;margin-top:6px;transition:all 0.15s">📋 Import — Auto-filter F&O stocks only</button>
+      <div id="pasteResult" style="font-size:11px;margin-top:5px;min-height:16px"></div>
+
+      <!-- NSE GAINERS/LOSERS -->
+      <div class="wl-section-label">📈 Auto-Pick from NSE — Top Movers</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+        <button onclick="loadNSEMovers('gainers')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--green-bd);background:var(--green-bg);color:var(--green);font-size:12px;font-weight:700;cursor:pointer;min-width:100px">📈 Top Gainers</button>
+        <button onclick="loadNSEMovers('losers')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--red-bd);background:var(--red-bg);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;min-width:100px">📉 Top Losers</button>
+        <button onclick="loadNSEMovers('active')" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid var(--pur-bd);background:var(--pur-bg);color:var(--purple);font-size:12px;font-weight:700;cursor:pointer;min-width:100px">⚡ Most Active</button>
+      </div>
+      <div id="moversResult" style="display:flex;gap:5px;flex-wrap:wrap;min-height:20px"></div>
+      <div id="moversStatus" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+
+      <!-- QUICK ADD -->
       <div class="wl-section-label">Quick Add — Popular F&O Stocks</div>
       <div id="wlQuickAdd" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+
+      <!-- SEARCH -->
       <div class="wl-section-label">Search & Add</div>
-      <input style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none" id="wlSearch" type="text" placeholder="Type stock symbol..." oninput="onWlSearch(this.value)" autocomplete="off"/>
+      <input style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--bg3);color:var(--text);outline:none" id="wlSearch" type="text" placeholder="Type stock symbol or name..." oninput="onWlSearch(this.value)" autocomplete="off"/>
       <div id="wlSearchResults" style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"></div>
+
       <button class="wl-save-btn" onclick="saveWatchlist()">✅ Save & Start Scanning</button>
     </div>
   </div>
@@ -486,6 +508,96 @@ const FNO = [
   {s:'RECLTD',n:'REC Ltd',lot:3000,sec:'Finance'},
   {s:'PFC',n:'PFC',lot:3000,sec:'Finance'},
   {s:'INDIGO',n:'IndiGo',lot:350,sec:'Aviation'},
+  // Power & Energy
+  {s:'JSWENERGY',n:'JSW Energy',lot:1500,sec:'Power'},
+  {s:'JSWINFRA',n:'JSW Infrastructure',lot:3000,sec:'Infra'},
+  {s:'NHPC',n:'NHPC',lot:6000,sec:'Power'},
+  {s:'SJVN',n:'SJVN',lot:8000,sec:'Power'},
+  {s:'TORNTPOWER',n:'Torrent Power',lot:1000,sec:'Power'},
+  {s:'CESC',n:'CESC',lot:2000,sec:'Power'},
+  {s:'ADANIGREEN',n:'Adani Green',lot:1000,sec:'Power'},
+  // Metals & Mining
+  {s:'SAIL',n:'Steel Authority of India',lot:5000,sec:'Metal'},
+  {s:'NMDC',n:'NMDC',lot:4500,sec:'Mining'},
+  {s:'VEDL',n:'Vedanta',lot:3500,sec:'Metal'},
+  {s:'NATIONALUM',n:'National Aluminium',lot:7000,sec:'Metal'},
+  // Banking
+  {s:'BANKBARODA',n:'Bank of Baroda',lot:3750,sec:'Banking'},
+  {s:'PNB',n:'Punjab National Bank',lot:8000,sec:'Banking'},
+  {s:'CANBK',n:'Canara Bank',lot:3000,sec:'Banking'},
+  {s:'UNIONBANK',n:'Union Bank',lot:5000,sec:'Banking'},
+  {s:'FEDERALBNK',n:'Federal Bank',lot:5000,sec:'Banking'},
+  {s:'IDFCFIRSTB',n:'IDFC First Bank',lot:6000,sec:'Banking'},
+  // NBFC & Finance
+  {s:'CHOLAFIN',n:'Cholamandalam Finance',lot:700,sec:'NBFC'},
+  {s:'BAJAJFINSV',n:'Bajaj Finserv',lot:500,sec:'NBFC'},
+  {s:'MUTHOOTFIN',n:'Muthoot Finance',lot:500,sec:'Finance'},
+  {s:'LICHSGFIN',n:'LIC Housing Finance',lot:2000,sec:'Finance'},
+  {s:'ABCAPITAL',n:'Aditya Birla Capital',lot:4000,sec:'Finance'},
+  {s:'ANGELONE',n:'Angel One',lot:300,sec:'Finance'},
+  {s:'CDSL',n:'CDSL',lot:1250,sec:'Finance'},
+  {s:'MCX',n:'MCX',lot:250,sec:'Finance'},
+  // IT Extended
+  {s:'PERSISTENT',n:'Persistent Systems',lot:250,sec:'IT'},
+  {s:'MPHASIS',n:'Mphasis',lot:300,sec:'IT'},
+  {s:'COFORGE',n:'Coforge',lot:200,sec:'IT'},
+  {s:'LTTS',n:'L&T Technology',lot:200,sec:'IT'},
+  {s:'KPITTECH',n:'KPIT Technologies',lot:1000,sec:'IT'},
+  // Pharma Extended
+  {s:'AUROPHARMA',n:'Aurobindo Pharma',lot:1250,sec:'Pharma'},
+  {s:'TORNTPHARM',n:'Torrent Pharma',lot:500,sec:'Pharma'},
+  {s:'LUPIN',n:'Lupin',lot:850,sec:'Pharma'},
+  {s:'ALKEM',n:'Alkem Labs',lot:250,sec:'Pharma'},
+  {s:'LALPATHLAB',n:'Dr Lal PathLabs',lot:300,sec:'Pharma'},
+  // Real Estate
+  {s:'DLF',n:'DLF',lot:1650,sec:'Realty'},
+  {s:'GODREJPROP',n:'Godrej Properties',lot:600,sec:'Realty'},
+  {s:'OBEROIRLTY',n:'Oberoi Realty',lot:700,sec:'Realty'},
+  {s:'PRESTIGE',n:'Prestige Estates',lot:1000,sec:'Realty'},
+  // FMCG Extended
+  {s:'VARUNBEV',n:'Varun Beverages',lot:1000,sec:'FMCG'},
+  {s:'RADICO',n:'Radico Khaitan',lot:700,sec:'FMCG'},
+  {s:'UBL',n:'United Breweries',lot:700,sec:'FMCG'},
+  {s:'MCDOWELL-N',n:'United Spirits',lot:1200,sec:'FMCG'},
+  {s:'JUBLFOOD',n:'Jubilant FoodWorks',lot:1250,sec:'QSR'},
+  // Capital Goods
+  {s:'BHEL',n:'BHEL',lot:4500,sec:'Capital Goods'},
+  {s:'CUMMINSIND',n:'Cummins India',lot:450,sec:'Capital Goods'},
+  {s:'THERMAX',n:'Thermax',lot:400,sec:'Capital Goods'},
+  {s:'ABB',n:'ABB India',lot:275,sec:'Capital Goods'},
+  {s:'SIEMENS',n:'Siemens India',lot:275,sec:'Capital Goods'},
+  {s:'POLYCAB',n:'Polycab India',lot:350,sec:'Capital Goods'},
+  {s:'HAVELLS',n:'Havells India',lot:750,sec:'Capital Goods'},
+  // Auto Extended
+  {s:'MOTHERSON',n:'Samvardhana Motherson',lot:7200,sec:'Auto Parts'},
+  {s:'ASHOKLEY',n:'Ashok Leyland',lot:4000,sec:'Auto'},
+  {s:'TVSMOTOR',n:'TVS Motor',lot:700,sec:'Auto'},
+  {s:'BALKRISIND',n:'Balkrishna Ind',lot:400,sec:'Tyres'},
+  {s:'MRF',n:'MRF',lot:15,sec:'Tyres'},
+  {s:'APOLLOTYRE',n:'Apollo Tyres',lot:2000,sec:'Tyres'},
+  // Infra / Rail
+  {s:'RVNL',n:'Rail Vikas Nigam',lot:4000,sec:'Infra'},
+  {s:'IRFC',n:'IRFC',lot:7500,sec:'Finance'},
+  {s:'CONCOR',n:'Container Corp',lot:1000,sec:'Logistics'},
+  {s:'GMRAIRPORT',n:'GMR Airports',lot:9000,sec:'Infra'},
+  // Internet / New Age
+  {s:'NAUKRI',n:'Info Edge (Naukri)',lot:300,sec:'Internet'},
+  {s:'INDIAMART',n:'IndiaMart',lot:300,sec:'Internet'},
+  {s:'PAYTM',n:'Paytm',lot:2000,sec:'Fintech'},
+  {s:'NYKAA',n:'Nykaa',lot:3000,sec:'Internet'},
+  {s:'POLICYBZR',n:'PB Fintech',lot:1500,sec:'Fintech'},
+  // Chemicals
+  {s:'DEEPAKNTR',n:'Deepak Nitrite',lot:500,sec:'Chemicals'},
+  {s:'AARTIIND',n:'Aarti Industries',lot:1500,sec:'Chemicals'},
+  {s:'PIDILITIND',n:'Pidilite Industries',lot:500,sec:'Chemicals'},
+  // Consumer / Retail
+  {s:'TRENT',n:'Trent',lot:375,sec:'Retail'},
+  {s:'PAGEIND',n:'Page Industries',lot:30,sec:'Consumer'},
+  {s:'ABFRL',n:'Aditya Birla Fashion',lot:4000,sec:'Retail'},
+  // Media / Entertainment
+  {s:'SUNTV',n:'Sun TV Network',lot:1500,sec:'Media'},
+  {s:'ZEEL',n:'Zee Entertainment',lot:3000,sec:'Media'},
+  {s:'PVR',n:'PVR Inox',lot:777,sec:'Entertainment'},
 ]
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1245,6 +1357,144 @@ function toggleWl(sym) {
   renderWatchlistModal()
 }
 
+// ── PASTE IMPORT ──────────────────────────────────
+function importFromPaste() {
+  const raw = document.getElementById('pasteInput')?.value || ''
+  if (!raw.trim()) return
+
+  // Split on comma, semicolon, newline, space, tab, pipe
+  const tokens = raw.split(/[,;
+
+	| ]+/)
+    .map(t => t.trim().toUpperCase())
+    .filter(t => t.length >= 2 && t.length <= 20)
+    // Remove common CSV headers and non-symbol words
+    .filter(t => !/^(SYMBOL|STOCK|NAME|TICKER|SR|NO|S\.NO|DATE|PRICE|CLOSE|OPEN|HIGH|LOW|VOLUME|CHANGE|%)$/.test(t))
+    // Remove numbers-only tokens
+    .filter(t => /[A-Z]/.test(t))
+
+  const fnoSyms  = FNO.map(f => f.s)
+  const matched  = tokens.filter(t => fnoSyms.includes(t))
+  const notFno   = tokens.filter(t => !fnoSyms.includes(t) && t.length >= 2)
+
+  // Add matched to watchlist
+  let added = 0
+  matched.forEach(sym => {
+    if (!watchlist.includes(sym) && watchlist.length < 20) {
+      watchlist.push(sym); added++
+    }
+  })
+
+  const res = document.getElementById('pasteResult')
+  if (matched.length > 0) {
+    res.innerHTML = `<span style="color:var(--green);font-weight:700">✅ Added ${added} F&O stocks: ${matched.join(', ')}</span>`
+    if (notFno.length > 0) {
+      res.innerHTML += `<br><span style="color:var(--text3)">Skipped (not in F&O): ${notFno.slice(0,10).join(', ')}${notFno.length>10?'...':''}</span>`
+    }
+  } else {
+    res.innerHTML = `<span style="color:var(--red)">No F&O stocks found in paste.</span>`
+    if (notFno.length > 0) {
+      res.innerHTML += `<span style="color:var(--text3)"> Tokens found: ${notFno.slice(0,8).join(', ')} — none match NSE F&O list</span>`
+    }
+  }
+
+  document.getElementById('pasteInput').value = ''
+  renderWatchlistModal()
+}
+
+// ── NSE GAINERS / LOSERS / MOST ACTIVE ────────────
+async function loadNSEMovers(type) {
+  const statusEl   = document.getElementById('moversStatus')
+  const resultsEl  = document.getElementById('moversResult')
+  statusEl.textContent = `Fetching ${type} from NSE...`
+  resultsEl.innerHTML  = ''
+
+  // NSE equity endpoints
+  const endpoints = {
+    gainers: 'https://www.nseindia.com/api/live-analysis-gainers-n-loosers?index=gainers',
+    losers:  'https://www.nseindia.com/api/live-analysis-gainers-n-loosers?index=loosers',
+    active:  'https://www.nseindia.com/api/live-analysis-volume-gainers'
+  }
+
+  let data = null
+
+  // Try local proxy first
+  try {
+    const enc = encodeURIComponent(endpoints[type])
+    const r   = await fetch(`http://localhost:3001/proxy?url=${enc}`, {signal:AbortSignal.timeout(4000)})
+    if (r.ok) data = await r.json()
+  } catch(e){}
+
+  // Try CORS proxy
+  if (!data) {
+    try {
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(endpoints[type])}`,
+        `https://corsproxy.io/?${encodeURIComponent(endpoints[type])}`
+      ]
+      for (const url of proxies) {
+        try {
+          const r = await fetch(url, {signal:AbortSignal.timeout(8000)})
+          if (r.ok) { data = await r.json(); break }
+        } catch(e) {}
+      }
+    } catch(e){}
+  }
+
+  const fnoSyms = FNO.map(f => f.s)
+
+  if (data) {
+    // NSE response structure varies — try multiple paths
+    const raw = data.data || data.NIFTY?.data || data.SECTORALS?.data || []
+    const symbols = raw
+      .map(r => (r.symbol||r.Symbol||r.SYMBOL||'').trim().toUpperCase())
+      .filter(s => s.length > 0)
+
+    const fnoMatches = symbols.filter(s => fnoSyms.includes(s)).slice(0, 15)
+
+    if (fnoMatches.length > 0) {
+      statusEl.textContent = `Found ${fnoMatches.length} F&O stocks in ${type}. Click to add:`
+      resultsEl.innerHTML = fnoMatches.map(sym => {
+        const inWl = watchlist.includes(sym)
+        return `<div onclick="toggleWl('${sym}');renderMovers('${sym}',this)"
+          style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;border:1.5px solid ${inWl?'var(--blue)':'var(--border)'};background:${inWl?'var(--blue)':'var(--bg3)'};color:${inWl?'white':'var(--text2)'};cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s">
+          ${sym}${inWl?' ✓':''}
+        </div>`
+      }).join('')
+    } else {
+      statusEl.textContent = `NSE data received but no F&O matches found (market may be closed)`
+      // Show top raw symbols anyway for reference
+      if (symbols.length > 0) {
+        statusEl.textContent += ` — Raw symbols: ${symbols.slice(0,5).join(', ')}`
+      }
+    }
+  } else {
+    // Fallback — show popular movers based on sector rotation
+    statusEl.textContent = `NSE unreachable (market closed or proxy not running). Showing popular picks:`
+    const popular = {
+      gainers: ['ADANIENT','JSWENERGY','TATAPOWER','NHPC','RVNL','HAL','BEL','IRFC'],
+      losers:  ['ZOMATO','PAYTM','NYKAA','DMART','JUBLFOOD','INDIGO','PVR','ABFRL'],
+      active:  ['SBIN','HDFCBANK','RELIANCE','TCS','TATAMOTORS','BAJFINANCE','INFY','ICICIBANK']
+    }
+    resultsEl.innerHTML = (popular[type]||[]).map(sym => {
+      const inWl = watchlist.includes(sym)
+      return `<div onclick="toggleWl('${sym}');this.style.background='var(--blue)';this.style.color='white';this.style.borderColor='var(--blue)'"
+        style="display:inline-flex;padding:4px 10px;border-radius:14px;border:1.5px solid ${inWl?'var(--blue)':'var(--border)'};background:${inWl?'var(--blue)':'var(--bg3)'};color:${inWl?'white':'var(--text2)'};cursor:pointer;font-size:11px;font-weight:700;transition:all 0.15s">
+        ${sym}${inWl?' ✓':''}
+      </div>`
+    }).join('')
+  }
+}
+
+function renderMovers(sym, el) {
+  const inWl = watchlist.includes(sym)
+  el.style.background = inWl?'var(--blue)':'var(--bg3)'
+  el.style.color = inWl?'white':'var(--text2)'
+  el.style.borderColor = inWl?'var(--blue)':'var(--border)'
+  el.innerHTML = sym + (inWl?' ✓':'')
+  document.getElementById('wlCount').textContent = watchlist.length
+}
+
 function onWlSearch(val) {
   const res = document.getElementById('wlSearchResults')
   if (!val) { res.innerHTML=''; return }
@@ -1320,7 +1570,7 @@ function getExpiryType(exp,all) {
 // Demo chain builder
 function buildDemoChain(sym) {
   const info  = FNO.find(f=>f.s===sym)||{s:sym,n:sym,lot:500,sec:'—'}
-  const spots = {RELIANCE:2980,TCS:3850,HDFCBANK:1720,INFY:1890,ICICIBANK:1280,SBIN:845,AXISBANK:1190,BAJFINANCE:7200,WIPRO:520,TATAMOTORS:995,SUNPHARMA:1890,LT:3650,ZOMATO:245,HAL:4200,BEL:295,DIXON:16500,NTPC:375,ONGC:285,BHARTIARTL:1850,ADANIENT:2850}
+  const spots = {RELIANCE:2980,TCS:3850,HDFCBANK:1720,INFY:1890,ICICIBANK:1280,SBIN:845,JSWENERGY:680,JSWINFRA:350,NHPC:95,SJVN:120,SAIL:145,NMDC:235,BANKBARODA:245,PNB:115,CANBK:115,FEDERALBNK:185,IDFCFIRSTB:82,CHOLAFIN:1450,BAJAJFINSV:1950,PERSISTENT:5800,MPHASIS:3200,COFORGE:7500,DLF:890,GODREJPROP:2800,AUROPHARMA:1250,TORNTPHARM:3300,LUPIN:2100,RVNL:480,IRFC:195,POLYCAB:7200,HAVELLS:1850,DEEPAKNTR:2650,PIDILITIND:3100,TRENT:6800,MCDOWELL-N:1180,JUBLFOOD:650,AXISBANK:1190,BAJFINANCE:7200,WIPRO:520,TATAMOTORS:995,SUNPHARMA:1890,LT:3650,ZOMATO:245,HAL:4200,BEL:295,DIXON:16500,NTPC:375,ONGC:285,BHARTIARTL:1850,ADANIENT:2850}
   const spot  = spots[sym]||1500
   const step  = spot>5000?100:spot>2000?50:spot>500?20:10
   const base  = Math.round(spot/step)*step

@@ -1757,9 +1757,9 @@ function buildQuickRead(d, s) {
 
   // Emoji indicator
   const emoji = dir==='bull' ? '🟢' : dir==='bear' ? '🔴' : dir==='range' ? '🟡' : '⚪'
-  const bgColor = dir==='bull' ? 'var(--green-bg)' : dir==='bear' ? 'var(--red-bg)' : 'var(--yel-bg)'
-  const bdColor = dir==='bull' ? 'var(--green-bd)' : dir==='bear' ? 'var(--red-bd)' : 'var(--yel-bd)'
-  const txColor = dir==='bull' ? 'var(--green)' : dir==='bear' ? 'var(--red)' : 'var(--yellow)'
+  const bgColor = dir==='bull' ? 'var(--green-bg)' : dir==='bear' ? 'var(--red-bg)' : 'var(--blue-bg)'
+  const bdColor = dir==='bull' ? 'var(--green-bd)' : dir==='bear' ? 'var(--red-bd)' : 'var(--blue-bd)'
+  const txColor = dir==='bull' ? 'var(--green)' : dir==='bear' ? 'var(--red)' : 'var(--blue)'
 
   // Check for short covering signals across all near strikes
   // This is computed here so Quick Read can mention it
